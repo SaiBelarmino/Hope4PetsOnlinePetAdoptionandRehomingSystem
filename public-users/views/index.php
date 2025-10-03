@@ -8,7 +8,6 @@ $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : '
 ?>
 
 <div class="container-fluid">
-
   <div class="row g-3 py-3">
     <!-- Left sidebar: shortcuts -->
     <div class="col-12 col-lg-3">
