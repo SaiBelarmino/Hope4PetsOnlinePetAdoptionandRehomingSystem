@@ -1,91 +1,114 @@
 <?php if (session_status() === PHP_SESSION_NONE) { session_start(); } ?>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top shadow-sm py-2 py-lg-3">
-    <div class="container-fluid">
+<?php
+    $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']) || (!empty($_SESSION['user']) && !empty($_SESSION['user']['shelter_id']));
+    $shelterCtaLabel = $hasShelter ? 'My Shelter' : 'Be a Shelter';
+    $shelterCtaHref  = $hasShelter ? './my_shelter.php' : './register_shelter.php';
+?>
 
-        <div class="d-flex align-items-center">
-            <a class="navbar-brand d-flex align-items-center me-3" href="./index.php">
-                <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets" height="42" />
+<!-- Topbar Styles (scoped overrides) -->
+<style>
+    /* Layout improvements */
+    .topbar { font-size: .9375rem; }
+    .topbar .navbar-brand img { height:42px; width:auto; }
+    .topbar .topbar-icons .nav-link { position:relative; display:flex; align-items:center; justify-content:center; height:44px; width:44px; padding:0; color:#4b5563; border-radius:10px; transition:.18s; }
+    .topbar .topbar-icons .nav-link:hover, .topbar .topbar-icons .nav-link:focus { background:#f1f5f9; color:#2952ff; }
+    .topbar .icon-huge { font-size:1.35rem; line-height:1; }
+    .topbar .icon-huge-search { font-size:1.1rem; opacity:.7; }
+    .topbar .input-group-lg .form-control { padding-top:.55rem; padding-bottom:.55rem; }
+    .topbar .search-desktop { width:320px; max-width:36vw; }
+    .topbar .btn-shelter-cta { display:inline-flex; align-items:center; gap:.35rem; font-weight:600; }
+    .topbar .btn-shelter-cta i { font-size:1.15rem; }
+    .topbar .notification-dot { width:9px; height:9px; }
+    .topbar .profile-avatar { object-fit:cover; border:2px solid #eef2f7; }
+    .topbar .navbar-toggler { border-radius:8px; }
+    .topbar .navbar-toggler:focus { box-shadow:none; }
+    .topbar .dropdown-menu { font-size:.9rem; }
+    @media (max-width: 991.98px) { /* below lg */
+        .topbar .search-desktop { display:none !important; }
+        .topbar .topbar-icons { display:none !important; }
+        .topbar .collapse-area { padding-top:.75rem; }
+        .topbar .mobile-nav a.dropdown-item { padding:.55rem .85rem; border-radius:6px; }
+        .topbar .mobile-nav a.dropdown-item:hover { background:#f1f5f9; }
+    }
+    @media (max-width: 575.98px) { /* xs */
+        .topbar .btn-shelter-cta { padding:.4rem .75rem; }
+    }
+</style>
+
+<nav class="topbar navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top shadow-sm py-2 py-lg-2" role="navigation" aria-label="Primary">
+    <div class="container-fluid align-items-center d-flex gap-2 gap-lg-3">
+        <!-- Left: Brand -->
+        <a class="navbar-brand d-flex align-items-center" href="./index.php" aria-label="Hope4Pets Home">
+            <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets Logo" />
+        </a>
+
+        <!-- Desktop Search -->
+        <form class="search-desktop d-none d-md-block" role="search" method="get" action="./search.php">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text bg-light border-end-0"><i class="ti ti-search icon-huge-search"></i></span>
+                <input type="text" name="q" class="form-control border-start-0" placeholder="Search..." aria-label="Search" />
+            </div>
+        </form>
+
+        <!-- Center: Icon Nav (desktop) -->
+        <ul class="topbar-icons navbar-nav flex-row align-items-center d-none d-lg-flex ms-1">
+            <li class="nav-item"><a class="nav-link" href="./index.php" title="Home" aria-label="Home"><i class="ti ti-home icon-huge"></i></a></li>
+            <li class="nav-item"><a class="nav-link" href="./community.php" title="Community" aria-label="Community"><i class="ti ti-users icon-huge"></i></a></li>
+            <li class="nav-item"><a class="nav-link" href="./pets.php" title="Pets" aria-label="Pets"><i class="ti ti-paw icon-huge"></i></a></li>
+            <li class="nav-item"><a class="nav-link" href="./shelters.php" title="Shelters" aria-label="Shelters"><i class="ti ti-building-community icon-huge"></i></a></li>
+            <li class="nav-item"><a class="nav-link" href="./adoptions.php" title="Adoptions" aria-label="Adoptions"><i class="ti ti-heart-handshake icon-huge"></i></a></li>
+            <li class="nav-item"><a class="nav-link" href="./events.php" title="Events" aria-label="Events"><i class="ti ti-calendar-event icon-huge"></i></a></li>
+            <li class="nav-item"><a class="nav-link" href="./favorites.php" title="Favorites" aria-label="Favorites"><i class="ti ti-star icon-huge"></i></a></li>
+            <li class="nav-item"><a class="nav-link" href="./messages.php" title="Messages" aria-label="Messages"><i class="ti ti-message-circle icon-huge"></i></a></li>
+        </ul>
+
+        <!-- Right Section -->
+        <div class="d-flex align-items-center ms-auto gap-2">
+            <a href="<?php echo htmlspecialchars($shelterCtaHref); ?>" class="btn btn-primary btn-shelter-cta d-none d-md-inline-flex"><i class="ti ti-building-community"></i><span><?php echo htmlspecialchars($shelterCtaLabel); ?></span></a>
+
+            <a class="nav-link position-relative p-0 d-flex align-items-center justify-content-center" href="./notifications.php" title="Notifications" aria-label="Notifications" style="height:44px; width:44px; border-radius:10px;">
+                <i class="ti ti-bell-ringing icon-huge"></i>
+                <span class="notification-dot bg-danger rounded-circle position-absolute top-25 start-75 translate-middle"></span>
             </a>
-            
-            <form class="d-none d-md-block me-3" role="search" method="get" action="./search.php">
-                <div class="input-group input-group-lg">
-                    <span class="input-group-text bg-light border-end-0"><i class="ti ti-search icon-huge-search"></i></span>
-                    <input type="text" name="q" class="form-control border-start-0" placeholder="Search..." aria-label="Search" />
-                </div>
-            </form>
 
-            <ul class="navbar-nav flex-row align-items-center d-none d-lg-flex">
-                <li class="nav-item"><a class="nav-link px-2" href="./index.php" title="Home"><i class="ti ti-home icon-huge"></i></a></li>
-                <li class="nav-item"><a class="nav-link px-2" href="./community.php" title="Community"><i class="ti ti-users icon-huge"></i></a></li>
-                <li class="nav-item"><a class="nav-link px-2" href="./pets.php" title="Pets"><i class="ti ti-paw icon-huge"></i></a></li>
-                <li class="nav-item"><a class="nav-link px-2" href="./shelters.php" title="Shelters"><i class="ti ti-building-community icon-huge"></i></a></li>
-                <li class="nav-item"><a class="nav-link px-2" href="./adoptions.php" title="Adoptions"><i class="ti ti-heart-handshake icon-huge"></i></a></li>
-                <li class="nav-item"><a class="nav-link px-2" href="./events.php" title="Events"><i class="ti ti-calendar-event icon-huge"></i></a></li>
-                <li class="nav-item"><a class="nav-link px-2" href="./favorites.php" title="Favorites"><i class="ti ti-star icon-huge"></i></a></li>
-                <li class="nav-item"><a class="nav-link px-2" href="./messages.php" title="Messages"><i class="ti ti-message-circle icon-huge"></i></a></li>
-            </ul>
-        </div>
-        
-        <div class="d-flex align-items-center">
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#communityNav" aria-controls="communityNav" aria-expanded="false" aria-label="Toggle navigation">
+            <div class="dropdown">
+                <a class="nav-link p-0 d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                    <img src="../../assets/images/profile/user-1.jpg" alt="Profile" width="40" height="40" class="rounded-circle profile-avatar" />
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenu">
+                    <li><a class="dropdown-item" href="./profile.php"><i class="ti ti-user me-1"></i> Profile</a></li>
+                    <li><a class="dropdown-item" href="./messages.php"><i class="ti ti-message-circle me-1"></i> Messages</a></li>
+                    <li><a class="dropdown-item" href="./settings.php"><i class="ti ti-settings me-1"></i> Settings</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item" href="../api/logout.php"><i class="ti ti-logout me-1"></i> Logout</a></li>
+                </ul>
+            </div>
+
+            <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#communityNav" aria-controls="communityNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
-            <ul class="navbar-nav flex-row ms-auto align-items-center">
-                <li class="nav-item me-2 d-none d-md-block">
-                    <?php
-                        $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']) || (!empty($_SESSION['user']) && !empty($_SESSION['user']['shelter_id']));
-                        $shelterCtaLabel = $hasShelter ? 'My Shelter' : 'Be a Shelter';
-                        $shelterCtaHref  = $hasShelter ? './my_shelter.php' : './register_shelter.php';
-                    ?>
-                    <a href="<?php echo htmlspecialchars($shelterCtaHref); ?>" class="btn btn-primary btn-sm"><i class="ti ti-building-community me-1" style="font-size: 1.25rem;"></i><?php echo htmlspecialchars($shelterCtaLabel); ?></a>
-                </li>
-                
-                <li class="nav-item me-2">
-                    <a class="nav-link nav-icon-hover position-relative" href="./notifications.php" title="Notifications">
-                        <i class="ti ti-bell-ringing icon-huge"></i>
-                        <div class="notification bg-danger rounded-circle position-absolute top-0 start-100 translate-middle" style="width: 8px; height: 8px;"></div>
-                    </a>
-                </li>
-                
-                <li class="nav-item dropdown">
-                    <a class="nav-link p-0" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="../../assets/images/profile/user-1.jpg" alt="Profile" width="36" height="36" class="rounded-circle" />
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                        <li><a class="dropdown-item" href="./profile.php"><i class="ti ti-user me-1"></i> Profile</a></li>
-                        <li><a class="dropdown-item" href="./messages.php"><i class="ti ti-message-circle me-1"></i> Messages</a></li>
-                        <li><a class="dropdown-item" href="./settings.php"><i class="ti ti-settings me-1"></i> Settings</a></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item" href="../api/logout.php"><i class="ti ti-logout me-1"></i> Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
         </div>
+    </div>
 
-        <div class="collapse navbar-collapse w-100" id="communityNav">
-            <form class="w-100 mt-3 d-md-none" role="search" method="get" action="./search.php">
-                <div class="input-group input-group-lg mb-2 mb-lg-0">
-                    <span class="input-group-text bg-light border-end-0"><i class="ti ti-search icon-huge-search"></i></span>
-                    <input type="text" name="q" class="form-control border-start-0" placeholder="Search..." aria-label="Search" />
-                </div>
-            </form>
-            
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-lg-none">
-                <li class="nav-item"><a class="dropdown-item" href="./index.php">Home</a></li>
-                <li class="nav-item"><a class="dropdown-item" href="./community.php">Community</a></li>
-                <li class="nav-item"><a class="dropdown-item" href="./pets.php">Pets</a></li>
-                <li class="nav-item"><a class="dropdown-item" href="./shelters.php">Shelters</a></li>
-                <li class="nav-item"><a class="dropdown-item" href="./adoptions.php">Adoptions</a></li>
-                <li class="nav-item"><a class="dropdown-item" href="./events.php">Events</a></li>
-                <li class="nav-item"><a class="dropdown-item" href="./favorites.php">Favorites</a></li>
-                <li class="nav-item"><a class="dropdown-item" href="./messages.php">Messages</a></li>
-                <li class="nav-item mt-3 mb-2">
-                    <a href="<?php echo htmlspecialchars($shelterCtaHref); ?>" class="btn btn-primary w-100"><?php echo htmlspecialchars($shelterCtaLabel); ?></a>
-                </li>
-            </ul>
-        </div>
+    <!-- Collapsible (Mobile) -->
+    <div class="collapse navbar-collapse collapse-area border-top px-3 px-md-4" id="communityNav">
+        <form class="w-100 py-3 d-md-none" role="search" method="get" action="./search.php">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text bg-light border-end-0"><i class="ti ti-search icon-huge-search"></i></span>
+                <input type="text" name="q" class="form-control border-start-0" placeholder="Search..." aria-label="Search" />
+            </div>
+        </form>
+        <ul class="navbar-nav mobile-nav mb-3 d-lg-none w-100">
+            <li class="nav-item"><a class="dropdown-item" href="./index.php">Home</a></li>
+            <li class="nav-item"><a class="dropdown-item" href="./community.php">Community</a></li>
+            <li class="nav-item"><a class="dropdown-item" href="./pets.php">Pets</a></li>
+            <li class="nav-item"><a class="dropdown-item" href="./shelters.php">Shelters</a></li>
+            <li class="nav-item"><a class="dropdown-item" href="./adoptions.php">Adoptions</a></li>
+            <li class="nav-item"><a class="dropdown-item" href="./events.php">Events</a></li>
+            <li class="nav-item"><a class="dropdown-item" href="./favorites.php">Favorites</a></li>
+            <li class="nav-item"><a class="dropdown-item" href="./messages.php">Messages</a></li>
+            <li class="nav-item mt-2 mb-3"><a href="<?php echo htmlspecialchars($shelterCtaHref); ?>" class="btn btn-primary w-100 btn-shelter-cta"><i class="ti ti-building-community"></i> <?php echo htmlspecialchars($shelterCtaLabel); ?></a></li>
+        </ul>
     </div>
 </nav>
