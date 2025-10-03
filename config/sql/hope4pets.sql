@@ -194,13 +194,15 @@ CREATE TABLE donations (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   donor_id BIGINT UNSIGNED,
   shelter_id BIGINT UNSIGNED,
+  transaction_id VARCHAR(100) NOT NULL UNIQUE, -- From payment API
+  donor_name VARCHAR(150), -- For quick reference (redundant but useful for reports)
   amount DECIMAL(12,2) NOT NULL,
-  status ENUM('pending','completed','failed') DEFAULT 'pending',
+  payment_method ENUM('credit_card','paypal','gcash','paymaya','bank_transfer','other') NOT NULL,
+  status ENUM('pending','completed','failed','refunded') DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (donor_id) REFERENCES users(id) ON DELETE SET NULL,
   FOREIGN KEY (shelter_id) REFERENCES shelters(id) ON DELETE SET NULL
 );
-
 -- ===================================================
 -- ADOPTIONS
 -- ===================================================

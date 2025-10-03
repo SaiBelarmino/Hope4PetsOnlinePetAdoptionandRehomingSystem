@@ -49,4 +49,99 @@ $(function () {
     $("#sidebarnav >li >a.has-arrow").on("click", function (e) {
       e.preventDefault();
     });
+
+    // ==============================================
+    // Persist admin sidebar scroll position
+    // Keeps sidebar from jumping back to top on navigation
+    // ==============================================
+    (function () {
+      // Only apply on admin pages
+      if (!window.location.pathname.includes('/admin/')) return;
+
+      const STORAGE_KEY = 'admin:sidebarScrollY';
+
+      function getSidebarContainer() {
+        // Prefer element with data-simplebar inside the left sidebar
+        const container = document.querySelector('aside.left-sidebar [data-simplebar]')
+          || document.querySelector('aside.left-sidebar .scroll-sidebar')
+          || document.querySelector('aside.left-sidebar nav.sidebar-nav')
+          || document.querySelector('nav.sidebar-nav.scroll-sidebar');
+        return container || null;
+      }
+
+      function getSidebarScrollElement() {
+        const container = getSidebarContainer();
+        if (!container) return null;
+        // Simplebar wraps content; prefer its scrollable wrapper if present
+        const wrapper = container.querySelector('.simplebar-content-wrapper') || container.querySelector('.simplebar-content');
+        return wrapper || container;
+      }
+
+      function restoreScroll() {
+        const el = getSidebarScrollElement();
+        if (!el) return;
+        const y = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+        if (!isNaN(y) && y > 0) {
+          el.scrollTop = y;
+        } else {
+          // If no stored position yet, ensure active item is visible
+          const active = document.querySelector('#sidebarnav a.active');
+          if (active && el.contains(active)) {
+            active.scrollIntoView({ block: 'center' });
+          }
+        }
+      }
+
+      function saveScroll() {
+        const el = getSidebarScrollElement();
+        if (!el) return;
+        try {
+          localStorage.setItem(STORAGE_KEY, String(el.scrollTop));
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+
+      // Restore after page fully loads so Simplebar is initialized
+      function scheduleRestores() {
+        // Try multiple times to handle late init/DOM moves
+        restoreScroll();
+        setTimeout(restoreScroll, 60);
+        setTimeout(restoreScroll, 150);
+        requestAnimationFrame(restoreScroll);
+        // Observe DOM changes within sidebar to restore once content mounts
+        const container = getSidebarContainer();
+        if (container && typeof MutationObserver !== 'undefined') {
+          const mo = new MutationObserver(function () {
+            restoreScroll();
+          });
+          mo.observe(container, { childList: true, subtree: true });
+          // Stop observing after a short period to avoid overhead
+          setTimeout(function(){ try { mo.disconnect(); } catch(e){} }, 1000);
+        }
+      }
+
+      window.addEventListener('load', function () {
+        scheduleRestores();
+        const el = getSidebarScrollElement();
+        if (el) {
+          el.addEventListener('scroll', function () {
+            // Save on scroll (passive)
+            try { localStorage.setItem(STORAGE_KEY, String(el.scrollTop)); } catch (e) {}
+          }, { passive: true });
+        }
+      });
+
+      // Save before navigating away and when clicking any sidebar link
+      window.addEventListener('beforeunload', saveScroll);
+      // Save earlier on interaction to beat navigation
+      function maybeSave(e) {
+        const link = e.target && e.target.closest && e.target.closest('#sidebarnav a');
+        if (link) saveScroll();
+      }
+      document.addEventListener('click', maybeSave, true);
+      document.addEventListener('mousedown', maybeSave, true);
+      document.addEventListener('touchstart', maybeSave, { passive: true, capture: true });
+      document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') saveScroll(); });
+    })();
   });

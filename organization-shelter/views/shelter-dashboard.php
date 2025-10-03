@@ -1,17 +1,15 @@
 <?php 
-    // Protect page
-    include __DIR__ . '/../include/auth_guard.php';
-    // Include header using an absolute path to avoid relative path issues
-    include __DIR__ . '/../include/header.php';
+    // Include controller
 ?>
-<!--  Sidebar End -->
+
+<?php 
+    // Include sidebar (contains HTML skeleton and left sidebar)
+    include __DIR__ . '/../include/sidebar.php';
+?>
 <!--  Main wrapper -->
 <div class="body-wrapper">
     <!--  Header Start -->
-    <?php 
-        // Include topbar using an absolute path to avoid relative path issues
-        include __DIR__ . '/../include/topbar.php';
-    ?>
+    <?php include __DIR__ . '/../include/header.php'; ?>
     <!--  Header End -->
     <div class="container-fluid">
         <div class="row">
@@ -68,7 +66,7 @@
                                             <a href="javascript:void(0)"
                                                 class="link-primary text-dark fw-medium d-block">/index.php</a>
                                         </td>
-                                        <td class="text-center fw-medium">18,456</td>
+                                        <td class="text-center fw-medium">$18,456</td>
                                         <td class="text-center fw-medium">$2.40</td>
                                     </tr>
                                     <tr>
