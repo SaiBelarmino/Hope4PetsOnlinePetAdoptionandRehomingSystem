@@ -75,15 +75,56 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-5">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-transparent border-0"><i
-                                            class="ti ti-map-pin"></i></span>
-                                    <input type="text" class="form-control border-0" placeholder="City or ZIP" />
+                                <div class="input-group position-relative">
+                                    <span class="input-group-text bg-transparent border-0">
+                                        <i class="ti ti-map-pin"></i>
+                                    </span>
+                                    <button class="form-select text-start border-0 bg-white dropdown-toggle"
+                                        type="button"
+                                        id="locationDropdownBtn"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        Select city or ZIP
+                                    </button>
+                                    <ul class="dropdown-menu w-100 shadow-sm p-2 small" aria-labelledby="locationDropdownBtn"
+                                        style="max-height:240px; overflow-y:auto;">
+                                        <li class="px-2 pb-2">
+                                            <input type="text" class="form-control form-control-sm"
+                                                placeholder="Search location..." oninput="
+                                                    const val=this.value.toLowerCase();
+                                                    this.closest('ul').querySelectorAll('li.location-item').forEach(li=>{
+                                                        li.style.display = li.dataset.value.includes(val)?'block':'none';
+                                                    });
+                                                ">
+                                        </li>
+                                        <li><hr class="dropdown-divider my-2"></li>
+                                        <?php
+                                        // Example static list (replace with dynamic DB query if needed)
+                                        $locations = ['Manila 1000','Quezon City 1100','Cebu City 6000','Davao City 8000','Baguio 2600','Iloilo City 5000','Pasig 1600','Taguig 1630','Makati 1200','Bacolod 6100'];
+                                        foreach ($locations as $loc):
+                                            $val = strtolower($loc);
+                                        ?>
+                                            <li class="location-item" data-value="<?php echo htmlspecialchars($val); ?>">
+                                                <a href="#" class="dropdown-item py-2"
+                                                    onclick="
+                                                        event.preventDefault();
+                                                        const btn=document.getElementById('locationDropdownBtn');
+                                                        btn.textContent='<?php echo addslashes($loc); ?>';
+                                                        document.getElementById('locationHidden').value='<?php echo addslashes($loc); ?>';
+                                                    ">
+                                                    <i class="ti ti-map-pin me-1 text-primary"></i><?php echo htmlspecialchars($loc); ?>
+                                                </a>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                    <input type="hidden" name="location" id="locationHidden">
                                 </div>
                             </div>
                             <div class="col-12 col-md-3 d-grid">
-                                <a href="public-users/views/authentication-login.php" class="btn btn-primary"><i
-                                        class="ti ti-search me-1"></i> Search</a>
+                                <a href="public-users/views/authentication-login.php" class="btn btn-primary">
+                                    <i class="ti ti-search me-1"></i> Search
+                                </a>
                             </div>
                         </form>
                     </div>
