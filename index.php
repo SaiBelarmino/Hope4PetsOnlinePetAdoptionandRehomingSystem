@@ -38,7 +38,7 @@
                     <li class="nav-item ms-lg-3 mb-2 mb-lg-0"><a class="btn btn-outline-primary w-100"
                             href="public-users/views/authentication-login.php">Log in</a></li>
                     <li class="nav-item ms-lg-2 mb-2 mb-lg-0"><a class="btn btn-primary w-100"
-                            href="public-users/views/authentication-signup.php">Sign up hahahah</a></li>
+                            href="public-users/views/authentication-signup.php">Sign up</a></li>
                 </ul>
             </div>
         </div>

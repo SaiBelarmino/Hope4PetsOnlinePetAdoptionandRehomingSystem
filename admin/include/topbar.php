@@ -6,8 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hope4Pets</title>
-    <link rel="shortcut icon" type="image/png" href="../assets/images/logos/seodashlogo.png" />
-    <link rel="stylesheet" href="../assets/css/styles.min.css" />
+    <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/seodashlogo.png" />
+    <link rel="stylesheet" href="../../assets/css/styles.min.css" />
 </head>
 
 <body>
@@ -20,7 +20,7 @@
             <div>
                 <div class="brand-logo d-flex align-items-center justify-content-between">
                     <a href="../admin/admin-dashboard.php" class="text-nowrap logo-img">
-                        <img src="../assets/images/logos/logo-light.svg" alt="" />
+                        <img src="../../assets/images/logos/logo-light.svg" alt="" />
                     </a>
                     <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
                         <i class="ti ti-x fs-8"></i>

@@ -6,9 +6,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sign Up - Hope4Pets</title>
-    <link rel="shortcut icon" type="image/png" href="../assets/images/logos/seodashlogo.png" />
-    <link rel="stylesheet" href="../assets/css/styles.min.css" />
-    <link rel="stylesheet" href="../assets/css/icons/tabler-icons/tabler-icons.css" />
+    <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/seodashlogo.png" />
+    <link rel="stylesheet" href="../../assets/css/styles.min.css" />
+    <link rel="stylesheet" href="../../assets/css/icons/tabler-icons/tabler-icons.css" />
 </head>
 
 <body>
@@ -21,12 +21,12 @@
                         <div class="card mb-0">
                             <div class="card-body">
                                 <div class="mb-2">
-                                     <a href="../index.php" class="text-decoration-none" aria-label="Back to Home" title="Back to Home">
+                                     <a href="../../index.php" class="text-decoration-none" aria-label="Back to Home" title="Back to Home">
                                         <i class="ti ti-arrow-left"></i>
                                     </a>
                                 </div>
                                 <a href="./admin-dashboard.php" class="text-nowrap logo-img text-center d-block py-3 w-100">
-                                    <img src="../assets/images/logos/logo-light.svg" alt="">
+                                    <img src="../../assets/images/logos/logo-light.svg" alt="">
                                 </a>
                                 <p class="text-center">Create your account</p>
                                 <?php if (!empty($_GET['error'])): ?>
@@ -64,8 +64,8 @@
             </div>
         </div>
     </div>
-    <script src="../assets/libs/jquery/dist/jquery.min.js"></script>
-    <script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="../../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
 </body>
 

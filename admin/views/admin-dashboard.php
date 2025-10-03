@@ -1,11 +1,11 @@
 <?php 
     // Use existing topbar includes
-    include __DIR__ . '/include/topbar.php';
+    include __DIR__ . '/../include/topbar.php';
 ?>
 <div class="body-wrapper">
     <?php
         // Use existing header includes
-        include __DIR__ . '/include/header.php';
+        include __DIR__ . '/../include/header.php';
      ?>
     <div class="container-fluid">
         <main class="py-2">
@@ -276,5 +276,5 @@
         });
         </script>
     </div>
-    <?php include __DIR__ . '/include/footer.php'; ?>
+    <?php include __DIR__ . '/../include/footer.php'; ?>
 </div>

@@ -1,228 +1,202 @@
--- ==============================
--- USERS & PROFILES
--- ==============================
+-- Create Database
+CREATE DATABASE IF NOT EXISTS hope4pets
+  DEFAULT CHARACTER SET utf8mb4
+  COLLATE utf8mb4_general_ci;
+USE hope4pets;
 
+-- ========================================
+-- ROLES
+-- ========================================
+CREATE TABLE roles (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL UNIQUE, -- guest, user, shelter, admin
+  description VARCHAR(255)
+);
+
+INSERT INTO roles (name, description) VALUES
+('guest','Unauthenticated visitor'),
+('user','Individual user / adopter'),
+('shelter','Shelter / Organization user'),
+('admin','Administrator');
+
+-- ========================================
+-- USERS (individual + shelter + admin)
+-- ========================================
 CREATE TABLE users (
-    user_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name           VARCHAR(100) NOT NULL,
-    email          VARCHAR(150) NOT NULL UNIQUE,
-    password_hash  VARCHAR(255) NOT NULL,
-    role           ENUM('adopter','owner','rescuer','shelter_admin','platform_admin') DEFAULT 'adopter',
-    status         ENUM('active','inactive','banned') DEFAULT 'active',
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  role_id INT NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255),
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  display_name VARCHAR(150),
+  birthday DATE,
+  gender ENUM('male','female','other','unspecified') DEFAULT 'unspecified',
+  contact_number VARCHAR(50),
+  address TEXT,
+  is_verified TINYINT(1) DEFAULT 0,
+  signup_source ENUM('email','google','facebook','other') DEFAULT 'email',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
-CREATE TABLE profiles (
-    profile_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id        BIGINT NOT NULL,
-    bio            TEXT,
-    address        VARCHAR(255),
-    phone          VARCHAR(20),
-    verification_status ENUM('pending','verified','rejected') DEFAULT 'pending',
-    documents      TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
--- ==============================
--- SHELTERS / ORGANIZATIONS
--- ==============================
-
+-- ========================================
+-- SHELTER META
+-- ========================================
 CREATE TABLE shelters (
-    shelter_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name           VARCHAR(150) NOT NULL,
-    location       VARCHAR(255),
-    contact_info   VARCHAR(255),
-    verification_status ENUM('pending','verified','rejected') DEFAULT 'pending'
+  id BIGINT UNSIGNED PRIMARY KEY, -- same as users.id
+  shelter_name VARCHAR(255) NOT NULL,
+  address VARCHAR(500),
+  contact_number VARCHAR(50),
+  contact_person VARCHAR(150),
+  registration_number VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- ==============================
--- PETS & MEDIA
--- ==============================
+-- ========================================
+-- FILES (uploads: IDs, permits, pet photos, etc.)
+-- ========================================
+CREATE TABLE files (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED,
+  filename VARCHAR(255) NOT NULL,
+  filepath VARCHAR(500) NOT NULL,
+  filetype VARCHAR(100),
+  filesize BIGINT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
 
+-- ========================================
+-- PETS
+-- ========================================
 CREATE TABLE pets (
-    pet_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    owner_id       BIGINT NOT NULL,
-    shelter_id     BIGINT,
-    name           VARCHAR(100) NOT NULL,
-    type           VARCHAR(50) NOT NULL,
-    breed          VARCHAR(100),
-    age            INT,
-    gender         ENUM('male','female','unknown'),
-    size           ENUM('small','medium','large'),
-    health_status  VARCHAR(255),
-    vaccination_status VARCHAR(255),
-    special_needs  TEXT,
-    status         ENUM('available','adopted','archived') DEFAULT 'available',
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (shelter_id) REFERENCES shelters(shelter_id) ON DELETE SET NULL,
-    INDEX idx_pet_status_type (status, type)
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  shelter_id BIGINT UNSIGNED NULL,
+  posted_by BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(200),
+  species ENUM('dog','cat','bird','rabbit','other') DEFAULT 'other',
+  breed VARCHAR(200),
+  age VARCHAR(50),
+  gender ENUM('male','female','unknown') DEFAULT 'unknown',
+  size ENUM('small','medium','large','extra-large') DEFAULT 'medium',
+  description TEXT,
+  status ENUM('available','pending','adopted','not_for_adoption','removed') DEFAULT 'available',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (shelter_id) REFERENCES shelters(id) ON DELETE SET NULL,
+  FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE petmedia (
-    media_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
-    pet_id         BIGINT NOT NULL,
-    file_url       VARCHAR(255) NOT NULL,
-    caption        VARCHAR(255),
-    media_type     ENUM('image','video','document') DEFAULT 'image',
-    uploaded_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (pet_id) REFERENCES pets(pet_id) ON DELETE CASCADE
+-- Pet Photos
+CREATE TABLE pet_photos (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  pet_id BIGINT UNSIGNED NOT NULL,
+  file_id BIGINT UNSIGNED NOT NULL,
+  is_primary TINYINT(1) DEFAULT 0,
+  FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE,
+  FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
 );
 
--- ==============================
--- ADOPTION / APPLICATION FLOW
--- ==============================
-
-CREATE TABLE applications (
-    application_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    pet_id         BIGINT NOT NULL,
-    applicant_id   BIGINT NOT NULL,
-    form_responses TEXT,
-    documents      TEXT,
-    status         ENUM('pending','approved','rejected','completed') DEFAULT 'pending',
-    submitted_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    reviewed_at    TIMESTAMP NULL,
-    FOREIGN KEY (pet_id) REFERENCES pets(pet_id) ON DELETE CASCADE,
-    FOREIGN KEY (applicant_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    INDEX idx_applicant_status (applicant_id, status)
+-- ========================================
+-- COMMUNITY POSTS (feed)
+-- ========================================
+CREATE TABLE posts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  content TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE adoptions (
-    adoption_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
-    pet_id         BIGINT NOT NULL,
-    adopter_id     BIGINT NOT NULL,
-    application_id BIGINT NOT NULL,
-    adoption_date  DATE,
-    status         ENUM('pending','accepted','rejected','completed') DEFAULT 'pending',
-    notes          TEXT,
-    FOREIGN KEY (pet_id) REFERENCES pets(pet_id) ON DELETE CASCADE,
-    FOREIGN KEY (adopter_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE
+-- Post Photos
+CREATE TABLE post_photos (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  post_id BIGINT UNSIGNED NOT NULL,
+  file_id BIGINT UNSIGNED NOT NULL,
+  FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+  FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
 );
 
--- ==============================
--- MESSAGING & NOTIFICATIONS
--- ==============================
+-- ========================================
+-- COMMENTS & REACTIONS
+-- ========================================
+CREATE TABLE comments (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  target_type ENUM('post','pet') NOT NULL,
+  target_id BIGINT UNSIGNED NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
+CREATE TABLE reactions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  target_type ENUM('post','pet') NOT NULL,
+  target_id BIGINT UNSIGNED NOT NULL,
+  reaction_type VARCHAR(50) DEFAULT 'like',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ========================================
+-- MESSAGES
+-- ========================================
 CREATE TABLE messages (
-    message_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
-    sender_id      BIGINT NOT NULL,
-    receiver_id    BIGINT NOT NULL,
-    content        TEXT NOT NULL,
-    attachment     VARCHAR(255),
-    sent_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    read_status    ENUM('unread','read') DEFAULT 'unread',
-    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    INDEX idx_receiver_read (receiver_id, read_status)
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  sender_id BIGINT UNSIGNED,
+  recipient_id BIGINT UNSIGNED NOT NULL,
+  body TEXT,
+  is_read TINYINT(1) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE notifications (
-    notification_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id        BIGINT NOT NULL,
-    type           VARCHAR(100),
-    message        TEXT,
-    status         ENUM('unread','read') DEFAULT 'unread',
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
--- ==============================
--- APPOINTMENTS (MEET & GREET)
--- ==============================
-
-CREATE TABLE appointments (
-    appointment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    adoption_id    BIGINT NOT NULL,
-    date           DATETIME NOT NULL,
-    location       VARCHAR(255),
-    status         ENUM('pending','confirmed','completed','cancelled') DEFAULT 'pending',
-    confirmation_sent BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (adoption_id) REFERENCES adoptions(adoption_id) ON DELETE CASCADE
-);
-
--- ==============================
--- DONATIONS & PAYMENTS
--- ==============================
-
+-- ========================================
+-- DONATIONS
+-- ========================================
 CREATE TABLE donations (
-    donation_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id        BIGINT NOT NULL,
-    shelter_id     BIGINT NOT NULL,
-    amount         DECIMAL(10,2) NOT NULL,
-    currency       VARCHAR(10) DEFAULT 'PHP',
-    date           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    transaction_id VARCHAR(100) UNIQUE,
-    status         ENUM('pending','completed','failed') DEFAULT 'pending',
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (shelter_id) REFERENCES shelters(shelter_id) ON DELETE CASCADE
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  donor_user_id BIGINT UNSIGNED,
+  shelter_id BIGINT UNSIGNED,
+  amount DECIMAL(12,2) NOT NULL,
+  status ENUM('pending','completed','failed') DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (donor_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (shelter_id) REFERENCES shelters(id) ON DELETE SET NULL
 );
 
-CREATE TABLE payments (
-    payment_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
-    donation_id    BIGINT NOT NULL,
-    method         ENUM('credit_card','paypal','gcash','maya','gotyme','other'),
-    status         ENUM('pending','completed','failed') DEFAULT 'pending',
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (donation_id) REFERENCES donations(donation_id) ON DELETE CASCADE
+-- ========================================
+-- ADOPTIONS
+-- ========================================
+CREATE TABLE adoptions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  pet_id BIGINT UNSIGNED NOT NULL,
+  applicant_user_id BIGINT UNSIGNED NOT NULL,
+  shelter_id BIGINT UNSIGNED,
+  status ENUM('applied','approved','rejected','completed','cancelled') DEFAULT 'applied',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE,
+  FOREIGN KEY (applicant_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (shelter_id) REFERENCES shelters(id) ON DELETE SET NULL
 );
 
--- ==============================
--- MEDICAL RECORDS
--- ==============================
-
-CREATE TABLE medicalrecords (
-    record_id      BIGINT AUTO_INCREMENT PRIMARY KEY,
-    pet_id         BIGINT NOT NULL,
-    vaccination_type VARCHAR(100),
-    date_administered DATE,
-    next_due_date  DATE,
-    status         ENUM('done','scheduled','missed') DEFAULT 'scheduled',
-    FOREIGN KEY (pet_id) REFERENCES pets(pet_id) ON DELETE CASCADE
-);
-
--- ==============================
--- FEEDBACK & RATINGS
--- ==============================
-
-CREATE TABLE feedback (
-    feedback_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
-    from_user_id   BIGINT NOT NULL,
-    to_user_id     BIGINT NOT NULL,
-    adoption_id    BIGINT NOT NULL,
-    rating         INT CHECK (rating >= 1 AND rating <= 5),
-    comment        TEXT,
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (from_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (to_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (adoption_id) REFERENCES adoptions(adoption_id) ON DELETE CASCADE
-);
-
--- ==============================
--- MODERATION & REPORTS
--- ==============================
-
+-- ========================================
+-- REPORTS (system reports)
+-- ========================================
 CREATE TABLE reports (
-    report_id      BIGINT AUTO_INCREMENT PRIMARY KEY,
-    reported_by    BIGINT NOT NULL,
-    content_id     BIGINT NOT NULL,
-    type           ENUM('listing','message','user') NOT NULL,
-    reason         TEXT,
-    status         ENUM('open','reviewed','resolved') DEFAULT 'open',
-    action_taken   TEXT,
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (reported_by) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
--- ==============================
--- OPTIONAL: AUDIT LOGS (Admin)
--- ==============================
-
-CREATE TABLE audit_logs (
-    log_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    admin_id       BIGINT NOT NULL,
-    action         VARCHAR(255),
-    details        TEXT,
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  reporter_user_id BIGINT UNSIGNED,
+  target_type ENUM('post','pet','user','donation','message') NOT NULL,
+  target_id BIGINT UNSIGNED NOT NULL,
+  reason VARCHAR(255),
+  status ENUM('open','resolved','dismissed') DEFAULT 'open',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (reporter_user_id) REFERENCES users(id) ON DELETE SET NULL
 );
