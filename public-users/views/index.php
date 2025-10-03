@@ -8,6 +8,7 @@ $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : '
 ?>
 
 <div class="container-fluid">
+
   <div class="row g-3 py-3">
     <!-- Left sidebar: shortcuts -->
     <div class="col-12 col-lg-3">
@@ -47,7 +48,7 @@ $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : '
               <i class="ti ti-edit me-2"></i><?php echo htmlspecialchars($displayName); ?>...
             </a>
           </div>
-          <div class="d-flex gap-2 mt-3">
+          <div class="d-flex gap-2 mt-3 composer-actions btn-stack-sm">
             <a href="./create_post.php" class="btn btn-light border"><i class="ti ti-photo me-1 text-success"></i> Photo</a>
             <a href="./create_post.php" class="btn btn-light border"><i class="ti ti-video me-1 text-danger"></i> Video</a>
             <a href="./create_post.php" class="btn btn-light border"><i class="ti ti-article me-1 text-primary"></i> Update</a>
@@ -67,13 +68,13 @@ $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : '
           </div>
           <p class="mb-3">Meet Coco! A gentle 2-year-old looking for a loving home. Vaccinated and house-trained. 🐶💛</p>
           <img src="../../assets/images/products/GRDog1.jpg" class="img-fluid rounded mb-3" alt="Pet" />
-          <div class="d-flex justify-content-between">
-            <div>
-              <a href="./post_view.php" class="btn btn-light border me-1"><i class="ti ti-thumb-up"></i> Like</a>
-              <a href="./post_view.php" class="btn btn-light border me-1"><i class="ti ti-message-circle"></i> Comment</a>
-              <a href="./post_view.php" class="btn btn-light border"><i class="ti ti-share"></i> Share</a>
+          <div class="d-flex justify-content-between post-actions-sm mt-2">
+            <div class="action-group d-flex flex-wrap">
+              <a href="./post_view.php" class="btn btn-light border me-1 mb-1"><i class="ti ti-thumb-up"></i> <span class="d-none d-sm-inline">Like</span></a>
+              <a href="./post_view.php" class="btn btn-light border me-1 mb-1"><i class="ti ti-message-circle"></i> <span class="d-none d-sm-inline">Comment</span></a>
+              <a href="./post_view.php" class="btn btn-light border mb-1"><i class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></a>
             </div>
-            <a href="./pets.php" class="btn btn-primary"><i class="ti ti-heart me-1"></i> Adopt</a>
+            <a href="./pets.php" class="btn btn-primary primary-action"><i class="ti ti-heart me-1"></i> <span>Adopt</span></a>
           </div>
         </div>
       </div>
@@ -89,13 +90,13 @@ $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : '
           </div>
           <p class="mb-3">Kittens rescued and now ready for pre-adoption screening. Visit our shelter profile for details. 🐱</p>
           <img src="../../assets/images/products/PCat3.jpg" class="img-fluid rounded mb-3" alt="Kittens" />
-          <div class="d-flex justify-content-between">
-            <div>
-              <a href="./post_view.php" class="btn btn-light border me-1"><i class="ti ti-thumb-up"></i> Like</a>
-              <a href="./post_view.php" class="btn btn-light border me-1"><i class="ti ti-message-circle"></i> Comment</a>
-              <a href="./post_view.php" class="btn btn-light border"><i class="ti ti-share"></i> Share</a>
+          <div class="d-flex justify-content-between post-actions-sm mt-2">
+            <div class="action-group d-flex flex-wrap">
+              <a href="./post_view.php" class="btn btn-light border me-1 mb-1"><i class="ti ti-thumb-up"></i> <span class="d-none d-sm-inline">Like</span></a>
+              <a href="./post_view.php" class="btn btn-light border me-1 mb-1"><i class="ti ti-message-circle"></i> <span class="d-none d-sm-inline">Comment</span></a>
+              <a href="./post_view.php" class="btn btn-light border mb-1"><i class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></a>
             </div>
-            <a href="./shelters.php" class="btn btn-outline-primary"><i class="ti ti-building-community me-1"></i> View Shelter</a>
+            <a href="./shelters.php" class="btn btn-outline-primary primary-action"><i class="ti ti-building-community me-1"></i> <span>View Shelter</span></a>
           </div>
         </div>
       </div>
