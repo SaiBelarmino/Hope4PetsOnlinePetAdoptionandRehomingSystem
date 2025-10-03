@@ -1,5 +1,5 @@
-<?php include __DIR__ . '/../include/topbar.php'; ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
+<?php include __DIR__ . '/../include/topbar.php'; ?>
 
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
