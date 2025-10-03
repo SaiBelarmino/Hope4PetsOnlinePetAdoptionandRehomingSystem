@@ -1,12 +1,11 @@
+<?php include __DIR__ . '/../include/topbar.php'; ?>
+<?php include __DIR__ . '/../include/header.php'; ?>
+
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 $pageTitle = 'Community Feed';
 $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : 'Share something';
 ?>
-
-
-<?php include __DIR__ . '/../include/header.php'; ?>
-<?php include __DIR__ . '/../include/topbar.php'; ?>
 
 <div class="container-fluid">
   <div class="row g-3 py-3">
