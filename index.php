@@ -22,8 +22,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
         <div class="container py-2">
             <a class="navbar-brand d-flex align-items-center" href="index.php">
-                <img src="assets/images/logos/logo-light.svg" alt="Hope4Pets" height="36" class="me-2" />
-                <span class="fw-semibold">Hope4Pets</span>
+                <img src="assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets" height="30" class="me-2" />
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain"
                 aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
@@ -292,8 +291,7 @@
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="d-flex align-items-center mb-3">
-                        <img src="assets/images/logos/logo-light.svg" alt="Hope4Pets" height="32" class="me-2" />
-                        <span class="fw-semibold text-white">Hope4Pets</span>
+                        <img src="assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets" height="32" class="me-2" />
                     </div>
                     <p class="mb-3">Connecting loving homes with pets in need through trusted shelters.</p>
                     <div class="d-flex gap-3 fs-5">
@@ -330,7 +328,7 @@
             <hr class="border-secondary my-4" />
             <div class="d-flex flex-column flex-md-row justify-content-between small">
                 <p class="mb-2 mb-md-0">© <?php echo date('Y'); ?> Hope4Pets. All rights reserved.</p>
-                <p class="mb-0">Design base by AdminMart / ThemeWagon</p>
+                <p class="mb-0">Design base by Team Jurassic - Code adapted by Hope4Pets.</p>
             </div>
         </div>
     </footer>
