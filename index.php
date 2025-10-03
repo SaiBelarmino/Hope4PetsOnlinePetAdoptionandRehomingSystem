@@ -8,7 +8,7 @@
     <title>Hope4Pets — Adopt, Rehome, Support</title>
     <meta name="description"
         content="Hope4Pets helps you adopt and rehome pets with trusted shelters and caring communities." />
-    <link rel="shortcut icon" type="image/png" href="assets/images/logos/seodashlogo.png" />
+    <link rel="shortcut icon" type="image/png" href="assets/images/logos/logo-icon.png" />
     <!-- Local theme/Bootstrap CSS -->
     <link rel="stylesheet" href="assets/css/styles.min.css" />
     <!-- Tabler Icons (local) -->
@@ -45,7 +45,7 @@
 
     <!-- Hero -->
     <section class="landing-hero position-relative overflow-hidden d-flex align-items-center"
-        style="min-height: 80vh; color: rgba(255,255,255,.85);">
+        style="min-height: 90vh; color: rgba(255,255,255,.85);">
         <video aria-hidden="true" class="position-absolute top-0 start-0 w-100 h-100"
             style="object-fit: cover; z-index: 0;" autoplay loop muted playsinline preload="auto">
             <source src="assets/images/videos/film.mp4" type="video/mp4" />
