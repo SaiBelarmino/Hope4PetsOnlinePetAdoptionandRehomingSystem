@@ -10,9 +10,4 @@
     <link rel="stylesheet" href="../../assets/css/styles.min.css" />
 </head>
 
-<body class="pu-layout">
-    <!-- Body Wrapper: public layout (no left sidebar) -->
-    <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
-        data-sidebar-position="fixed" data-header-position="fixed">
-        <div class="body-wrapper px-0">
-            <!-- Header (top nav) will be included next by pages -->
+<body>
