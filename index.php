@@ -19,7 +19,7 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top reveal is-visible">
         <div class="container py-2">
             <a class="navbar-brand d-flex align-items-center" href="index.php">
                 <img src="assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets" height="30" class="me-2" />
@@ -44,7 +44,7 @@
     </nav>
 
     <!-- Hero -->
-    <section class="landing-hero position-relative overflow-hidden d-flex align-items-center"
+    <section class="landing-hero position-relative overflow-hidden d-flex align-items-center reveal is-visible"
         style="min-height: 90vh; color: rgba(255,255,255,.85);">
         <video aria-hidden="true" class="position-absolute top-0 start-0 w-100 h-100"
             style="object-fit: cover; z-index: 0;" autoplay loop muted playsinline preload="auto">
@@ -59,7 +59,7 @@
                     <h1 class="display-5 fw-bold mb-3 text-warning">Adopt a pet with love and confidence.</h1>
                     <p class="lead text-white-50 mb-4">Browse verified shelters, meet amazing pets, and start a
                         life-changing friendship today.</p>
-                    <div class="card shadow-sm border-0 p-2 bg-white text-dark">
+                    <div class="card shadow-sm border-0 p-2 bg-white text-dark hover-lift">
                         <form class="row g-2 align-items-center">
                             <div class="col-12 col-md-4">
                                 <div class="input-group">
@@ -98,22 +98,22 @@
     </section>
 
     <!-- Stats -->
-    <section class="py-5 bg-white border-bottom">
+    <section class="py-5 bg-white border-bottom reveal">
         <div class="container">
             <div class="row text-center g-4">
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 reveal delay-1">
                     <h3 class="fw-bold mb-0">2k+</h3>
                     <p class="text-muted mb-0">Successful adoptions</p>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 reveal delay-2">
                     <h3 class="fw-bold mb-0">150+</h3>
                     <p class="text-muted mb-0">Partner shelters</p>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 reveal delay-3">
                     <h3 class="fw-bold mb-0">4.9/5</h3>
                     <p class="text-muted mb-0">Community rating</p>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 reveal delay-4">
                     <h3 class="fw-bold mb-0">24/7</h3>
                     <p class="text-muted mb-0">Support</p>
                 </div>
@@ -122,7 +122,7 @@
     </section>
 
     <!-- Categories -->
-    <section id="adopt" class="py-6">
+    <section id="adopt" class="py-6 reveal">
         <div class="container">
             <div class="d-flex align-items-end justify-content-between mb-4">
                 <div>
@@ -132,7 +132,7 @@
                 <a href="public-users/views/authentication-login.php" class="btn btn-outline-primary">Browse pets</a>
             </div>
             <div class="row g-4">
-                <div class="col-12 col-md-6 col-xl-3">
+                <div class="col-12 col-md-6 col-xl-3 reveal">
                     <a class="text-decoration-none" href="public-users/views/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/GRDog1.jpg" class="card-img-top" alt="Dogs" />
@@ -143,7 +143,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-12 col-md-6 col-xl-3">
+                <div class="col-12 col-md-6 col-xl-3 reveal delay-1">
                     <a class="text-decoration-none" href="public-users/views/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/PCat3.jpg" class="card-img-top" alt="Cats" />
@@ -154,7 +154,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-12 col-md-6 col-xl-3">
+                <div class="col-12 col-md-6 col-xl-3 reveal delay-2">
                     <a class="text-decoration-none" href="public-users/views/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/rabbit2.jpg" class="card-img-top" alt="Small pets" />
@@ -166,7 +166,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-12 col-md-6 col-xl-3">
+                <div class="col-12 col-md-6 col-xl-3 reveal delay-3">
                     <a class="text-decoration-none" href="public-users/views/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/fish1.jpg" class="card-img-top" alt="Fish" />
@@ -182,15 +182,15 @@
     </section>
 
     <!-- How it works -->
-    <section id="how" class="py-6 bg-light">
+    <section id="how" class="py-6 bg-light reveal">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="h1 fw-bold">How it works</h2>
                 <p class="text-muted">We make adoption simple and trusted.</p>
             </div>
             <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                <div class="col-md-4 reveal">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
                         <div class="card-body p-4">
                             <div class="icon-circle bg-primary-subtle text-primary mb-3"><i class="ti ti-search"></i>
                             </div>
@@ -199,8 +199,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                <div class="col-md-4 reveal delay-1">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
                         <div class="card-body p-4">
                             <div class="icon-circle bg-primary-subtle text-primary mb-3"><i
                                     class="ti ti-message-heart"></i></div>
@@ -209,8 +209,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                <div class="col-md-4 reveal delay-2">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
                         <div class="card-body p-4">
                             <div class="icon-circle bg-primary-subtle text-primary mb-3"><i
                                     class="ti ti-home-heart"></i></div>
@@ -224,15 +224,15 @@
     </section>
 
     <!-- Stories -->
-    <section id="stories" class="py-6">
+    <section id="stories" class="py-6 reveal">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="h1 fw-bold">Happy stories</h2>
                 <p class="text-muted">Real adoptions from our community.</p>
             </div>
             <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm h-100">
+                <div class="col-md-4 reveal">
+                    <div class="card border-0 shadow-sm h-100 hover-lift">
                         <img src="assets/images/profile/user-1.jpg" class="card-img-top object-fit-cover"
                             style="height: 220px" alt="" />
                         <div class="card-body">
@@ -242,8 +242,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm h-100">
+                <div class="col-md-4 reveal delay-1">
+                    <div class="card border-0 shadow-sm h-100 hover-lift">
                         <img src="assets/images/profile/user-2.jpg" class="card-img-top object-fit-cover"
                             style="height: 220px" alt="" />
                         <div class="card-body">
@@ -253,8 +253,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm h-100">
+                <div class="col-md-4 reveal delay-2">
+                    <div class="card border-0 shadow-sm h-100 hover-lift">
                         <img src="assets/images/products/PCat1.jpg" class="card-img-top object-fit-cover"
                             style="height: 220px" alt="" />
                         <div class="card-body">
@@ -269,7 +269,7 @@
     </section>
 
     <!-- CTA for shelters -->
-    <section class="py-6 bg-primary text-white">
+    <section class="py-6 bg-primary text-white reveal">
         <div class="container">
             <div class="row align-items-center gy-3">
                 <div class="col-lg-8">
@@ -286,7 +286,7 @@
     </section>
 
     <!-- Footer -->
-    <footer id="contact" class="py-6 bg-dark text-white-50">
+    <footer id="contact" class="py-6 bg-dark text-white-50 reveal">
         <div class="container">
             <div class="row g-4">
                 <div class="col-md-4">
@@ -335,6 +335,7 @@
 
     <!-- Local JS (Bootstrap bundle includes Popper) -->
     <script src="assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/landing.js"></script>
     <!-- Optional: theme scripts if needed on landing -->
     <script src="assets/js/app.min.js"></script>
 </body>

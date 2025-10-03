@@ -20,7 +20,7 @@
             <div>
                 <div class="brand-logo d-flex align-items-center justify-content-between">
                     <a href="../admin/admin-dashboard.php" class="text-nowrap logo-img">
-                        <img src="../../assets/images/logos/logo-light.svg" alt="" />
+                        <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="logo" class="img-fluid" style="max-height: 40px;" />
                     </a>
                     <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
                         <i class="ti ti-x fs-8"></i>
