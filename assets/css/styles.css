@@ -9,6 +9,35 @@
 @import "../libs/simplebar/dist/simplebar.css";
 @import "../css/icons/tabler-icons/tabler-icons.css";
 
+/* ---- Public Users Layout Adjustments (fixed header, scrolling content only) ---- */
+body.pu-layout {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* prevent body scroll */
+}
+body.pu-layout > header.app-header {
+    flex: 0 0 auto;
+    z-index: 1030;
+}
+body.pu-layout .container-fluid, 
+body.pu-layout main.pu-content-wrapper {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+/* Utility wrapper if pages wrap content inside a div directly after header */
+body.pu-layout > .pu-scroll-wrapper { 
+    flex:1 1 auto; 
+    overflow-y:auto; 
+    min-height:0; 
+}
+/* Avoid layout shift when scrollbar appears */
+html { scrollbar-gutter: stable; }
+/* Ensure sticky header shadow for separation */
+body.pu-layout > header.app-header { box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+
 :root,
 [data-bs-theme=light] {
     --bs-blue: #5D87FF;
