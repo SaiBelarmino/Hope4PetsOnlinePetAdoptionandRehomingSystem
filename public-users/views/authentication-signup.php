@@ -25,7 +25,7 @@
                                         <i class="ti ti-arrow-left"></i>
                                     </a>
                                 </div>
-                                <a href="./admin-dashboard.php" class="text-nowrap logo-img text-center d-block py-3 w-100">
+                                <a href="../../index.php" class="text-nowrap logo-img text-center d-block py-3 w-100">
                                     <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets Logo" class="img-fluid" style="width: 260px; max-width: 100%; height: auto;">
                                 </a>
                                 <p class="text-center">Create your account</p>

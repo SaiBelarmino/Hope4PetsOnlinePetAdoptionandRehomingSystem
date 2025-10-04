@@ -1,6 +1,6 @@
 /* Lightweight landing-only styles. Keep separate from theme bundle. */
 /* Motion tokens */
-:root { --ease-out: cubic-bezier(.2,.8,.2,1); --dur-fast: 180ms; --dur-med: 380ms; }
+:root { --ease-out: cubic-bezier(.2,.8,.2,1); --ease-smooth: cubic-bezier(.16,.84,.24,1); --dur-fast: 180ms; --dur-med: 420ms; --dur-slow: 900ms; }
 
 .landing-hero {
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 60%, #ffffff 100%);
@@ -63,23 +63,82 @@ body.is-ready { opacity: 1; transition: opacity 420ms var(--ease-out); }
 .reveal {
   opacity: 0;
   /* default motion: up */
-  transform: translateY(14px);
+  transform: translateY(18px);
   filter: none;
+  will-change: opacity, transform, filter;
   transition:
-    opacity 600ms var(--ease-out),
-    transform 600ms var(--ease-out),
-    filter 600ms var(--ease-out);
+    opacity var(--reveal-dur,620ms) var(--ease-smooth),
+    transform var(--reveal-dur,620ms) var(--ease-smooth),
+    filter var(--reveal-dur,620ms) var(--ease-smooth);
   transition-delay: var(--reveal-delay, 0ms);
 }
 .reveal.is-visible { opacity: 1; transform: none; filter: none; }
 
 /* Variants */
-.reveal-up { transform: translateY(18px); }
+.reveal-up { transform: translateY(28px); }
 .reveal-down { transform: translateY(-18px); }
 .reveal-left { transform: translateX(18px); }
 .reveal-right { transform: translateX(-18px); }
 .reveal-scale { transform: scale(.98); }
 .reveal-blur { filter: blur(10px); }
+/* New variants */
+.reveal-fade { transform: none; }
+.reveal-zoom { transform: scale(.92); }
+.reveal-zoom.is-visible { transform: scale(1); }
+.reveal-rotate { transform: rotate(-6deg) translateY(20px); }
+.reveal-rotate.is-visible { transform: none; }
+.reveal-flip { transform: rotateX(70deg); transform-origin: top; }
+.reveal-flip.is-visible { transform: rotateX(0deg); }
+.reveal-skew { transform: skewY(6deg) translateY(24px); }
+.reveal-skew.is-visible { transform: none; }
+.reveal-blur-lift { filter: blur(14px); transform: translateY(32px); }
+.reveal-blur-lift.is-visible { filter: none; transform: none; }
+
+/* Assemble animation (text pieces slide + fade into place) */
+[data-assemble] { --assemble-stagger: 42ms; --assemble-distance: 20px; --assemble-dur: 640ms; --assemble-ease: cubic-bezier(.16,.84,.24,1); display: inline-block; }
+[data-assemble].assemble-inline-block { display:inline-block; }
+[data-assemble] .assemble-item { display:inline-block; opacity:0; transform: translateY(var(--assemble-distance)) rotateX(15deg); transform-origin: 50% 80%; filter: blur(6px); will-change: transform, opacity, filter; }
+[data-assemble].is-assembled .assemble-item { opacity:1; transform: none; filter: blur(0); }
+[data-assemble] .assemble-item { transition: opacity var(--assemble-dur) var(--assemble-ease), transform var(--assemble-dur) var(--assemble-ease), filter var(--assemble-dur) var(--assemble-ease); }
+
+/* Variation: letters assembly (shorter distance) */
+[data-assemble="chars"] { --assemble-distance: 26px; }
+[data-assemble="chars"] .assemble-item { transform: translateY(var(--assemble-distance)) rotateX(25deg) scale(.94); }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-assemble] .assemble-item { transition: none !important; opacity:1 !important; transform:none !important; filter:none !important; }
+}
+
+/* Slow & extra-slow speed utilities */
+.reveal-slow { --reveal-dur: 900ms; }
+.reveal-xslow { --reveal-dur: 1200ms; }
+
+/* Floating pulse for emphasized elements */
+.float-pulse { animation: floatPulse 6s var(--ease-smooth) infinite; }
+@keyframes floatPulse { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+/* Soft shimmer accent (optional use) */
+.shimmer { position: relative; overflow: hidden; }
+.shimmer::after {
+  content: ""; position: absolute; inset: 0; background:
+    linear-gradient(110deg, transparent 0%, rgba(255,255,255,.28) 45%, rgba(255,255,255,.65) 50%, rgba(255,255,255,.28) 55%, transparent 100%);
+  transform: translateX(-100%);
+  animation: shimmerMove 3.2s linear infinite;
+  pointer-events: none; mix-blend-mode: overlay;
+}
+@keyframes shimmerMove { to { transform: translateX(100%); } }
+
+/* Parallax helper: element moves slower than scroll */
+[data-parallax] { will-change: transform; }
+
+/* Counter up number style */
+.counter { display: inline-block; font-variant-numeric: tabular-nums; }
+
+/* Utility for delay steps beyond built-ins */
+.delay-6 { transition-delay: 600ms; }
+.delay-7 { transition-delay: 700ms; }
+.delay-8 { transition-delay: 800ms; }
 .delay-1 { transition-delay: 100ms; }
 .delay-2 { transition-delay: 200ms; }
 .delay-3 { transition-delay: 300ms; }

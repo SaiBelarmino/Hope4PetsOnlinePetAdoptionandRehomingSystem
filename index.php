@@ -19,7 +19,7 @@
 
 <body class="page-preload">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top reveal reveal-down is-visible">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top reveal reveal-down reveal-slow is-visible" data-reveal-dur="800ms">
         <div class="container py-2">
             <a class="navbar-brand d-flex align-items-center" href="index.php">
                 <img src="assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets" height="30" class="me-2" />
@@ -44,7 +44,7 @@
     </nav>
 
     <!-- Hero -->
-    <section class="landing-hero position-relative overflow-hidden d-flex align-items-center reveal reveal-up is-visible"
+    <section class="landing-hero position-relative overflow-hidden d-flex align-items-center reveal reveal-up reveal-xslow is-visible"
         style="min-height: 90vh; color: rgba(255,255,255,.85);">
         <video aria-hidden="true" class="position-absolute top-0 start-0 w-100 h-100"
             style="object-fit: cover; z-index: 0;" autoplay loop muted playsinline preload="auto">
@@ -53,13 +53,13 @@
         <div class="position-absolute top-0 start-0 w-100 h-100"
             style="background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)); z-index: 1;"></div>
         <div class="container position-relative py-5" style="z-index: 2;">
-            <div class="row align-items-center py-4 gy-4">
+            <div class="row align-items-center py-4 gy-4" data-parallax="0.12">
                 <div class="col-lg-6">
                     <span class="badge bg-primary-subtle text-primary mb-3">Find your new best friend</span>
-                    <h1 class="display-5 fw-bold mb-3 text-warning reveal reveal-up" data-reveal-delay="80ms">Adopt a pet with love and confidence.</h1>
+                    <h1 class="display-5 fw-bold mb-3 text-warning reveal reveal-up reveal-zoom" data-reveal-delay="80ms" data-reveal-dur="900ms" data-assemble="words" data-assemble-delay="180">Adopt a pet with love and confidence.</h1>
                     <p class="lead text-white-50 mb-4 reveal reveal-up" data-reveal-delay="140ms">Browse verified shelters, meet amazing pets, and start a
                         life-changing friendship today.</p>
-                    <div class="card shadow-sm border-0 p-2 bg-white text-dark hover-lift reveal reveal-up" data-reveal-delay="220ms">
+                    <div class="card shadow-sm border-0 p-2 bg-white text-dark hover-lift reveal reveal-up reveal-blur-lift" data-reveal-delay="220ms" data-reveal-dur="900ms">
                         <form class="row g-2 align-items-center">
                             <div class="col-12 col-md-4">
                                 <div class="input-group">
@@ -139,23 +139,23 @@
     </section>
 
     <!-- Stats -->
-    <section class="py-5 bg-white border-bottom reveal" data-reveal-group>
+    <section class="py-5 bg-white border-bottom reveal reveal-fade" data-reveal-group data-reveal-dur="800ms">
         <div class="container">
             <div class="row text-center g-4">
                 <div class="col-6 col-md-3 reveal reveal-up delay-1">
-                    <h3 class="fw-bold mb-0">2k+</h3>
+                    <h3 class="fw-bold mb-0"><span class="counter" data-target="2000" data-suffix="+" data-duration="1800">0+</span></h3>
                     <p class="text-muted mb-0">Successful adoptions</p>
                 </div>
                 <div class="col-6 col-md-3 reveal reveal-up delay-2">
-                    <h3 class="fw-bold mb-0">150+</h3>
+                    <h3 class="fw-bold mb-0"><span class="counter" data-target="150" data-suffix="+" data-duration="1600">0+</span></h3>
                     <p class="text-muted mb-0">Partner shelters</p>
                 </div>
                 <div class="col-6 col-md-3 reveal reveal-up delay-3">
-                    <h3 class="fw-bold mb-0">4.9/5</h3>
+                    <h3 class="fw-bold mb-0"><span class="counter" data-target="4.9" data-duration="2000">0</span>/5</h3>
                     <p class="text-muted mb-0">Community rating</p>
                 </div>
                 <div class="col-6 col-md-3 reveal reveal-up delay-4">
-                    <h3 class="fw-bold mb-0">24/7</h3>
+                    <h3 class="fw-bold mb-0"><span class="counter" data-target="24" data-duration="1500">0</span>/<span class="counter" data-target="7" data-duration="1800">0</span></h3>
                     <p class="text-muted mb-0">Support</p>
                 </div>
             </div>
@@ -163,17 +163,17 @@
     </section>
 
     <!-- Categories -->
-    <section id="adopt" class="py-6 reveal" data-reveal-group>
+    <section id="adopt" class="py-6 reveal reveal-fade" data-reveal-group data-reveal-dur="850ms">
         <div class="container">
             <div class="d-flex align-items-end justify-content-between mb-4">
                 <div>
-                    <h2 class="h1 fw-bold mb-1">Popular categories</h2>
+                    <h2 class="h1 fw-bold mb-1" data-assemble="words" data-assemble-delay="140">Popular categories</h2>
                     <p class="text-muted mb-0">Start browsing by the type of pet you love.</p>
                 </div>
                 <a href="public-users/views/authentication-login.php" class="btn btn-outline-primary">Browse pets</a>
             </div>
             <div class="row g-4">
-                <div class="col-12 col-md-6 col-xl-3 reveal reveal-up">
+                <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-scale">
                     <a class="text-decoration-none" href="public-users/views/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/GRDog1.jpg" class="card-img-top" alt="Dogs" />
@@ -184,7 +184,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-12 col-md-6 col-xl-3 reveal reveal-up delay-1">
+                <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-zoom delay-1" data-reveal-dur="780ms">
                     <a class="text-decoration-none" href="public-users/views/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/PCat3.jpg" class="card-img-top" alt="Cats" />
@@ -195,7 +195,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-12 col-md-6 col-xl-3 reveal reveal-up delay-2">
+                <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-rotate delay-2" data-reveal-dur="820ms">
                     <a class="text-decoration-none" href="public-users/views/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/rabbit2.jpg" class="card-img-top" alt="Small pets" />
@@ -207,7 +207,7 @@
                         </div>
                     </a>
                 </div>
-                <div class="col-12 col-md-6 col-xl-3 reveal reveal-up delay-3">
+                <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-flip delay-3" data-reveal-dur="900ms">
                     <a class="text-decoration-none" href="public-users/views/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/fish1.jpg" class="card-img-top" alt="Fish" />
@@ -223,14 +223,14 @@
     </section>
 
     <!-- How it works -->
-    <section id="how" class="py-6 bg-light reveal" data-reveal-group>
+    <section id="how" class="py-6 bg-light reveal reveal-fade" data-reveal-group data-reveal-dur="880ms">
         <div class="container">
             <div class="text-center mb-5">
-                <h2 class="h1 fw-bold">How it works</h2>
+                <h2 class="h1 fw-bold" data-assemble="words" data-assemble-delay="140">How it works</h2>
                 <p class="text-muted">We make adoption simple and trusted.</p>
             </div>
             <div class="row g-4">
-                <div class="col-md-4 reveal reveal-up">
+                <div class="col-md-4 reveal reveal-up reveal-blur-lift">
                     <div class="card h-100 border-0 shadow-sm hover-lift">
                         <div class="card-body p-4">
                             <div class="icon-circle bg-primary-subtle text-primary mb-3"><i class="ti ti-search"></i>
@@ -240,7 +240,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 reveal reveal-up delay-1">
+                <div class="col-md-4 reveal reveal-up reveal-skew delay-1" data-reveal-dur="820ms">
                     <div class="card h-100 border-0 shadow-sm hover-lift">
                         <div class="card-body p-4">
                             <div class="icon-circle bg-primary-subtle text-primary mb-3"><i
@@ -250,7 +250,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 reveal reveal-up delay-2">
+                <div class="col-md-4 reveal reveal-up reveal-zoom delay-2" data-reveal-dur="820ms">
                     <div class="card h-100 border-0 shadow-sm hover-lift">
                         <div class="card-body p-4">
                             <div class="icon-circle bg-primary-subtle text-primary mb-3"><i
@@ -265,14 +265,14 @@
     </section>
 
     <!-- Stories -->
-    <section id="stories" class="py-6 reveal" data-reveal-group>
+    <section id="stories" class="py-6 reveal reveal-fade" data-reveal-group data-reveal-dur="900ms">
         <div class="container">
             <div class="text-center mb-5">
-                <h2 class="h1 fw-bold">Happy stories</h2>
+                <h2 class="h1 fw-bold" data-assemble="words" data-assemble-delay="140">Happy stories</h2>
                 <p class="text-muted">Real adoptions from our community.</p>
             </div>
             <div class="row g-4">
-                <div class="col-md-4 reveal reveal-up">
+                <div class="col-md-4 reveal reveal-up reveal-scale">
                     <div class="card border-0 shadow-sm h-100 hover-lift">
                         <img src="assets/images/profile/user-1.jpg" class="card-img-top object-fit-cover"
                             style="height: 220px" alt="" />
@@ -283,7 +283,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 reveal reveal-up delay-1">
+                <div class="col-md-4 reveal reveal-up reveal-rotate delay-1" data-reveal-dur="820ms">
                     <div class="card border-0 shadow-sm h-100 hover-lift">
                         <img src="assets/images/profile/user-2.jpg" class="card-img-top object-fit-cover"
                             style="height: 220px" alt="" />
@@ -294,7 +294,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 reveal reveal-up delay-2">
+                <div class="col-md-4 reveal reveal-up reveal-blur-lift delay-2" data-reveal-dur="950ms">
                     <div class="card border-0 shadow-sm h-100 hover-lift">
                         <img src="assets/images/products/PCat1.jpg" class="card-img-top object-fit-cover"
                             style="height: 220px" alt="" />
@@ -310,11 +310,11 @@
     </section>
 
     <!-- CTA for shelters -->
-    <section class="py-6 bg-primary text-white reveal reveal-up">
+    <section class="py-6 bg-primary text-white reveal reveal-up reveal-zoom" data-reveal-dur="850ms" data-parallax="0.08">
         <div class="container">
             <div class="row align-items-center gy-3">
                 <div class="col-lg-8">
-                    <h2 class="fw-bold mb-1">Are you a shelter or rescue org?</h2>
+                    <h2 class="fw-bold mb-1" data-assemble="chars" data-assemble-delay="160">Are you a shelter or rescue org?</h2>
                     <p class="mb-0 opacity-85">Reach more adopters, manage applications, and share your pets with our
                         community.</p>
                 </div>
@@ -327,7 +327,7 @@
     </section>
 
     <!-- Footer -->
-    <footer id="contact" class="py-6 bg-dark text-white-50 reveal reveal-up">
+    <footer id="contact" class="py-6 bg-dark text-white-50 reveal reveal-up reveal-fade" data-reveal-dur="1000ms">
         <div class="container">
             <div class="row g-4">
                 <div class="col-md-4">
