@@ -10,7 +10,7 @@
     <div class="container-fluid">
         <main class="py-2">
             <!-- Overview Stats -->
-            <div class="row g-3 g-lg-4 mb-4">
+            <div class="row g-3 g-lg-4 mb-4 metrics-row">
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="card h-100">
                         <div class="card-body d-flex align-items-center justify-content-between">
@@ -102,7 +102,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
+                                <table class="table table-hover align-middle mb-0 table-auto-stack">
                                     <thead class="table-light">
                                         <tr>
                                             <th>User</th>
@@ -203,8 +203,44 @@
         <script>
         window.addEventListener('load', function() {
             if (typeof ApexCharts === 'undefined') return;
+            function currentTheme(){ return document.body.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light'; }
+            function numberFmt(v){ return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+            function baseCommon(){ const dark = currentTheme()==='dark'; return {
+                tooltip: {
+                    theme: currentTheme(),
+                    y: {
+                        formatter: function(val, opts){
+                            if(opts.w.config.chart.type === 'bar') return '₱' + numberFmt(val);
+                            return numberFmt(val);
+                        }
+                    },
+                    custom: function({ series, seriesIndex, dataPointIndex, w }){
+                        const val = series[seriesIndex][dataPointIndex];
+                        const cat = w.globals.categoryLabels[dataPointIndex];
+                        const isBar = w.config.chart.type === 'bar';
+                        const color = w.config.colors[seriesIndex] || '#3b82f6';
+                        const bg = dark ? '#1e293b' : '#ffffff';
+                        const border = dark ? '#334155' : '#e2e8f0';
+                        const txt = dark ? '#e2e8f0' : '#1e293b';
+                        const sub = dark ? '#94a3b8' : '#64748b';
+                        const displayVal = isBar ? '₱' + numberFmt(val) : numberFmt(val);
+                        return `<div style="background:${bg};color:${txt};border:1px solid ${border};padding:8px 10px;border-radius:8px;min-width:140px;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.15)">
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                                <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${color}"></span>
+                                <strong style="font-size:12px;letter-spacing:.5px">${cat}</strong>
+                            </div>
+                            <div style="font-size:20px;font-weight:600;line-height:1;color:${txt}">${displayVal}</div>
+                            <div style="margin-top:2px;font-size:11px;color:${sub}">${isBar? 'Donations':'Adoptions'} </div>
+                        </div>`;
+                    }
+                },
+                grid: { borderColor: dark ? '#334155' : '#e2e8f0' },
+                xaxis: { labels: { style: { colors: dark ? '#cbd5e1' : '#475569' } } },
+                yaxis: { labels: { style: { colors: dark ? '#cbd5e1' : '#475569' } } },
+                markers: { strokeColors: dark ? '#0f172a' : '#ffffff' }
+            }; }
             // Line Chart - Monthly Adoptions
-            const adoptionOptions = {
+            const adoptionOptions = Object.assign({
                 chart: {
                     type: 'line',
                     height: 280,
@@ -237,11 +273,11 @@
                 markers: {
                     size: 3
                 }
-            };
-            new ApexCharts(document.querySelector('#adoptionLineChart'), adoptionOptions).render();
+            }, baseCommon());
+            const adoptionChart = new ApexCharts(document.querySelector('#adoptionLineChart'), adoptionOptions); adoptionChart.render();
 
             // Bar Chart - Monthly Donations
-            const donationOptions = {
+            const donationOptions = Object.assign({
                 chart: {
                     type: 'bar',
                     height: 280,
@@ -271,8 +307,20 @@
                 grid: {
                     strokeDashArray: 4
                 }
-            };
-            new ApexCharts(document.querySelector('#donationBarChart'), donationOptions).render();
+            }, baseCommon());
+            const donationChart = new ApexCharts(document.querySelector('#donationBarChart'), donationOptions); donationChart.render();
+
+            // Observe theme changes
+            const observer = new MutationObserver(function(muts){
+                for(const m of muts){
+                    if(m.type==='attributes' && m.attributeName==='data-bs-theme'){
+                        const common = baseCommon();
+                        adoptionChart.updateOptions(common, false, true);
+                        donationChart.updateOptions(common, false, true);
+                    }
+                }
+            });
+            observer.observe(document.body,{ attributes:true, attributeFilter:['data-bs-theme'] });
         });
         </script>
     </div>

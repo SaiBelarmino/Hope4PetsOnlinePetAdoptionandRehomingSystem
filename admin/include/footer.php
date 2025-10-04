@@ -13,5 +13,8 @@
   <script src="../../assets/js/sidebarmenu.js"></script>
   <script src="../../assets/js/app.min.js"></script>
   <script src="../../assets/js/dashboard.js"></script>
+  <script src="../../assets/js/admin-theme-toggle.js"></script>
+  <script src="../../assets/js/preloader.js"></script>
+  <script src="../../assets/js/table-responsive.js"></script>
 </body>
 </html>

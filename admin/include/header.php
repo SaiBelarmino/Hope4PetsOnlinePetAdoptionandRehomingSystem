@@ -1,20 +1,29 @@
 <header class="app-header">
-        <nav class="navbar navbar-expand-lg navbar-light">
-            <ul class="navbar-nav">
+        <nav class="navbar navbar-expand-lg navbar-light d-flex align-items-center px-3 w-100" style="min-height:60px;">
+            <ul class="navbar-nav flex-row align-items-center me-auto gap-2">
                 <li class="nav-item d-block d-xl-none">
                     <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
                         <i class="ti ti-menu-2"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link nav-icon-hover" href="javascript:void(0)">
+                    <a class="nav-link nav-icon-hover position-relative" href="javascript:void(0)">
                         <i class="ti ti-bell-ringing"></i>
-                        <div class="notification bg-primary rounded-circle"></div>
+                        <span class="position-absolute top-0 start-100" style="transform:translate(-70%, -30%);">
+                            <span class="spinner-grow spinner-grow-sm text-primary" style="width:.55rem;height:.55rem;" role="status" aria-label="New notifications"></span>
+                        </span>
                     </a>
                 </li>
+                <!-- Theme Toggle -->
+                <li class="nav-item">
+                    <button id="themeToggle" class="nav-link nav-icon-hover btn btn-link p-0" type="button" aria-label="Toggle dark mode" title="Toggle dark / light mode">
+                        <i class="ti ti-moon-stars fs-5 theme-icon theme-icon-dark"></i>
+                        <i class="ti ti-sun fs-5 theme-icon theme-icon-light"></i>
+                    </button>
+                </li>
             </ul>
-            <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
-                <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+            <div class="navbar-collapse d-flex justify-content-end px-0" id="navbarNav">
+                <ul class="navbar-nav flex-row align-items-center gap-2">
                     <li class="nav-item dropdown">
                         <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2"
                             data-bs-toggle="dropdown" aria-expanded="false">
