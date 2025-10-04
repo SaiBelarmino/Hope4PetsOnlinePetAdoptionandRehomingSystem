@@ -1,7 +1,3 @@
-<?php 
-    // (Optional) Include controller if needed for data fetching
-    // include __DIR__ . '/../controllers/admin-dashboard-controllers.php';
-?>
 
 <?php 
     // Include sidebar (contains HTML skeleton and left sidebar)
