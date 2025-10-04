@@ -7,9 +7,40 @@
     <title>Hope4Pets</title>
     <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/logo-icon.png" />
     <link rel="stylesheet" href="../../assets/css/styles.min.css" />
+    <!-- Dark/Light theme overrides -->
+    <link rel="stylesheet" href="../../assets/css/admin-theme.css" />
 </head>
-
-<body>
+<?php
+    // Determine theme preference (cookie set by JS) fallback to light
+    $adminTheme = isset($_COOKIE['admin_theme']) && in_array($_COOKIE['admin_theme'], ['dark','light'])
+        ? $_COOKIE['admin_theme']
+        : 'light';
+?>
+<body class="theme-<?= $adminTheme; ?> preload">
+    <!-- Preloader -->
+    <div id="preloader" class="h4p-preloader" aria-hidden="true">
+        <div class="h4p-preloader-inner">
+            <div class="h4p-spinner">
+                <span class="h4p-spinner-core"><i class="ti ti-paw"></i></span>
+            </div>
+            <div class="h4p-preloader-text">Loading…</div>
+        </div>
+    </div>
+    <script>
+    // Early theme guard
+    (function() {
+        try {
+            var stored = localStorage.getItem('admin_theme');
+            var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var target = stored || (document.cookie.match(/(?:^|; )admin_theme=(dark|light)/) || [])[1] || (systemDark ? 'dark' : 'light');
+            if (!document.body.classList.contains('theme-' + target)) {
+                document.body.classList.remove('theme-dark','theme-light');
+                document.body.classList.add('theme-' + target);
+            }
+            requestAnimationFrame(function(){ document.body.classList.remove('preload'); });
+        } catch(e) { document.body.classList.remove('preload'); }
+    })();
+    </script>
     <!--  Body Wrapper -->
     <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
         data-sidebar-position="fixed" data-header-position="fixed">
