@@ -95,6 +95,9 @@ body.pu-layout > header.app-header { box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     --bs-light-primary-rgb: 236, 242, 255;
     --bs-light-secondary-rgb: 232, 247, 255;
     --bs-light-info-rgb: 235, 243, 254;
+    .blockquote-footer:before {
+        content: "—\u00A0"
+    }
     --bs-light-success-rgb: 230, 255, 250;
     --bs-light-warning-rgb: 254, 245, 229;
     --bs-light-danger-rgb: 251, 242, 239;
