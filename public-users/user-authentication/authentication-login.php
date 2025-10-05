@@ -53,8 +53,10 @@
                                         <span class="text-muted">&nbsp;</span>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-3">Sign In</button>
-                                    <a href="../api/google_oauth_start.php" class="btn btn-outline-secondary w-100 py-8 fs-4 mb-4">
-                                        <span class="me-2"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style="width:20px;height:20px"></span>
+                                    <a href="../../api/google/google_oauth_start.php" class="btn btn-outline-secondary w-100 py-8 fs-4 mb-4">
+                                        <span class="me-2">
+                                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:20px;height:20px">
+                                        </span>
                                         Continue with Google
                                     </a>
                                     <div class="d-flex align-items-center justify-content-center">

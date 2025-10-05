@@ -14,7 +14,7 @@
     <!-- Tabler Icons (local) -->
     <link rel="stylesheet" href="assets/css/icons/tabler-icons/tabler-icons.css" />
     <!-- Landing overrides -->
-    <link rel="stylesheet" href="assets/css/landing.css" />
+    <link rel="stylesheet" href="assets/css/landing.css"/>
 </head>
 
 <body class="page-preload">

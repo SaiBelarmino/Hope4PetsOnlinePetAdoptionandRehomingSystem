@@ -48,7 +48,7 @@
                                         <input type="password" class="form-control" id="password" name="password" minlength="6" required>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-3">Sign Up</button>
-                                    <a href="../api/google_oauth_start.php" class="btn btn-outline-secondary w-100 py-8 fs-4 mb-4">
+                                    <a href="../../api/google/google_oauth_start.php" class="btn btn-outline-secondary w-100 py-8 fs-4 mb-4">
                                         <span class="me-2"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style="width:20px;height:20px"></span>
                                         Sign up with Google
                                     </a>
