@@ -133,14 +133,16 @@ CREATE TABLE pet_reactions (
 );
 
 -- ===================================================
--- POSTS
+-- POSTS (UPDATED: now linked to pet_id)
 -- ===================================================
 CREATE TABLE posts (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL,
+  pet_id BIGINT UNSIGNED NULL, -- ✅ link to pet if post is about a pet
   content TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE SET NULL
 );
 
 CREATE TABLE post_photos (
@@ -194,8 +196,8 @@ CREATE TABLE donations (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   donor_id BIGINT UNSIGNED,
   shelter_id BIGINT UNSIGNED,
-  transaction_id VARCHAR(100) NOT NULL UNIQUE, -- From payment API
-  donor_name VARCHAR(150), -- For quick reference (redundant but useful for reports)
+  transaction_id VARCHAR(100) NOT NULL UNIQUE,
+  donor_name VARCHAR(150),
   amount DECIMAL(12,2) NOT NULL,
   payment_method ENUM('credit_card','paypal','gcash','paymaya','bank_transfer','other') NOT NULL,
   status ENUM('pending','completed','failed','refunded') DEFAULT 'pending',
@@ -203,6 +205,7 @@ CREATE TABLE donations (
   FOREIGN KEY (donor_id) REFERENCES users(id) ON DELETE SET NULL,
   FOREIGN KEY (shelter_id) REFERENCES shelters(id) ON DELETE SET NULL
 );
+
 -- ===================================================
 -- ADOPTIONS
 -- ===================================================
@@ -222,7 +225,7 @@ CREATE TABLE adoptions (
 );
 
 -- ===================================================
--- REPORTS (split by entity for strict FKs)
+-- REPORTS
 -- ===================================================
 CREATE TABLE user_reports (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
