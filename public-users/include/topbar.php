@@ -63,7 +63,8 @@
                     <li>
                         <hr class="dropdown-divider" />
                     </li>
-                    <li><a class="dropdown-item" href="../api/logout.php"><i class="ti ti-logout me-1"></i> Logout</a>
+                    <!-- Fixed logout path -->
+                    <li><a class="dropdown-item" href="../user-authentication/authentication-logout.php"><i class="ti ti-logout me-1"></i> Logout</a>
                     </li>
                 </ul>
             </div>
