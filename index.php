@@ -35,9 +35,9 @@
                     <li class="nav-item"><a class="nav-link" href="#stories">Stories</a></li>
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                     <li class="nav-item ms-lg-3 mb-2 mb-lg-0"><a class="btn btn-outline-primary w-100"
-                            href="public-users/views/authentication-login.php">Log in</a></li>
+                            href="public-users/user-authentication/authentication-login.php">Log in</a></li>
                     <li class="nav-item ms-lg-2 mb-2 mb-lg-0"><a class="btn btn-primary w-100"
-                            href="public-users/views/authentication-signup.php">Sign up</a></li>
+                            href="public-users/user-authentication/authentication-signup.php">Sign up</a></li>
                 </ul>
             </div>
         </div>
