@@ -5,14 +5,6 @@ if (session_status() === PHP_SESSION_NONE) {
 ?>
 
 <?php
-/**
- * View: messages.php (full inbox + conversation)
- * Table: messages
- * Controller sets: $inbox, $conversation, $otherUser, $authUserId, $otherId, $sendError
- *  - $inbox => list of threads with: other_user_id, last_message, last_time, unread_count
- *  - $conversation => messages array
- */
-// existing logic below retained
 require_once __DIR__ . '/../controllers/messages-controller.php';
 
 $authUserId = 0;
@@ -112,7 +104,7 @@ if ($otherId && $otherId > 0 && $authUserId > 0) {
         <!-- Center: messages interface -->
         <div class="col-12 col-lg-6">
             <h3 class="mb-3 d-none d-lg-block">
-            <?php
+                <?php
                 if ($otherUser && isset($otherUser['full_name']) && $otherUser['full_name']) {
                     echo 'Conversation with ' . htmlspecialchars($otherUser['full_name']);
                 } else {
@@ -129,20 +121,22 @@ if ($otherId && $otherId > 0 && $authUserId > 0) {
                             </div>
                             <ul class="list-unstyled mb-0 friend-list overflow-auto flex-grow-1">
                                 <?php if (empty($inbox)): ?>
-                                    <li class="px-3 py-2 text-muted small">No conversations yet.</li>
+                                <li class="px-3 py-2 text-muted small">No conversations yet.</li>
                                 <?php else: foreach ($inbox as $row): 
                                     $active = ($otherId === (int)$row['other_user_id']);
                                     $preview = htmlspecialchars(mb_strimwidth($row['last_message'] ?? '', 0, 60, '…'));
                                     $unread = (int)$row['unread_count'];
                                     $time = htmlspecialchars(date('M d H:i', strtotime($row['last_time'])));
                                 ?>
-                                    <li class="<?php echo $active ? 'active' : ''; ?>">
-                                        <a href="./messages.php?u=<?php echo (int)$row['other_user_id']; ?>" class="d-flex align-items-start px-3 py-2 text-decoration-none">
-                                            <img src="../../assets/images/profile/user-placeholder.png" alt="" class="rounded-circle me-2" width="44" height="44">
-                                            <div class="flex-grow-1">
-                                                <div class="d-flex justify-content-between">
-                                                    <strong>
-                                                        <?php
+                                <li class="<?php echo $active ? 'active' : ''; ?>">
+                                    <a href="./messages.php?u=<?php echo (int)$row['other_user_id']; ?>"
+                                        class="d-flex align-items-start px-3 py-2 text-decoration-none">
+                                        <img src="../../assets/images/profile/user-placeholder.png" alt=""
+                                            class="rounded-circle me-2" width="44" height="44">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between">
+                                                <strong>
+                                                    <?php
                                                         $uid = (int)$row['other_user_id'];
                                                         if (isset($userNames[$uid]) && $userNames[$uid]) {
                                                             echo htmlspecialchars($userNames[$uid]);
@@ -150,14 +144,15 @@ if ($otherId && $otherId > 0 && $authUserId > 0) {
                                                             echo 'User #' . $uid;
                                                         }
                                                         ?>
-                                                    </strong>
-                                                    <small class="text-muted"><?php echo $time; ?></small>
-                                                </div>
-                                                <div class="small text-muted"><?php echo $preview ?: 'No text'; ?></div>
+                                                </strong>
+                                                <small class="text-muted"><?php echo $time; ?></small>
                                             </div>
-                                            <?php if ($unread>0): ?><span class="badge bg-danger ms-2 align-self-start"><?php echo $unread; ?></span><?php endif; ?>
-                                        </a>
-                                    </li>
+                                            <div class="small text-muted"><?php echo $preview ?: 'No text'; ?></div>
+                                        </div>
+                                        <?php if ($unread>0): ?><span
+                                            class="badge bg-danger ms-2 align-self-start"><?php echo $unread; ?></span><?php endif; ?>
+                                    </a>
+                                </li>
                                 <?php endforeach; endif; ?>
                             </ul>
                         </div>
@@ -165,20 +160,23 @@ if ($otherId && $otherId > 0 && $authUserId > 0) {
                         <div class="col-12 col-md-7 d-flex flex-column h-100">
                             <div class="flex-grow-1 p-3 overflow-auto" id="chatContainer">
                                 <?php if (!$otherId): ?>
-                                    <div class="text-muted small">Select a conversation or start a new one below.</div>
+                                <div class="text-muted small">Select a conversation or start a new one below.</div>
                                 <?php else: ?>
-                                    <ul class="list-unstyled chat mb-0" id="chatList" data-last-id="0">
-                                        <?php if (empty($conversation)): ?>
-                                            <li class="text-muted small">No messages yet. Say hello!</li>
-                                        <?php else: foreach ($conversation as $msg):
+                                <ul class="list-unstyled chat mb-0" id="chatList" data-last-id="0">
+                                    <?php if (empty($conversation)): ?>
+                                    <li class="text-muted small">No messages yet. Say hello!</li>
+                                    <?php else: foreach ($conversation as $msg):
                                             $isOutgoing = (int)$msg['is_outgoing'] === 1;
                                             $time = htmlspecialchars(date('M d H:i', strtotime($msg['created_at'])));
                                             $bodyHtml = nl2br(htmlspecialchars($msg['body']));
                                         ?>
-                                            <li class="mb-3 d-flex <?php echo $isOutgoing ? 'flex-row-reverse text-end' : ''; ?>" data-msg-id="<?php echo (int)$msg['id']; ?>">
-                                                <img src="https://bootdey.com/img/Content/user_<?php echo $isOutgoing ? '1' : '3'; ?>.jpg" class="rounded-circle <?php echo $isOutgoing ? 'ms-2' : 'me-2'; ?>" width="40" height="40" alt="User">
-                                                <div>
-                                                    <div class="small text-muted"><?php
+                                    <li class="mb-3 d-flex <?php echo $isOutgoing ? 'flex-row-reverse text-end' : ''; ?>"
+                                        data-msg-id="<?php echo (int)$msg['id']; ?>">
+                                        <img src="https://bootdey.com/img/Content/user_<?php echo $isOutgoing ? '1' : '3'; ?>.jpg"
+                                            class="rounded-circle <?php echo $isOutgoing ? 'ms-2' : 'me-2'; ?>"
+                                            width="40" height="40" alt="User">
+                                        <div>
+                                            <div class="small text-muted"><?php
                                                         if ($isOutgoing) {
                                                             echo 'You';
                                                         } else if (isset($userNames[$msg['sender_id']]) && $userNames[$msg['sender_id']]) {
@@ -188,34 +186,43 @@ if ($otherId && $otherId > 0 && $authUserId > 0) {
                                                         }
                                                         echo ' • ' . $time;
                                                     ?></div>
-                                                    <div class="p-2 rounded <?php echo $isOutgoing ? 'bg-primary text-white' : 'bg-light'; ?>"><?php echo $bodyHtml; ?></div>
-                                                </div>
-                                            </li>
-                                        <?php endforeach; endif; ?>
-                                    </ul>
+                                            <div
+                                                class="p-2 rounded <?php echo $isOutgoing ? 'bg-primary text-white' : 'bg-light'; ?>">
+                                                <?php echo $bodyHtml; ?></div>
+                                        </div>
+                                    </li>
+                                    <?php endforeach; endif; ?>
+                                </ul>
                                 <?php endif; ?>
                             </div>
                             <div class="border-top p-2">
-                                                                <form class="d-flex gap-2" method="post" action="./messages.php?u=<?php echo (int)$otherId; ?>">
-                                                                        <input type="hidden" name="action" value="send" />
-                                                                        <input type="hidden" name="recipient_id" id="recipient_id" value="<?php echo (int)$otherId; ?>" />
-                                                                        <input type="text" name="body" class="form-control" placeholder="Type your message" aria-label="Message" autocomplete="off" <?php echo $otherId? '' : 'disabled'; ?>>
-                                                                        <button class="btn btn-success" type="submit" <?php echo $otherId? '' : 'disabled'; ?>><i class="ti ti-send"></i><span class="d-none d-sm-inline ms-1">Send</span></button>
-                                                                </form>
-                                                                <script>
-                                                                // Ensure recipient_id is always set from URL param if missing
-                                                                (function() {
-                                                                    var url = new URL(window.location.href);
-                                                                    var u = url.searchParams.get('u');
-                                                                    var rid = document.getElementById('recipient_id');
-                                                                    if (u && rid && (!rid.value || rid.value === '0')) {
-                                                                        rid.value = u;
-                                                                    }
-                                                                })();
-                                                                </script>
-                                <?php if ($sendError): ?><div class="text-danger small mt-1"><?php echo htmlspecialchars($sendError); ?></div><?php endif; ?>
+                                <form id="sendMessageForm" class="d-flex gap-2" method="post"
+                                    action="./messages.php?u=<?php echo (int)$otherId; ?>">
+                                    <input type="hidden" name="action" value="send" />
+                                    <input type="hidden" name="recipient_id" id="recipient_id"
+                                        value="<?php echo (int)$otherId; ?>" />
+                                    <input type="text" name="body" id="messageBody" class="form-control" placeholder="Type your message"
+                                        aria-label="Message" autocomplete="off"
+                                        <?php echo $otherId? '' : 'disabled'; ?>>
+                                    <button id="sendBtn" class="btn btn-success" type="submit"
+                                        <?php echo $otherId? '' : 'disabled'; ?>><i class="ti ti-send"></i><span
+                                            class="d-none d-sm-inline ms-1">Send</span></button>
+                                </form>
+                                <script>
+                                // Ensure recipient_id is always set from URL param if missing
+                                (function() {
+                                    var url = new URL(window.location.href);
+                                    var u = url.searchParams.get('u');
+                                    var rid = document.getElementById('recipient_id');
+                                    if (u && rid && (!rid.value || rid.value === '0')) {
+                                        rid.value = u;
+                                    }
+                                })();
+                                </script>
+                                <?php if ($sendError): ?><div class="text-danger small mt-1">
+                                    <?php echo htmlspecialchars($sendError); ?></div><?php endif; ?>
                                 <?php if (!$otherId): ?>
-                                    <div class="small text-muted mt-1">Choose a user from the left to start chatting.</div>
+                                <div class="small text-muted mt-1">Choose a user from the left to start chatting.</div>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -266,5 +273,4 @@ if ($otherId && $otherId > 0 && $authUserId > 0) {
         </div>
     </div>
 </div>
-
 <?php include __DIR__ . '/../include/footer.php'; ?>
