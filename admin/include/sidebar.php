@@ -265,7 +265,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="../api/logout.php" aria-expanded="false">
+                            <a class="sidebar-link" href="../admin-authentication/authentication-logout.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-logout fs-6"></i>
                                 </span>
