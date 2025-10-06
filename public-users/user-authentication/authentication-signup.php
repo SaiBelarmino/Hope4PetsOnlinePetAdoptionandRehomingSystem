@@ -66,7 +66,7 @@ $flash = SessionManager::getFlash();
                                     </div>
                                 <?php endif; ?>
                                 
-                                <form method="post" action="../controllers/register-handler.php">
+                                <form method="post" action="../authentication-controllers/authentication-signup-controller.php">
                                     <div class="mb-3">
                                         <label for="full_name" class="form-label">Full Name</label>
                                         <input type="text" class="form-control" id="full_name" name="full_name" required>
