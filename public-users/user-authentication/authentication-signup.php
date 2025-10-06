@@ -36,9 +36,18 @@ $flash = SessionManager::getFlash();
                     <div class="col-md-8 col-lg-6 col-xxl-3">
                         <div class="card mb-0">
                             <div class="card-body">
-                                <a href="../../index.php" class="text-nowrap logo-img text-center d-block py-3 w-100">
-                                    <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets Logo" class="img-fluid" style="width: 260px; max-width: 100%; height: auto;">
-                                </a>
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center justify-content-start mb-2">
+                                        <a href="../../index.php" class="btn btn-light btn-sm p-2" aria-label="Back to landing" title="Back">
+                                            <i class="ti ti-arrow-left"></i>
+                                        </a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a href="../../index.php" class="text-nowrap logo-img d-block py-2">
+                                            <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets Logo" class="img-fluid" style="width: 260px; max-width: 100%; height: auto;">
+                                        </a>
+                                    </div>
+                                </div>
                                 <p class="text-center">Create your account</p>
                                 
                                 <?php if ($flash): ?>
