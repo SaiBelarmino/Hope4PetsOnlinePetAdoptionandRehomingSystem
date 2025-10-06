@@ -1,7 +1,25 @@
 <?php
 // Google OAuth callback: exchanges code for tokens and logs user in / creates account.
 
-session_start();
+// Debug: Show errors during development
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Configure session cookie similarly to start script and start session early
+$secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => $_SERVER['HTTP_HOST'] ?? '',
+    'secure' => $secure,
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once __DIR__ . '/../../config/db-connection/db_connection.php';
 require_once __DIR__ . '/../../controllers/BaseController.php';
 
@@ -30,8 +48,31 @@ if ($clientId === '' || $clientSecret === '') {
     exit('Google OAuth not configured. Define GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.');
 }
 
+// Debug helper: print session and GET state when ?debug=1 is provided
+if (isset($_GET['debug'])) {
+    header('Content-Type: text/plain');
+    echo "Session ID: " . session_id() . "\n";
+    echo "Session cookie name: " . session_name() . "\n";
+    echo "Session state (stored): " . (isset($_SESSION['google_oauth_state']) ? $_SESSION['google_oauth_state'] : '<none>') . "\n";
+    echo "GET state: " . ($_GET['state'] ?? '<none>') . "\n";
+    echo "\nSESSION DUMP:\n";
+    print_r($_SESSION);
+    echo "\n\nGET DUMP:\n";
+    print_r($_GET);
+    echo "\n\nCOOKIES:\n";
+    print_r($_COOKIE);
+    exit;
+}
+
 if (!isset($_GET['state']) || !hash_equals($_SESSION['google_oauth_state'] ?? '', $_GET['state'])) {
-    exit('Invalid state parameter.');
+    header('Content-Type: text/plain');
+    echo "Invalid state parameter.\n";
+    echo "Stored session state: " . (isset($_SESSION['google_oauth_state']) ? $_SESSION['google_oauth_state'] : '<none>') . "\n";
+    echo "Received GET state: " . ($_GET['state'] ?? '<none>') . "\n";
+    echo "Session ID: " . session_id() . "\n";
+    echo "Cookies: ";
+    print_r($_COOKIE);
+    exit;
 }
 if (!isset($_GET['code'])) {
     exit('Missing authorization code.');
@@ -75,9 +116,18 @@ if (!$user) {
     }
 }
 
-$_SESSION['user_id'] = $user['id'];
-$_SESSION['user_email'] = $user['email'];
-$_SESSION['user_name'] = $user['full_name'];
+// Use SessionManager so session state matches the rest of the app
+require_once __DIR__ . '/../../config/SessionManager.php';
+
+$loginUser = [
+    'id' => $user['id'],
+    'full_name' => $user['full_name'],
+    'email' => $user['email'],
+    'is_verified' => $user['is_verified'] ?? 0,
+    'profile_photo' => $user['profile_photo'] ?? null,
+];
+SessionManager::login($loginUser);
+SessionManager::setFlash('success', 'Signed in with Google.');
 
 // Redirect to dashboard (correct relative path was two levels up)
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://';

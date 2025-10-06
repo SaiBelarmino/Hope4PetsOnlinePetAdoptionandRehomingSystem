@@ -1,7 +1,19 @@
 <?php
 // Google OAuth start script.
 
-session_start();
+// Configure session cookie for local development and start session early
+$secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => $_SERVER['HTTP_HOST'] ?? '',
+    'secure' => $secure,
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $clientId = trim(getenv('GOOGLE_CLIENT_ID') ?: '375118041490-9gh5vfl3u6k3ql4c3a7v09f6fn2tbu78.apps.googleusercontent.com');
 $redirectUri = trim(getenv('GOOGLE_REDIRECT_URI') ?: 'http://localhost/Hope4PetsOnlinePetAdoptionandRehomingSystem/api/google/google_oauth_callback.php');
