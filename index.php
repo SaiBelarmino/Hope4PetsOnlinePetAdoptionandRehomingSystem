@@ -273,8 +273,10 @@ exit;
             <div class="row g-4">
                 <div class="col-md-4 reveal reveal-up reveal-scale">
                     <div class="card border-0 shadow-sm h-100 hover-lift">
-                        <img src="assets/images/profile/user-1.jpg" class="card-img-top object-fit-cover"
-                            style="height: 220px" alt="" />
+                        <a href="public-users/views/profile.php?user_id=1">
+                            <img src="assets/images/profile/user-1.jpg" class="card-img-top object-fit-cover"
+                                style="height: 220px" alt="" />
+                        </a>
                         <div class="card-body">
                             <h5 class="card-title">Buddy found a home</h5>
                             <p class="card-text text-muted mb-0">“The process was smooth and the team guided us at every
@@ -284,8 +286,10 @@ exit;
                 </div>
                 <div class="col-md-4 reveal reveal-up reveal-rotate delay-1" data-reveal-dur="820ms">
                     <div class="card border-0 shadow-sm h-100 hover-lift">
-                        <img src="assets/images/profile/user-2.jpg" class="card-img-top object-fit-cover"
-                            style="height: 220px" alt="" />
+                        <a href="public-users/views/profile.php?user_id=2">
+                            <img src="assets/images/profile/user-2.jpg" class="card-img-top object-fit-cover"
+                                style="height: 220px" alt="" />
+                        </a>
                         <div class="card-body">
                             <h5 class="card-title">Mia the cat</h5>
                             <p class="card-text text-muted mb-0">“We met Mia through Hope4Pets and it was love at first

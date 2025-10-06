@@ -38,12 +38,11 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
               <th>Reacts</th>
               <th>Comments</th>
               <th>Date</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
             <?php if (empty($posts)): ?>
-              <tr><td colspan="7" class="text-center text-muted py-4">No posts yet.</td></tr>
+              <tr><td colspan="6" class="text-center text-muted py-4">No posts yet.</td></tr>
             <?php else: foreach($posts as $po): ?>
               <tr>
                 <td class="small" style="max-width:260px;">
@@ -56,17 +55,6 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
                 <td><?php echo (int)$po['reaction_count']; ?></td>
                 <td><?php echo (int)$po['comment_count']; ?></td>
                 <td><span class="small text-muted"><?php echo htmlspecialchars(date('M d', strtotime($po['created_at']))); ?></span></td>
-                <td class="text-end">
-                  <div class="btn-group btn-group-sm">
-                    <a href="./post_view.php?id=<?php echo (int)$po['id']; ?>" class="btn btn-outline-secondary"><i class="ti ti-eye"></i></a>
-                    <a href="./create_post.php?edit=<?php echo (int)$po['id']; ?>" class="btn btn-outline-secondary"><i class="ti ti-edit"></i></a>
-                    <form action="../controllers/create-post-controller.php" method="post" onsubmit="return confirm('Delete this post?');">
-                      <input type="hidden" name="post_id" value="<?php echo (int)$po['id']; ?>">
-                      <input type="hidden" name="action" value="delete">
-                      <button class="btn btn-outline-danger"><i class="ti ti-trash"></i></button>
-                    </form>
-                  </div>
-                </td>
               </tr>
             <?php endforeach; endif; ?>
           </tbody>

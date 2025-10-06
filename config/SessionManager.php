@@ -33,11 +33,9 @@ class SessionManager {
      */
     public static function login(array $user): void {
         self::init();
-        
         // Regenerate session ID to prevent session fixation
         session_regenerate_id(true);
-        
-        // Store user data in session
+        // Store user data in session (flat)
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['full_name'] = $user['full_name'];
         $_SESSION['email'] = $user['email'];
@@ -45,7 +43,14 @@ class SessionManager {
         $_SESSION['profile_photo'] = $user['profile_photo'] ?? null;
         $_SESSION['logged_in'] = true;
         $_SESSION['login_time'] = time();
-        
+        // Store user data in $_SESSION['user'] array for compatibility
+        $_SESSION['user'] = [
+            'id' => $user['id'],
+            'full_name' => $user['full_name'],
+            'email' => $user['email'],
+            'is_verified' => $user['is_verified'] ?? 0,
+            'profile_photo' => $user['profile_photo'] ?? null
+        ];
         // Check if user has a shelter
         self::refreshShelterStatus();
     }

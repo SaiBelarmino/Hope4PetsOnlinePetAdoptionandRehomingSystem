@@ -46,40 +46,117 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
         <h3 class="mb-0">Post</h3>
         <a href="./index.php" class="btn btn-outline-secondary"><i class="ti ti-arrow-left"></i> Feed</a>
       </div>
-      <div class="card mb-3">
-        <div class="card-body">
+      <?php 
+      // Display flash messages
+      $flash = SessionManager::getFlash();
+      if (!empty($flash['message'])): ?>
+        <div class="alert alert-<?php echo htmlspecialchars($flash['type'] ?? 'info'); ?> alert-dismissible fade show" id="autoHideAlert">
+          <?php echo htmlspecialchars($flash['message']); ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <script>
+        // Auto-hide alert after 3 seconds
+        setTimeout(function() {
+          var alert = document.getElementById('autoHideAlert');
+          if (alert) {
+            var bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 3000); // 3 seconds
+        </script>
+      <?php endif; ?>
       <div class="card mb-3">
         <div class="card-body">
           <?php if(!$post): ?>
             <div class="alert alert-warning mb-0">Post not found or has been removed.</div>
           <?php else: ?>
-          <div class="d-flex align-items-center mb-2">
-            <img src="../../assets/images/profile/user-placeholder.png" class="rounded-circle me-2" width="44" height="44" alt="User">
-            <div>
-              <strong><?php echo htmlspecialchars($post['user_name'] ?? ('User #'.$post['user_id'])); ?></strong><br>
-              <span class="text-muted small"><?php echo htmlspecialchars(date('M d, Y H:i', strtotime($post['created_at'] ?? 'now'))); ?></span>
+          <?php 
+            // Get profile photo or default
+            $profilePhoto = !empty($post['profile_photo']) 
+                ? '../../' . htmlspecialchars($post['profile_photo']) 
+                : '../../assets/images/profile/user-1.jpg';
+            
+            // Check if current user is the post owner
+            $isOwner = isset($_SESSION['user']['id']) && $_SESSION['user']['id'] == $post['user_id'];
+            
+            // DEBUG: Remove this after testing
+            // echo "Session User ID: " . ($_SESSION['user']['id'] ?? 'not set') . "<br>";
+            // echo "Post User ID: " . ($post['user_id'] ?? 'not set') . "<br>";
+            // echo "Is Owner: " . ($isOwner ? 'YES' : 'NO') . "<br>";
+          ?>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center">
+              <a href="./profile.php?id=<?php echo (int)$post['user_id']; ?>" class="text-decoration-none">
+                <img src="<?php echo $profilePhoto; ?>" 
+                     class="rounded-circle me-2" 
+                     width="44" height="44" 
+                     alt="User"
+                     style="cursor: pointer; transition: opacity 0.2s;"
+                     onmouseover="this.style.opacity='0.8'"
+                     onmouseout="this.style.opacity='1'"
+                     onerror="this.src='../../assets/images/profile/user-1.jpg'">
+              </a>
+              <div>
+                <a href="./profile.php?id=<?php echo (int)$post['user_id']; ?>" class="text-dark text-decoration-none">
+                  <strong style="cursor: pointer;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                    <?php echo htmlspecialchars($post['user_name'] ?? ('User #'.$post['user_id'])); ?>
+                  </strong>
+                </a><br>
+                <span class="text-muted small"><?php echo htmlspecialchars(date('M d, Y H:i', strtotime($post['created_at'] ?? 'now'))); ?></span>
+              </div>
             </div>
+            <!-- ALWAYS SHOW BUTTON FOR TESTING - REMOVE CONDITION TEMPORARILY -->
+            <div class="dropdown position-relative">
+              <button type="button" class="btn btn-sm btn-light border-0 p-2" id="postMenuBtn<?php echo (int)$post['id']; ?>" onclick="togglePostMenu(<?php echo (int)$post['id']; ?>)">
+                <i class="ti ti-dots fs-5"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end shadow" id="postMenu<?php echo (int)$post['id']; ?>" style="display: none; position: absolute; right: 0; top: 100%; z-index: 1000; min-width: 150px;">
+                <a class="dropdown-item" href="./create_post.php?edit=<?php echo (int)$post['id']; ?>">
+                  <i class="ti ti-edit me-2"></i>Edit Post
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this post?')) { document.getElementById('deletePostForm<?php echo (int)$post['id']; ?>').submit(); }">
+                  <i class="ti ti-trash me-2"></i>Delete Post
+                </a>
+              </div>
+            </div>
+            <form id="deletePostForm<?php echo (int)$post['id']; ?>" action="../controllers/create-post-controller.php" method="post" style="display:none;">
+              <input type="hidden" name="post_id" value="<?php echo (int)$post['id']; ?>">
+              <input type="hidden" name="action" value="delete">
+            </form>
+            <script>
+            function togglePostMenu(postId) {
+              var menu = document.getElementById('postMenu' + postId);
+              if (menu.style.display === 'none' || menu.style.display === '') {
+                // Hide all other menus first
+                document.querySelectorAll('.dropdown-menu').forEach(function(m) {
+                  m.style.display = 'none';
+                });
+                menu.style.display = 'block';
+              } else {
+                menu.style.display = 'none';
+              }
+            }
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+              if (!event.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(function(m) {
+                  m.style.display = 'none';
+                });
+              }
+            });
+            </script>
           </div>
           <p class="mb-3"><?php echo nl2br(htmlspecialchars($post['content'] ?? '')); ?></p>
           <?php if(!empty($photos)): ?>
             <div class="row g-2 mb-2">
                <?php foreach($photos as $ph): ?>
-                 <?php 
-                   $rawPath = $ph['photo_path'];
-                   // Normalize to /storage/... web path
-                   $norm = str_replace('\\', '/', $rawPath); // Windows backslash to forward
-                   // If absolute Windows path (C:/ or similar), extract from 'storage' onward
-                   if (preg_match('/^[A-Za-z]:\//', $norm)) {
-                       $pos = stripos($norm, 'storage/');
-                       if ($pos !== false) { $norm = substr($norm, $pos); }
-                   }
-                   // Ensure leading slash for web path
-                   if (strpos($norm, 'storage/') === 0) { $norm = '/' . $norm; }
-                   $imgPath = $norm ?: '';
-                 ?>
                 <div class="col-6 col-md-4">
                   <div class="ratio ratio-4x3 bg-light rounded overflow-hidden">
-                    <img src="<?php echo htmlspecialchars($imgPath); ?>" class="object-fit-cover" alt="Post photo">
+                    <img src="../../<?php echo htmlspecialchars($ph['photo_path']); ?>" 
+                         class="object-fit-cover" 
+                         alt="Post photo"
+                         onerror="this.src='../../assets/images/profile/user-placeholder.png'">
                   </div>
                 </div>
               <?php endforeach; ?>
@@ -108,10 +185,35 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
         <div class="card-body">
           <?php if (empty($comments)): ?>
             <div class="text-muted small">No comments yet.</div>
-          <?php else: foreach($comments as $c): ?>
+          <?php else: foreach($comments as $c): 
+            $commentProfilePhoto = !empty($c['profile_photo']) 
+                ? '../../' . htmlspecialchars($c['profile_photo']) 
+                : '../../assets/images/profile/user-1.jpg';
+          ?>
             <div class="mb-3 border-bottom pb-2">
-              <div class="small fw-semibold"><?php echo htmlspecialchars($c['user_name'] ?? ('User #'.$c['user_id'])); ?> <span class="text-muted fw-normal">• <?php echo htmlspecialchars(date('M d, Y H:i', strtotime($c['created_at']))); ?></span></div>
-              <div><?php echo nl2br(htmlspecialchars($c['content'])); ?></div>
+              <div class="d-flex align-items-start">
+                <a href="./profile.php?id=<?php echo (int)$c['user_id']; ?>" class="text-decoration-none">
+                  <img src="<?php echo $commentProfilePhoto; ?>" 
+                       class="rounded-circle me-2" 
+                       width="32" height="32" 
+                       alt="User"
+                       style="cursor: pointer; transition: opacity 0.2s;"
+                       onmouseover="this.style.opacity='0.8'"
+                       onmouseout="this.style.opacity='1'"
+                       onerror="this.src='../../assets/images/profile/user-1.jpg'">
+                </a>
+                <div class="flex-grow-1">
+                  <div class="small">
+                    <a href="./profile.php?id=<?php echo (int)$c['user_id']; ?>" class="fw-semibold text-dark text-decoration-none" style="cursor: pointer;">
+                      <span onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                        <?php echo htmlspecialchars($c['user_name'] ?? ('User #'.$c['user_id'])); ?>
+                      </span>
+                    </a>
+                    <span class="text-muted fw-normal">• <?php echo htmlspecialchars(date('M d, Y H:i', strtotime($c['created_at']))); ?></span>
+                  </div>
+                  <div><?php echo nl2br(htmlspecialchars($c['content'])); ?></div>
+                </div>
+              </div>
             </div>
           <?php endforeach; endif; ?>
           <form action="../controllers/post-view-controller.php" method="post" class="mt-3">
@@ -122,29 +224,6 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
         </div>
       </div>
   <?php endif; ?>
-    </div>
-    <!-- Right Sidebar -->
-    <div class="col-12 col-lg-3">
-      <div class="card mb-3">
-        <div class="card-header bg-white border-0 pb-0"><h6 class="mb-0">Actions</h6></div>
-        <div class="card-body small">
-          <a href="./create_post.php?edit=<?php echo (int)($post['id'] ?? 0); ?>" class="btn btn-sm btn-outline-secondary w-100 mb-2"><i class="ti ti-edit"></i> Edit</a>
-          <form action="../controllers/create-post-controller.php" method="post" onsubmit="return confirm('Delete this post?');">
-            <input type="hidden" name="post_id" value="<?php echo (int)($post['id'] ?? 0); ?>">
-            <input type="hidden" name="action" value="delete">
-            <button class="btn btn-sm btn-outline-danger w-100"><i class="ti ti-trash"></i> Delete</button>
-          </form>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <h6 class="text-muted mb-2">Shortcuts</h6>
-          <div class="d-grid gap-2">
-            <a href="./community.php" class="btn btn-sm btn-light border">Community Feed</a>
-            <a href="./my_posts.php" class="btn btn-sm btn-light border">My Posts</a>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
  </div>

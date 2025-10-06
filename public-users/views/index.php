@@ -3,8 +3,14 @@
 
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/../controllers/index-controller.php';
+
 $pageTitle = 'Community Feed';
 $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : 'Share something';
+$userId = $_SESSION['user']['id'] ?? null;
+
+// Get recent posts from database
+$posts = IndexController::getRecentPosts(20);
 ?>
 
 <div class="container-fluid">
@@ -49,64 +55,124 @@ $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : '
                 </div>
             </div>
 
-            <!-- Feed items (placeholders) -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="../../assets/images/profile/user-2.jpg" class="rounded-circle me-2" width="36"
-                            height="36" alt="" />
-                        <div>
-                            <strong>@PawsRescuePH</strong>
-                            <div class="text-muted small">2 hrs • Manila</div>
-                        </div>
-                    </div>
-                    <p class="mb-3">Meet Coco! A gentle 2-year-old looking for a loving home. Vaccinated and
-                        house-trained. 🐶💛</p>
-                    <img src="../../assets/images/products/GRDog1.jpg" class="img-fluid rounded mb-3" alt="Pet" />
-                    <div class="d-flex justify-content-between post-actions-sm mt-2">
-                        <div class="action-group d-flex flex-wrap">
-                            <a href="./post_view.php" class="btn btn-light border me-1 mb-1"><i
-                                    class="ti ti-thumb-up"></i> <span class="d-none d-sm-inline">Like</span></a>
-                            <a href="./post_view.php" class="btn btn-light border me-1 mb-1"><i
-                                    class="ti ti-message-circle"></i> <span
-                                    class="d-none d-sm-inline">Comment</span></a>
-                            <a href="./post_view.php" class="btn btn-light border mb-1"><i class="ti ti-share"></i>
-                                <span class="d-none d-sm-inline">Share</span></a>
-                        </div>
-                        <a href="./pets.php" class="btn btn-primary primary-action"><i class="ti ti-heart me-1"></i>
-                            <span>Adopt</span></a>
+            <!-- Feed items from database -->
+            <?php if (empty($posts)): ?>
+                <div class="card mb-3">
+                    <div class="card-body text-center py-5">
+                        <i class="ti ti-mood-empty" style="font-size: 48px; color: #ccc;"></i>
+                        <p class="text-muted mt-3">No posts yet. Be the first to share something!</p>
+                        <a href="./create_post.php" class="btn btn-primary mt-2">
+                            <i class="ti ti-plus me-1"></i> Create Post
+                        </a>
                     </div>
                 </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="../../assets/images/profile/user-3.jpg" class="rounded-circle me-2" width="36"
-                            height="36" alt="" />
-                        <div>
-                            <strong>@CatHaven</strong>
-                            <div class="text-muted small">Yesterday • Quezon City</div>
+            <?php else: ?>
+                <?php foreach ($posts as $post): 
+                    // Get post photos
+                    $photos = IndexController::getPostPhotos($post['id']);
+                    
+                    // Format date
+                    $postDate = new DateTime($post['created_at']);
+                    $now = new DateTime();
+                    $interval = $now->diff($postDate);
+                    
+                    if ($interval->d == 0) {
+                        if ($interval->h == 0) {
+                            $timeAgo = $interval->i . ' min ago';
+                        } else {
+                            $timeAgo = $interval->h . ' hr' . ($interval->h > 1 ? 's' : '') . ' ago';
+                        }
+                    } elseif ($interval->d == 1) {
+                        $timeAgo = 'Yesterday';
+                    } elseif ($interval->d < 7) {
+                        $timeAgo = $interval->d . ' days ago';
+                    } else {
+                        $timeAgo = $postDate->format('M d, Y');
+                    }
+                    
+                    // Get profile photo or default
+                    $profilePhoto = !empty($post['profile_photo']) 
+                        ? '../../' . htmlspecialchars($post['profile_photo']) 
+                        : '../../assets/images/profile/user-1.jpg';
+                ?>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
+                                <img src="<?php echo $profilePhoto; ?>" 
+                                     class="rounded-circle me-2 object-fit-cover" 
+                                     width="36" height="36" 
+                                     style="object-fit: cover; aspect-ratio: 1/1; min-width:36px; min-height:36px; max-width:36px; max-height:36px;" 
+                                     alt="Profile picture" 
+                                     onerror="this.src='../../assets/images/profile/user-1.jpg'" />
+                            </a>
+                            <div>
+                                <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>" class="fw-bold text-decoration-none text-dark">
+                                    <?php echo htmlspecialchars($post['full_name']); ?>
+                                </a>
+                                <div class="text-muted small"><?php echo $timeAgo; ?></div>
+                            </div>
                         </div>
-                    </div>
-                    <p class="mb-3">Kittens rescued and now ready for pre-adoption screening. Visit our shelter profile
-                        for details. 🐱</p>
-                    <img src="../../assets/images/products/PCat3.jpg" class="img-fluid rounded mb-3" alt="Kittens" />
-                    <div class="d-flex justify-content-between post-actions-sm mt-2">
-                        <div class="action-group d-flex flex-wrap">
-                            <a href="./post_view.php" class="btn btn-light border me-1 mb-1"><i
-                                    class="ti ti-thumb-up"></i> <span class="d-none d-sm-inline">Like</span></a>
-                            <a href="./post_view.php" class="btn btn-light border me-1 mb-1"><i
-                                    class="ti ti-message-circle"></i> <span
-                                    class="d-none d-sm-inline">Comment</span></a>
-                            <a href="./post_view.php" class="btn btn-light border mb-1"><i class="ti ti-share"></i>
-                                <span class="d-none d-sm-inline">Share</span></a>
+                        
+                        <?php if (!empty($post['content'])): ?>
+                            <p class="mb-3"><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($photos)): ?>
+                            <?php if (count($photos) == 1): ?>
+                          <img src="../../<?php echo htmlspecialchars($photos[0]['photo_path']); ?>" 
+                              class="rounded mb-3 object-fit-cover w-100 d-block mx-auto" 
+                              style="max-width:400px; max-height:400px; width:100%; height:400px; object-fit:cover;" 
+                              alt="Post photo"
+                              onerror="this.style.display='none'" />
+                            <?php else: ?>
+                                <div class="row g-2 mb-3">
+                                    <?php foreach (array_slice($photos, 0, 4) as $index => $photo): ?>
+                                        <div class="col-6 position-relative">
+                                            <a href="../../<?php echo htmlspecialchars($photo['photo_path']); ?>" target="_blank" rel="noopener">
+                                                <img src="../../<?php echo htmlspecialchars($photo['photo_path']); ?>" 
+                                                     class="rounded object-fit-cover" 
+                                                     style="width:120px; height:120px; object-fit:cover;" 
+                                                     alt="Post photo"
+                                                     onerror="this.style.display='none'" />
+                                            </a>
+                                            <?php if ($index == 3 && count($photos) > 4): ?>
+                                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 rounded">
+                                                    <span class="text-white fs-4">+<?php echo count($photos) - 4; ?></span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <div class="d-flex justify-content-between post-actions-sm mt-2">
+                            <div class="action-group d-flex flex-wrap">
+                                <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border me-1 mb-1">
+                                    <i class="ti ti-thumb-up"></i> 
+                                    <span class="d-none d-sm-inline">Like</span>
+                                    <?php if ($post['reaction_count'] > 0): ?>
+                                        <span class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span>
+                                    <?php endif; ?>
+                                </a>
+                                <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border me-1 mb-1">
+                                    <i class="ti ti-message-circle"></i> 
+                                    <span class="d-none d-sm-inline">Comment</span>
+                                    <?php if ($post['comment_count'] > 0): ?>
+                                        <span class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span>
+                                    <?php endif; ?>
+                                </a>
+                                <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border mb-1">
+                                    <i class="ti ti-share"></i>
+                                    <span class="d-none d-sm-inline">Share</span>
+                                </a>
+                            </div>
                         </div>
-                        <a href="./shelters.php" class="btn btn-outline-primary primary-action"><i
-                                class="ti ti-building-community me-1"></i> <span>View Shelter</span></a>
                     </div>
                 </div>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
 
         <!-- Right sidebar: suggestions -->
