@@ -213,3 +213,15 @@ a:hover, a:active, a:focus {
   outline: 0;
 }
 /* End of custom CSS for Chat/Messages Page */
+/* User actions group (notifications, messages, avatar) */
+.user-actions a.nav-link {
+  transition: background-color .15s ease, color .15s ease;
+}
+.user-actions a.nav-link:hover, .user-actions a.nav-link:focus {
+  background-color: #f1f3f5;
+  outline: none;
+}
+.user-actions .notification-dot {
+  width:10px;
+  height:10px;
+}

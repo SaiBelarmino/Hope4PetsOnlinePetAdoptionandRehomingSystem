@@ -5,7 +5,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Hope4Pets</title>
+    <?php
+    $baseTitle = 'Hope4Pets';
+    // Avoid undefined variable notice and ensure non-empty value
+    $pageTitle = isset($pageTitle) && $pageTitle !== '' ? $pageTitle : null;
+    $titleTag = $baseTitle;
+    if ($pageTitle) {
+        $titleTag = $pageTitle . ' | ' . $baseTitle;
+    }
+    echo '<title>' . htmlspecialchars($titleTag, ENT_QUOTES, 'UTF-8') . '</title>';
+    ?>
     <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/logo-icon.png" />
     <link rel="stylesheet" href="../../assets/css/styles.css" />
 </head>
