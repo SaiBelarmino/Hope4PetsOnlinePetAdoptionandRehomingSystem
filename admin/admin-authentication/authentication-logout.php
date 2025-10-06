@@ -1,5 +1,5 @@
 <?php
-// Secure logout for public users
+// Secure logout for admin user (local handler)
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
 	session_start();
@@ -27,6 +27,6 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 
-// Redirect to public user login page
-header('Location: ../user-authentication/authentication-login.php?logged_out=1');
+// Redirect to admin login page
+header('Location: ../admin-authentication/authentication-login.php?logged_out=1');
 exit;
