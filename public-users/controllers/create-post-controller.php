@@ -47,7 +47,7 @@ class PublicCreatePostController extends BaseController {
         $postId = $mysqli->insert_id;
         $stmt->close();
         
-        // Insert photos if any
+    // Insert photos if any
         if (!empty($data['photos'])) {
             $errorsPhotos = [];
             $inserted = 0;
@@ -73,6 +73,18 @@ class PublicCreatePostController extends BaseController {
                 self::logUploadErrors($errorsPhotos);
                 SessionManager::setFlash('error', 'Photo insert issues: '.implode('; ', $errorsPhotos));
             }
+        }
+        // Insert video if provided
+        if (!empty($data['video'])) {
+            $videoPath = self::sanitizeRelative($data['video']);
+            $videoStmt = $mysqli->prepare("INSERT INTO post_videos (post_id, video_path) VALUES (?, ?)");
+            if ($videoStmt && $videoStmt->bind_param('is', $postId, $videoPath)) {
+                if (!$videoStmt->execute()) {
+                    self::logUploadErrors(['post_videos:'.$mysqli->error]);
+                    SessionManager::setFlash('error', 'Failed to save video metadata.');
+                }
+            }
+            if ($videoStmt) $videoStmt->close();
         }
         
         return ['success' => true, 'message' => 'Post created successfully!', 'post_id' => $postId];
@@ -156,6 +168,17 @@ class PublicCreatePostController extends BaseController {
             if ($errorsPhotos) {
                 self::logUploadErrors($errorsPhotos);
             }
+        }
+        // Handle new video if any
+        if (!empty($data['video'])) {
+            $videoPath = self::sanitizeRelative($data['video']);
+            $videoStmt = $mysqli->prepare("INSERT INTO post_videos (post_id, video_path) VALUES (?, ?)");
+            if ($videoStmt && $videoStmt->bind_param('is', $postId, $videoPath)) {
+                if (!$videoStmt->execute()) {
+                    self::logUploadErrors(['post_videos:'.$mysqli->error]);
+                }
+            }
+            if ($videoStmt) $videoStmt->close();
         }
 
         return ['success' => true, 'message' => 'Post updated successfully!'];
@@ -253,6 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Photo uploads for update
         $uploadedPhotos = [];
+        $uploadedVideo = null;
         if (!empty($_FILES['photos']['name'][0])) {
             $uploadDir = __DIR__ . '/../../storage/uploads/posts/';
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
@@ -276,12 +300,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
+        // Video upload for update (single)
+        if (!empty($_FILES['video']) && !empty($_FILES['video']['tmp_name'])) {
+            $uploadDir = __DIR__ . '/../../storage/uploads/posts/videos/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+            $allowedVideoTypes = ['video/mp4','video/webm','video/ogg','video/quicktime'];
+            $maxVideoSize = 50 * 1024 * 1024; // 50MB
+            $vtmp = $_FILES['video']['tmp_name'];
+            $vname = $_FILES['video']['name'];
+            $vsize = $_FILES['video']['size'];
+            $vtype = $_FILES['video']['type'];
+            $verr  = $_FILES['video']['error'];
+            if ($verr !== UPLOAD_ERR_OK) { $errors[] = "Error uploading video $vname"; }
+            elseif (!in_array($vtype, $allowedVideoTypes, true)) { $errors[] = "$vname invalid video type"; }
+            elseif ($vsize > $maxVideoSize) { $errors[] = "$vname too large (max 50MB)"; }
+            else {
+                $vext = pathinfo($vname, PATHINFO_EXTENSION);
+                $vnew = uniqid('post_vid_') . '_' . time() . '.' . $vext;
+                if (move_uploaded_file($vtmp, $uploadDir . $vnew)) {
+                    $uploadedVideo = 'storage/uploads/posts/videos/' . $vnew;
+                } else {
+                    $errors[] = "Failed to upload video $vname";
+                }
+            }
+        }
 
         if (!$errors) {
             $result = PublicCreatePostController::update($postId, $userId, [
                 'content' => $content,
                 'pet_id' => $petId,
-                'photos' => $uploadedPhotos
+                'photos' => $uploadedPhotos,
+                'video' => $uploadedVideo
             ]);
             if ($result['success']) {
                 SessionManager::setFlash('success', $result['message']);
@@ -309,6 +358,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Photo uploads
     $uploadedPhotos = [];
+    $uploadedVideo = null;
     if (!empty($_FILES['photos']['name'][0])) {
         $uploadDir = __DIR__ . '/../../storage/uploads/posts/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
@@ -333,12 +383,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+    // Video upload for create (single)
+    if (!empty($_FILES['video']) && !empty($_FILES['video']['tmp_name'])) {
+        $uploadDir = __DIR__ . '/../../storage/uploads/posts/videos/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+        $allowedVideoTypes = ['video/mp4','video/webm','video/ogg','video/quicktime'];
+        $maxVideoSize = 50 * 1024 * 1024; // 50MB
+        $vtmp = $_FILES['video']['tmp_name'];
+        $vname = $_FILES['video']['name'];
+        $vsize = $_FILES['video']['size'];
+        $vtype = $_FILES['video']['type'];
+        $verr  = $_FILES['video']['error'];
+        if ($verr !== UPLOAD_ERR_OK) { $errors[] = "Error uploading video $vname"; }
+        elseif (!in_array($vtype, $allowedVideoTypes, true)) { $errors[] = "$vname invalid video type"; }
+        elseif ($vsize > $maxVideoSize) { $errors[] = "$vname too large (max 50MB)"; }
+        else {
+            $vext = pathinfo($vname, PATHINFO_EXTENSION);
+            $vnew = uniqid('post_vid_') . '_' . time() . '.' . $vext;
+            if (move_uploaded_file($vtmp, $uploadDir . $vnew)) {
+                $uploadedVideo = 'storage/uploads/posts/videos/' . $vnew;
+            } else {
+                $errors[] = "Failed to upload video $vname";
+            }
+        }
+    }
 
     if (!$errors) {
         $result = PublicCreatePostController::create($userId, [
             'content' => $content,
             'pet_id' => $petId,
-            'photos' => $uploadedPhotos
+            'photos' => $uploadedPhotos,
+            'video' => $uploadedVideo
         ]);
         if (!empty($result['success'])) {
             SessionManager::setFlash('success', 'Post created successfully!');

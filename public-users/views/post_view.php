@@ -160,6 +160,18 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
               <?php endforeach; ?>
             </div>
           <?php endif; ?>
+          <?php 
+            // Fetch video if exists
+            $videoRow = PostViewController::video($postId);
+            if (!empty($videoRow) && !empty($videoRow['video_path'])): 
+          ?>
+            <div class="mb-3">
+              <video controls class="w-100 rounded" style="max-height:480px; background:#000;">
+                <source src="../../<?php echo htmlspecialchars($videoRow['video_path']); ?>" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          <?php endif; ?>
           <?php if (!empty($post['pet_id'])): ?>
             <div class="alert alert-light border d-flex justify-content-between align-items-center">
               <div class="small"><strong>Pet Featured:</strong> <a href="./pet_view.php?id=<?php echo (int)$post['pet_id']; ?>" class="text-decoration-none"><?php echo htmlspecialchars($post['pet_name']); ?></a></div>

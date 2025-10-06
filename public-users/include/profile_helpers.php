@@ -39,6 +39,16 @@ function resolve_profile_photo(?string $path): string {
         return '../../' . $normalized;
     }
 
+    // If it's a bare filename (no slashes) or looks like uploads/... map to storage/uploads/profile_picture/
+    if (strpos($normalized, '/') === false) {
+        // treat as filename
+        return '../../storage/uploads/profile_picture/' . ltrim($normalized, '/');
+    }
+
+    if (stripos($normalized, 'uploads/') === 0) {
+        return '../../storage/' . ltrim($normalized, '/');
+    }
+
     // Otherwise assume it's a path relative to project root and prefix
     return '../../' . $normalized;
 }

@@ -24,6 +24,12 @@ class PostViewController extends BaseController {
         return self::fetchAll("SELECT photo_path FROM post_photos WHERE post_id = ? ORDER BY id", 'i', [$postId]);
     }
 
+    /** Fetch single video for a post (if any) */
+    public static function video(int $postId): ?array {
+        $v = self::fetchOne("SELECT video_path FROM post_videos WHERE post_id = ? ORDER BY id LIMIT 1", 'i', [$postId]);
+        return $v ?: null;
+    }
+
     /** Fetch comments with commenter names */
     public static function comments(int $postId): array {
         $sql = "SELECT c.id, c.user_id, u.full_name AS user_name, u.profile_photo, c.content, c.created_at

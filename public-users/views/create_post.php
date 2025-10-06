@@ -37,12 +37,14 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
            <input type="file" name="photos[]" id="photoInput" class="form-control d-none" multiple accept="image/*">
            <span id="dropText">Drag & drop images here or click to select</span>
            <!-- Visible choose file button to complement drag & drop -->
-           <div class="mt-2">
-             <button type="button" id="chooseFilesBtn" class="btn btn-outline-primary btn-sm">Choose files</button>
+           <div class="mt-2 d-flex gap-2">
+             <button type="button" id="chooseFilesBtn" class="btn btn-outline-primary btn-sm">Choose images</button>
+             <button type="button" id="chooseVideoBtn" class="btn btn-outline-secondary btn-sm">Attach video</button>
            </div>
           <div id="photoPreview" class="row g-2 mt-2"></div>
+          <div id="videoPreview" class="mt-2"></div>
           <div id="photoLimitWarning" class="text-danger small mt-1" style="display:none;"></div>
-          <small class="text-muted">You can upload up to 5 images. Each max 3MB.</small>
+          <small class="text-muted">You can upload up to 5 images. Each max 5MB. Videos up to 50MB (mp4/webm/ogg).</small>
         </div>
         <div class="mb-3">
           <label class="form-label">Link a Pet (optional)</label>
@@ -84,16 +86,27 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
 <?php include __DIR__ . '/../include/footer.php'; ?>
 <script>
   (function(){
-    const chooseBtn = document.getElementById('chooseFilesBtn');
-    const photoInput = document.getElementById('photoInput');
-    const preview = document.getElementById('photoPreview');
-    const warning = document.getElementById('photoLimitWarning');
-    const dropText = document.getElementById('dropText');
+  const chooseBtn = document.getElementById('chooseFilesBtn');
+  const chooseVideoBtn = document.getElementById('chooseVideoBtn');
+  const photoInput = document.getElementById('photoInput');
+  // create a hidden video input for single video
+  const videoInput = document.createElement('input');
+  videoInput.type = 'file';
+  videoInput.name = 'video';
+  videoInput.id = 'videoInput';
+  videoInput.accept = 'video/*';
+  videoInput.className = 'd-none';
+  document.querySelector('form').appendChild(videoInput);
+  const preview = document.getElementById('photoPreview');
+  const videoPreview = document.getElementById('videoPreview');
+  const warning = document.getElementById('photoLimitWarning');
+  const dropText = document.getElementById('dropText');
 
-    if (chooseBtn) chooseBtn.addEventListener('click', () => photoInput.click());
+  if (chooseBtn) chooseBtn.addEventListener('click', () => photoInput.click());
+  if (chooseVideoBtn) chooseVideoBtn.addEventListener('click', () => videoInput.click());
 
     // Basic preview + limits
-    photoInput.addEventListener('change', (e) => {
+  photoInput.addEventListener('change', (e) => {
       const files = Array.from(photoInput.files || []);
       // Limit to 5 files
       if (files.length > 5) {
@@ -128,6 +141,24 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
         };
         reader.readAsDataURL(file);
       });
+    });
+
+    // Video preview handler (single file)
+    videoInput.addEventListener('change', (e) => {
+      const file = videoInput.files && videoInput.files[0];
+      videoPreview.innerHTML = '';
+      if (!file) return;
+      const allowed = ['video/mp4','video/webm','video/ogg','video/quicktime'];
+      if (!allowed.includes(file.type)) {
+        const el = document.createElement('div'); el.className='text-danger small'; el.textContent = 'Unsupported video type.'; videoPreview.appendChild(el); return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        const el = document.createElement('div'); el.className='text-danger small'; el.textContent = 'Video exceeds 50MB limit.'; videoPreview.appendChild(el); return;
+      }
+      const url = URL.createObjectURL(file);
+      const vid = document.createElement('video');
+      vid.src = url; vid.controls = true; vid.className = 'img-fluid rounded'; vid.style.maxHeight = '360px';
+      videoPreview.appendChild(vid);
     });
 
     // Optional: quick drag & drop support on the dropText area

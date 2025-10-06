@@ -70,14 +70,25 @@
                           style="width:10px;height:10px;top:4px;right:4px;"></span>
                 </a>
                 <div class="dropdown">
+                    <?php if (!function_exists('resolve_profile_photo')) { include __DIR__ . '/profile_helpers.php'; } ?>
                     <a class="nav-link p-0 d-flex align-items-center" href="#" id="userMenu" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
-                        <img src="../../assets/images/profile/user-1.jpg" alt="Profile" width="40" height="40"
+                        <?php $avatar = resolve_profile_photo($_SESSION['user']['profile_photo'] ?? null); ?>
+                        <img src="<?php echo $avatar; ?>" alt="Profile" width="40" height="40"
                             class="rounded-circle profile-avatar" />
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenu">
                         <li><a class="dropdown-item" href="./profile.php"><i class="ti ti-user me-1"></i> Profile</a>
                         </li>
+                        <?php if(isset($_SESSION['user']['full_name'])): ?>
+                          <div class="dropdown-item text-center small text-muted">
+                            <?php $avatarSmall = resolve_profile_photo($_SESSION['user']['profile_photo'] ?? null); ?>
+                            <img src="<?php echo $avatarSmall; ?>" alt="Profile" width="48" height="48" class="rounded-circle mb-1" />
+                            <div><?php echo htmlspecialchars($_SESSION['user']['full_name']); ?></div>
+                            <div class="small text-secondary"><?php echo htmlspecialchars($_SESSION['user']['email'] ?? ''); ?></div>
+                          </div>
+                          <hr class="dropdown-divider" />
+                        <?php endif; ?>
                         <li><a class="dropdown-item" href="./settings.php"><i class="ti ti-settings me-1"></i>
                                 Settings</a>
                         </li>

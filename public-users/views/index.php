@@ -6,8 +6,12 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/../controllers/index-controller.php';
 
 $pageTitle = 'Community Feed';
-$displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : 'Share something';
+// Composer display name (ensure we use the same session key used elsewhere)
+$displayName = !empty($_SESSION['user']['full_name']) ? $_SESSION['user']['full_name'] : 'Share something';
 $userId = $_SESSION['user']['id'] ?? null;
+// Composer avatar resolved from stored profile_photo
+if (!function_exists('resolve_profile_photo')) { include __DIR__ . '/../include/profile_helpers.php'; }
+$composerAvatar = resolve_profile_photo($_SESSION['user']['profile_photo'] ?? null);
 
 // Get recent posts from database
 $posts = IndexController::getRecentPosts(20);
@@ -37,11 +41,11 @@ $posts = IndexController::getRecentPosts(20);
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-start">
-                        <img src="../../assets/images/profile/user-1.jpg" class="rounded-circle me-3" width="44"
-                            height="44" alt="" />
-                        <a href="./create_post.php" class="form-control text-start text-muted"
+                        <img src="<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>" class="rounded-circle me-3 object-fit-cover" width="44"
+                            height="44" alt="<?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>'s avatar" style="object-fit:cover;" />
+                        <a href="./create_post.php" class="form-control text-start text-muted text-decoration-none"
                             style="text-decoration:none;">
-                            <i class="ti ti-edit me-2"></i><?php echo htmlspecialchars($displayName); ?>...
+                            <i class="ti ti-edit me-2" aria-hidden="true"></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
                         </a>
                     </div>
                     <div class="d-flex gap-2 mt-3 composer-actions btn-stack-sm">

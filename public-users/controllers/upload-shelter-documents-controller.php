@@ -14,7 +14,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $docType = trim($_POST['doc_type'] ?? '');
-    $allowedTypes = ['permit','registration','photo_id']; // adjust as needed
+    // Allow common Philippine business document types (non-ID)
+    $allowedTypes = [
+        'dtiregistration',
+        'mayors_permit',
+        'bir_registration',
+        'business_permit',
+        'articles_of_incorporation',
+        'barangay_clearance',
+        'contract_of_lease',
+        'other_business_documents'
+    ];
     if (!in_array($docType, $allowedTypes)) {
         SessionManager::setFlash('error', 'Invalid document type.');
         header('Location: ../views/upload_shelter_documents.php');

@@ -35,10 +35,24 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
                   <label class="form-label">Document Type</label>
                   <select name="doc_type" class="form-select" required>
                     <option value="">Select</option>
-                    <?php foreach(($requiredTypes ?? ['permit','registration','photo_id']) as $t): ?>
+                    <?php
+                      // Default to common Philippine business documents (non-ID)
+                      $defaultBusinessDocs = [
+                        'dtiregistration',
+                        'mayors_permit',
+                        'bir_registration',
+                        'business_permit',
+                        'articles_of_incorporation',
+                        'barangay_clearance',
+                        'contract_of_lease',
+                        'other_business_documents'
+                      ];
+                    ?>
+                    <?php foreach(($requiredTypes ?? $defaultBusinessDocs) as $t): ?>
                       <option value="<?php echo htmlspecialchars($t); ?>"><?php echo strtoupper(str_replace('_',' ', $t)); ?></option>
                     <?php endforeach; ?>
                   </select>
+                  <small class="text-muted d-block mt-1">Select the type of Philippine business document you're uploading (business registrations, permits, clearances). Do not upload personal IDs here.</small>
                 </div>
                 <div class="mb-3">
                   <label class="form-label">File</label>
@@ -46,7 +60,7 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
                     <input type="file" name="document" id="documentInput" class="form-control" required accept="image/*,application/pdf">
                     <button type="button" class="btn btn-outline-secondary" onclick="showCameraModal()"><i class="ti ti-camera"></i> Take Photo</button>
                   </div>
-                  <small class="text-muted">Max 5MB. JPG, PNG, PDF. You can also use your camera to take a photo.</small>
+                  <small class="text-muted">Max 5MB. JPG, PNG, PDF. Upload scanned copies or photos of Philippine business documents (DTI/BIR, Mayor's Permit, Barangay Clearance, etc.). You can also use your camera to take a photo.</small>
                   <!-- Camera Modal -->
                   <div id="cameraModal" style="display:none; position:fixed; z-index:1050; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
                     <div style="background:#fff; padding:20px; border-radius:8px; max-width:95vw; max-height:95vh; position:relative;">
