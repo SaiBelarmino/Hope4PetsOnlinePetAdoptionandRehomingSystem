@@ -163,11 +163,11 @@ if ($otherId && $otherId > 0 && $authUserId > 0) {
                         </div>
                         <!-- Active chat -->
                         <div class="col-12 col-md-7 d-flex flex-column h-100">
-                            <div class="flex-grow-1 p-3 overflow-auto">
+                            <div class="flex-grow-1 p-3 overflow-auto" id="chatContainer">
                                 <?php if (!$otherId): ?>
                                     <div class="text-muted small">Select a conversation or start a new one below.</div>
                                 <?php else: ?>
-                                    <ul class="list-unstyled chat mb-0">
+                                    <ul class="list-unstyled chat mb-0" id="chatList" data-last-id="0">
                                         <?php if (empty($conversation)): ?>
                                             <li class="text-muted small">No messages yet. Say hello!</li>
                                         <?php else: foreach ($conversation as $msg):
@@ -175,7 +175,7 @@ if ($otherId && $otherId > 0 && $authUserId > 0) {
                                             $time = htmlspecialchars(date('M d H:i', strtotime($msg['created_at'])));
                                             $bodyHtml = nl2br(htmlspecialchars($msg['body']));
                                         ?>
-                                            <li class="mb-3 d-flex <?php echo $isOutgoing ? 'flex-row-reverse text-end' : ''; ?>">
+                                            <li class="mb-3 d-flex <?php echo $isOutgoing ? 'flex-row-reverse text-end' : ''; ?>" data-msg-id="<?php echo (int)$msg['id']; ?>">
                                                 <img src="https://bootdey.com/img/Content/user_<?php echo $isOutgoing ? '1' : '3'; ?>.jpg" class="rounded-circle <?php echo $isOutgoing ? 'ms-2' : 'me-2'; ?>" width="40" height="40" alt="User">
                                                 <div>
                                                     <div class="small text-muted"><?php

@@ -1,6 +1,7 @@
 <!-- External topbar styles -->
 <link rel="stylesheet" href="../../assets/css/topbar.css" />
 <nav class="topbar navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top shadow-sm py-2 py-lg-2"
+    style="z-index:100000;"
     role="navigation" aria-label="Primary">
     <div class="container-fluid align-items-center d-flex gap-2 gap-lg-3">
         <!-- Left: Brand -->
