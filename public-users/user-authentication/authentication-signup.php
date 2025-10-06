@@ -29,12 +29,16 @@
                                     <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets Logo" class="img-fluid" style="width: 260px; max-width: 100%; height: auto;">
                                 </a>
                                 <p class="text-center">Create your account</p>
-                                <?php if (!empty($_GET['error'])): ?>
-                                  <div class="alert alert-danger" role="alert">
-                                    <?php echo htmlspecialchars($_GET['error']); ?>
-                                  </div>
-                                <?php endif; ?>
-                                <form method="post" action="../api/register.php">
+                                                                <?php if (!empty($_GET['error'])): ?>
+                                                                    <div class="alert alert-danger" role="alert">
+                                                                        <?php echo htmlspecialchars($_GET['error']); ?>
+                                                                    </div>
+                                                                <?php elseif (!empty($_GET['success'])): ?>
+                                                                    <div class="alert alert-success" role="alert">
+                                                                        Account created successfully. You can now <a href="./authentication-login.php" class="alert-link">sign in</a>.
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                                <form method="post" action="../authentication-controllers/authentication-signup-controller.php">
                                     <div class="mb-3">
                                         <label for="name" class="form-label">Name</label>
                                         <input type="text" class="form-control" id="name" name="name" required>

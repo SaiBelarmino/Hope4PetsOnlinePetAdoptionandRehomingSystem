@@ -29,12 +29,16 @@
                                     <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets Logo" class="img-fluid" style="width: 260px; max-width: 100%; height: auto;">
                                 </a>
                                 <p class="text-center">Welcome back</p>
-                                <?php if (!empty($_GET['error'])): ?>
-                                  <div class="alert alert-danger" role="alert">
-                                    <?php echo htmlspecialchars($_GET['error']); ?>
-                                  </div>
-                                <?php endif; ?>
-                                <form method="post" action="../api/login.php">
+                                                                <?php if (!empty($_GET['error'])): ?>
+                                                                    <div class="alert alert-danger" role="alert">
+                                                                        <?php echo htmlspecialchars($_GET['error']); ?>
+                                                                    </div>
+                                                                <?php elseif (!empty($_GET['registered'])): ?>
+                                                                    <div class="alert alert-success" role="alert">
+                                                                        Account created successfully. Please log in.
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                                <form method="post" action="../authentication-controllers/authentication-login-controller.php">
                                     <div class="mb-3">
                                         <label for="email" class="form-label">Email</label>
                                         <input type="email" class="form-control" id="email" name="email" required autofocus>
