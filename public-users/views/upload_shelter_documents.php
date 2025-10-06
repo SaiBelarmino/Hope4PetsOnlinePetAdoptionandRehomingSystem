@@ -1,16 +1,70 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+/**
+ * View: upload_shelter_documents.php
+ * Table: shelter_documents
+ * Expected Variables:
+ *  - $documents => existing docs [ {'id','doc_type','file_path','status','uploaded_at','reviewed_at'}, ... ]
+ *  - $requiredTypes => list of required types
+ */
 $pageTitle = 'Upload Shelter Documents';
 $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']) || !empty($_SESSION['user']['shelter_id']);
-// Removed shelter button per requirement
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
-<div class="pu-scroll-wrapper"><div class="container-fluid">
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
+<div class="pu-scroll-wrapper"><div class="container-fluid py-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h3 class="mb-0"><?php echo htmlspecialchars($pageTitle); ?></h3>
-    
+    <a href="./shelter_verification_status.php" class="btn btn-outline-secondary btn-sm"><i class="ti ti-arrow-left"></i> Status</a>
   </div>
-  <div class="card"><div class="card-body"><!-- Placeholder: upload fields for permits and IDs --></div></div>
+  <div class="row g-3">
+    <div class="col-12 col-lg-5">
+      <div class="card h-100">
+        <div class="card-header bg-white border-0 pb-0"><h6 class="mb-0">Upload Document</h6></div>
+        <div class="card-body">
+          <form action="../controllers/upload-shelter-documents-controller.php" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Document Type</label>
+              <select name="doc_type" class="form-select" required>
+                <option value="">Select</option>
+                <?php foreach(($requiredTypes ?? ['permit','registration','photo_id']) as $t): ?>
+                  <option value="<?php echo htmlspecialchars($t); ?>"><?php echo strtoupper(str_replace('_',' ', $t)); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">File</label>
+              <input type="file" name="document" class="form-control" required accept="image/*,application/pdf">
+              <small class="text-muted">Max 5MB. JPG, PNG, PDF.</small>
+            </div>
+            <button class="btn btn-primary w-100"><i class="ti ti-upload"></i> Upload</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-7">
+      <div class="card h-100">
+        <div class="card-header bg-white border-0 pb-0"><h6 class="mb-0">Submitted Documents</h6></div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light"><tr><th>Type</th><th>Status</th><th>Uploaded</th><th>Reviewed</th><th></th></tr></thead>
+              <tbody>
+                <?php if(empty($documents)): ?><tr><td colspan="5" class="text-center text-muted py-4">No documents uploaded.</td></tr><?php else: foreach($documents as $d): ?>
+                  <tr id="<?php echo htmlspecialchars($d['doc_type']); ?>">
+                    <td><?php echo strtoupper(str_replace('_',' ', htmlspecialchars($d['doc_type']))); ?></td>
+                    <td><span class="badge bg-<?php echo ['pending'=>'warning','approved'=>'success','rejected'=>'danger'][$d['status']] ?? 'light'; ?>"><?php echo htmlspecialchars(ucfirst($d['status'])); ?></span></td>
+                    <td><span class="small text-muted"><?php echo htmlspecialchars(date('M d', strtotime($d['uploaded_at']))); ?></span></td>
+                    <td><span class="small text-muted"><?php echo $d['reviewed_at']? htmlspecialchars(date('M d', strtotime($d['reviewed_at']))):'—'; ?></span></td>
+                    <td class="text-end"><a href="<?php echo htmlspecialchars($d['file_path']); ?>" target="_blank" class="btn btn-sm btn-outline-secondary">View</a></td>
+                  </tr>
+                <?php endforeach; endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
  </div></div>
 <?php include __DIR__ . '/../include/footer.php'; ?>

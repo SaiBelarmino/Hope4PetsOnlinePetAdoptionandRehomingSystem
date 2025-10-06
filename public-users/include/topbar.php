@@ -50,21 +50,6 @@
                 <i class="ti ti-building-community"></i>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./adoptions.php" title="Adoptions" aria-label="Adoptions">
-                <i class="ti ti-heart-handshake"></i>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./events.php" title="Events" aria-label="Events">
-                <i class="ti ti-calendar-event"></i>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./favorites.php" title="Favorites" aria-label="Favorites">
-                <i class="ti ti-star"></i>
-                </a>
-            </li>
             </ul>
         </div>
 
@@ -92,8 +77,6 @@
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenu">
                         <li><a class="dropdown-item" href="./profile.php"><i class="ti ti-user me-1"></i> Profile</a>
                         </li>
-                        <li><a class="dropdown-item" href="./messages.php"><i class="ti ti-message-circle me-1"></i>
-                                Messages</a></li>
                         <li><a class="dropdown-item" href="./settings.php"><i class="ti ti-settings me-1"></i>
                                 Settings</a>
                         </li>

@@ -1,18 +1,59 @@
 <?php
-// Temporary duplicate of shorcut-button.php (original with typo) to eliminate include warnings.
-// TODO: remove shorcut-button.php after updating all includes to use this correctly spelled filename.
+// Shortcut buttons include.
+// You can set (optionally) from controller:
+//   $pendingDocsCount (int)   -> number of pending user or shelter documents
+//   $unreadMessagesCount (int)-> unread messages badge
+//   $hasShelter (bool)        -> whether to show shelter-specific shortcuts
+// These are just hints; code will degrade gracefully if not set.
+if (!isset($hasShelter)) { $hasShelter = !empty($_SESSION['shelter_id']) || !empty($_SESSION['has_shelter']); }
+$pendingDocsCount = isset($pendingDocsCount)? (int)$pendingDocsCount : 0;
+$unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 0;
 ?>
 <div class="card mb-3">
   <div class="card-body">
-    <h5 class="card-title mb-3"><i class="ti ti-home me-2"></i>Shortcuts</h5>
+    <h6 class="text-uppercase text-muted small mb-3"><i class="ti ti-flash me-1"></i> Quick Actions</h6>
     <div class="list-group list-group-flush">
-      <a class="list-group-item list-group-item-action px-0" href="./index.php"><i class="ti ti-home-2 me-2"></i> Home</a>
-      <a class="list-group-item list-group-item-action px-0" href="./pets.php"><i class="ti ti-paw me-2"></i> Pets</a>
-      <a class="list-group-item list-group-item-action px-0" href="./messages.php"><i class="ti ti-message-circle me-2"></i> Messages</a>
-      <a class="list-group-item list-group-item-action px-0" href="./my_adoptions.php"><i class="ti ti-file-like me-2"></i> My Adoptions</a>
-      <a class="list-group-item list-group-item-action px-0" href="./my_posts.php"><i class="ti ti-news me-2"></i> My Posts</a>
-      <a class="list-group-item list-group-item-action px-0" href="./my_donations.php"><i class="ti ti-currency-dollar me-2"></i> My Donations</a>
-      <a class="list-group-item list-group-item-action px-0" href="./profile.php"><i class="ti ti-user-circle me-2"></i> Profile</a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./create_post.php">
+        <span><i class="ti ti-square-plus me-2 text-primary"></i>Create Post</span>
+      </a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./pets.php">
+        <span><i class="ti ti-paw me-2 text-success"></i>Browse Pets</span>
+      </a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./shelters.php">
+        <span><i class="ti ti-building-community me-2 text-info"></i>Find Shelters</span>
+      </a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./donate.php">
+        <span><i class="ti ti-heart-handshake me-2 text-danger"></i>Donate</span>
+      </a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./my_adoptions.php">
+        <span><i class="ti ti-file-like me-2 text-warning"></i>My Adoptions</span>
+      </a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./my_donations.php">
+        <span><i class="ti ti-currency-dollar me-2 text-success"></i>My Donations</span>
+      </a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./my_posts.php">
+        <span><i class="ti ti-news me-2 text-secondary"></i>My Posts</span>
+      </a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./messages.php">
+        <span><i class="ti ti-message-circle me-2 text-primary"></i>Messages</span>
+        <?php if($unreadMessagesCount>0): ?><span class="badge bg-danger ms-2"><?php echo $unreadMessagesCount; ?></span><?php endif; ?>
+      </a>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./upload_id.php">
+        <span><i class="ti ti-id me-2 text-dark"></i>User ID Docs</span>
+        <?php if($pendingDocsCount>0): ?><span class="badge bg-warning text-dark ms-2"><?php echo $pendingDocsCount; ?></span><?php endif; ?>
+      </a>
+      <?php if(!$hasShelter): ?>
+        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./register_shelter.php">
+          <span><i class="ti ti-building-arch me-2 text-info"></i>Register Shelter</span>
+        </a>
+      <?php else: ?>
+        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./my_shelter.php">
+          <span><i class="ti ti-home-heart me-2 text-info"></i>My Shelter</span>
+        </a>
+        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./shelter_verification_status.php">
+          <span><i class="ti ti-shield-check me-2 text-success"></i>Verification</span>
+        </a>
+      <?php endif; ?>
     </div>
   </div>
 </div>

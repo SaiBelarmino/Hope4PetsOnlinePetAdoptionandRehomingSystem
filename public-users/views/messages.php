@@ -1,38 +1,13 @@
 <?php
-// Simple messaging UI wired to PublicMessagesController WITHOUT using PHP sessions.
-// TEMP auth: pass ?uid=<yourUserId> in the query string. DO NOT use this in production.
+/**
+ * View: messages.php (full inbox + conversation)
+ * Table: messages
+ * Controller sets: $inbox, $conversation, $otherUser, $authUserId, $otherId, $sendError
+ *  - $inbox => list of threads with: other_user_id, last_message, last_time, unread_count
+ *  - $conversation => messages array
+ */
+// existing logic below retained
 require_once __DIR__ . '/../controllers/messages-controller.php';
-
-$pageTitle = 'Messages';
-$authUserId = isset($_GET['uid']) ? (int)$_GET['uid'] : 0; // temporary user identification
-$otherId = isset($_GET['u']) ? (int)$_GET['u'] : 0;       // conversation partner
-
-// If no uid supplied, we'll keep UI disabled.
-$authReady = $authUserId > 0;
-
-// Handle send POST
-$sendError = '';
-if ($authReady && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action']==='send') {
-    $recipient = (int)($_POST['recipient_id'] ?? 0); // trust only from form for temp
-    $body = trim($_POST['body'] ?? '');
-    if ($recipient <=0 || $body==='') {
-        $sendError = 'Message cannot be empty.';
-    } else {
-        $sent = PublicMessagesController::send($authUserId, $recipient, $body);
-        if ($sent) {
-            header('Location: ./messages.php?uid=' . $authUserId . '&u=' . $recipient);
-            exit;
-        } else {
-            $sendError = 'Failed to send.';
-        }
-    }
-}
-
-// Load inbox & conversation only if temp auth provided
-$inbox = $authReady ? PublicMessagesController::inbox($authUserId, 50) : [];
-$conversation = ($authReady && $otherId) ? PublicMessagesController::conversation($authUserId, $otherId, 300) : [];
-if ($authReady && $otherId) { PublicMessagesController::markAsRead($authUserId, $otherId); }
-$otherUser = ($authReady && $otherId) ? PublicMessagesController::userSummary($otherId) : null;
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
