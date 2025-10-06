@@ -5,7 +5,7 @@
 //   $unreadMessagesCount (int)-> unread messages badge
 //   $hasShelter (bool)        -> whether to show shelter-specific shortcuts
 // These are just hints; code will degrade gracefully if not set.
-if (!isset($hasShelter)) { $hasShelter = !empty($_SESSION['shelter_id']) || !empty($_SESSION['has_shelter']); }
+if (!isset($hasShelter)) { $hasShelter = !empty($_SESSION['shelter_id']); }
 $pendingDocsCount = isset($pendingDocsCount)? (int)$pendingDocsCount : 0;
 $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 0;
 ?>
@@ -39,7 +39,7 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
         <?php if($unreadMessagesCount>0): ?><span class="badge bg-danger ms-2"><?php echo $unreadMessagesCount; ?></span><?php endif; ?>
       </a>
       <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./upload_id.php">
-        <span><i class="ti ti-id me-2 text-dark"></i>User ID Docs</span>
+        <span><i class="ti ti-id me-2 text-dark"></i>Verification ID</span>
         <?php if($pendingDocsCount>0): ?><span class="badge bg-warning text-dark ms-2"><?php echo $pendingDocsCount; ?></span><?php endif; ?>
       </a>
       <?php if(!$hasShelter): ?>
