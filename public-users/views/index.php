@@ -49,8 +49,6 @@ $posts = IndexController::getRecentPosts(20);
                                 class="ti ti-photo me-1 text-success"></i> Photo</a>
                         <a href="./create_post.php" class="btn btn-light border"><i
                                 class="ti ti-video me-1 text-danger"></i> Video</a>
-                        <a href="./create_post.php" class="btn btn-light border"><i
-                                class="ti ti-article me-1 text-primary"></i> Update</a>
                     </div>
                 </div>
             </div>
@@ -90,16 +88,14 @@ $posts = IndexController::getRecentPosts(20);
                         $timeAgo = $postDate->format('M d, Y');
                     }
                     
-                    // Get profile photo or default
-                    $profilePhoto = !empty($post['profile_photo']) 
-                        ? '../../' . htmlspecialchars($post['profile_photo']) 
-                        : '../../assets/images/profile/user-1.jpg';
+                    // Get profile photo or default using helper
+                    $profilePhoto = resolve_profile_photo($post['profile_photo'] ?? null);
                 ?>
                 <div class="card mb-3">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-2">
                             <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
-                                <img src="<?php echo $profilePhoto; ?>" 
+                                <img src="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>" 
                                      class="rounded-circle me-2 object-fit-cover" 
                                      width="36" height="36" 
                                      style="object-fit: cover; aspect-ratio: 1/1; min-width:36px; min-height:36px; max-width:36px; max-height:36px;" 
@@ -115,10 +111,6 @@ $posts = IndexController::getRecentPosts(20);
                         </div>
                         
                         <?php if (!empty($post['content'])): ?>
-                            <p class="mb-3"><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
-                        <?php endif; ?>
-                        
-                        <?php if (!empty($photos)): ?>
                             <?php if (count($photos) == 1): ?>
                           <img src="../../<?php echo htmlspecialchars($photos[0]['photo_path']); ?>" 
                               class="rounded mb-3 object-fit-cover w-100 d-block mx-auto" 

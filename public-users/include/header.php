@@ -4,6 +4,8 @@
  * Include auth-guard to ensure user is logged in
  */
 require_once __DIR__ . '/auth-guard.php';
+// Helpers
+require_once __DIR__ . '/profile_helpers.php';
 ?>
 <!doctype html>
 <html lang="en">

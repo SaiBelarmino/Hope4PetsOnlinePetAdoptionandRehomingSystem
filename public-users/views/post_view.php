@@ -71,10 +71,8 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
             <div class="alert alert-warning mb-0">Post not found or has been removed.</div>
           <?php else: ?>
           <?php 
-            // Get profile photo or default
-            $profilePhoto = !empty($post['profile_photo']) 
-                ? '../../' . htmlspecialchars($post['profile_photo']) 
-                : '../../assets/images/profile/user-1.jpg';
+            // Get profile photo or default (handles Google URLs)
+            $profilePhoto = resolve_profile_photo($post['profile_photo'] ?? null);
             
             // Check if current user is the post owner
             $isOwner = isset($_SESSION['user']['id']) && $_SESSION['user']['id'] == $post['user_id'];
@@ -86,7 +84,7 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
           ?>
           <div class="d-flex align-items-center justify-content-between mb-3">
             <div class="d-flex align-items-center">
-              <a href="./profile.php?id=<?php echo (int)$post['user_id']; ?>" class="text-decoration-none">
+              <a href="./profile.php?user_id=<?php echo (int)$post['user_id']; ?>" class="text-decoration-none">
                 <img src="<?php echo $profilePhoto; ?>" 
                      class="rounded-circle me-2" 
                      width="44" height="44" 
@@ -97,7 +95,7 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
                      onerror="this.src='../../assets/images/profile/user-1.jpg'">
               </a>
               <div>
-                <a href="./profile.php?id=<?php echo (int)$post['user_id']; ?>" class="text-dark text-decoration-none">
+                <a href="./profile.php?user_id=<?php echo (int)$post['user_id']; ?>" class="text-dark text-decoration-none">
                   <strong style="cursor: pointer;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                     <?php echo htmlspecialchars($post['user_name'] ?? ('User #'.$post['user_id'])); ?>
                   </strong>
@@ -186,14 +184,12 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
           <?php if (empty($comments)): ?>
             <div class="text-muted small">No comments yet.</div>
           <?php else: foreach($comments as $c): 
-            $commentProfilePhoto = !empty($c['profile_photo']) 
-                ? '../../' . htmlspecialchars($c['profile_photo']) 
-                : '../../assets/images/profile/user-1.jpg';
+            $commentProfilePhoto = resolve_profile_photo($c['profile_photo'] ?? null);
           ?>
             <div class="mb-3 border-bottom pb-2">
               <div class="d-flex align-items-start">
-                <a href="./profile.php?id=<?php echo (int)$c['user_id']; ?>" class="text-decoration-none">
-                  <img src="<?php echo $commentProfilePhoto; ?>" 
+                <a href="./profile.php?user_id=<?php echo (int)$c['user_id']; ?>" class="text-decoration-none">
+                  <img src="<?php echo htmlspecialchars($commentProfilePhoto, ENT_QUOTES, 'UTF-8'); ?>" 
                        class="rounded-circle me-2" 
                        width="32" height="32" 
                        alt="User"
@@ -204,7 +200,7 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
                 </a>
                 <div class="flex-grow-1">
                   <div class="small">
-                    <a href="./profile.php?id=<?php echo (int)$c['user_id']; ?>" class="fw-semibold text-dark text-decoration-none" style="cursor: pointer;">
+                    <a href="./profile.php?user_id=<?php echo (int)$c['user_id']; ?>" class="fw-semibold text-dark text-decoration-none" style="cursor: pointer;">
                       <span onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                         <?php echo htmlspecialchars($c['user_name'] ?? ('User #'.$c['user_id'])); ?>
                       </span>

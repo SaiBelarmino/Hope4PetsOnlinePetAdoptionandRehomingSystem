@@ -13,11 +13,14 @@ SessionManager::requireLogin();
  */
 
 $viewUserId = null;
-if (isset($_GET['user_id'])) {
-  $viewUserId = (int)$_GET['user_id'];
-} elseif (isset($_GET['id'])) {
-  $viewUserId = (int)$_GET['id'];
-} else {
+// Accept multiple query parameter names to be robust: user_id, id, u, uid
+foreach (['user_id','id','u','uid'] as $param) {
+  if (isset($_GET[$param]) && is_numeric($_GET[$param]) && (int)$_GET[$param] > 0) {
+    $viewUserId = (int)$_GET[$param];
+    break;
+  }
+}
+if ($viewUserId === null) {
   $viewUserId = SessionManager::getUserId();
 }
 $currentUserId = SessionManager::getUserId();
@@ -41,6 +44,26 @@ $pageTitle = $isOwnProfile ? 'My Profile' : htmlspecialchars($user['full_name'])
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
+<?php
+// Debug helper: when visiting /profile.php?user_id=NNN&debug=1 show stored values (remove in production)
+if (!empty($_GET['debug'])) {
+  echo '<div class="container"><pre style="background:#f8f9fa;padding:12px;border:1px solid #ddd">';
+  echo "viewUserId: " . htmlspecialchars((string)$viewUserId) . "\n";
+  echo "stored profile_photo: " . htmlspecialchars((string)($user['profile_photo'] ?? '<none>')) . "\n";
+  $resolved = resolve_profile_photo($user['profile_photo'] ?? null);
+  echo "resolved src: " . htmlspecialchars($resolved) . "\n";
+  // If it's a storage path, check file existence on disk
+  if (stripos($resolved, 'storage/') !== false || stripos($resolved, '../../storage/') !== false) {
+    $checkPath = $resolved;
+    // normalize to filesystem path
+    $checkPath = preg_replace('#^\.\./\.\./#', '', $checkPath);
+    $fsPath = __DIR__ . '/../../' . $checkPath;
+    echo "filesystem path: " . htmlspecialchars($fsPath) . "\n";
+    echo "file exists: " . (file_exists($fsPath) ? 'YES' : 'NO') . "\n";
+  }
+  echo '</pre></div>';
+}
+?>
 <div class="pu-scroll-wrapper">
 <div class="container-fluid py-3">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -62,11 +85,10 @@ $pageTitle = $isOwnProfile ? 'My Profile' : htmlspecialchars($user['full_name'])
           <div class="mb-3">
             <div class="ratio ratio-1x1 rounded-circle overflow-hidden bg-light mx-auto" style="width:140px;">
               <?php 
-              $profilePhotoPath = !empty($user['profile_photo']) 
-                ? '../../' . htmlspecialchars($user['profile_photo']) 
-                : '../../assets/images/profile/user-1.jpg';
+              // Resolve profile photo (handles Google URL or local paths)
+              $profilePhotoPath = resolve_profile_photo($user['profile_photo'] ?? null);
               ?>
-              <img src="<?php echo $profilePhotoPath; ?>" 
+              <img src="<?php echo htmlspecialchars($profilePhotoPath, ENT_QUOTES, 'UTF-8'); ?>" 
                    class="object-fit-cover" 
                    alt="Profile"
                    onerror="this.src='../../assets/images/profile/user-1.jpg'">
