@@ -1,73 +1,189 @@
 <?php
-// Public User Signup Controller (Refactored to use BaseController)
-// Handles POST request from signup form and creates a new user record.
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-	header('Location: ../user-authentication/authentication-signup.php');
-	exit();
-}
+/**
+ * Registration Controller
+ * 
+ * Handles new user registration and automatic login.
+ * Creates new user account with hashed password.
+ */
 
 require_once __DIR__ . '/../../controllers/BaseController.php';
+require_once __DIR__ . '/../../config/SessionManager.php';
 
-class PublicSignupController extends BaseController {
-	public static function handle(): void {
-		$fullName = isset($_POST['name']) ? trim($_POST['name']) : '';
-		$email    = isset($_POST['email']) ? strtolower(trim($_POST['email'])) : '';
-		$password = isset($_POST['password']) ? $_POST['password'] : '';
+// Define the controller class FIRST
+class PublicAuthenticationSignupController extends BaseController {
+    /**
+     * Register a new user according to users table schema.
+     */
+    public static function register(array $data, array &$errors = []): bool {
+        $mysqli = self::db();
 
-		$fullName = preg_replace('/\s+/', ' ', $fullName);
-		$fullName = htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8');
+        // Basic validation
+        $fullName = trim($data['full_name'] ?? '');
+        $email = strtolower(trim($data['email'] ?? ''));
+        $password = $data['password'] ?? '';
+        $birthday = $data['birthday'] ?? null;
+        $gender = $data['gender'] ?? 'unspecified';
+        $contactNumber = $data['contact_number'] ?? null;
 
-		if ($fullName === '' || mb_strlen($fullName) > 150) {
-			self::redirect(['error' => 'Invalid name provided.']);
-		}
-		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-			self::redirect(['error' => 'Invalid email address.']);
-		}
-		if (strlen($password) < 6) {
-			self::redirect(['error' => 'Password must be at least 6 characters.']);
-		}
+        if ($fullName === '') $errors[] = 'Full name is required.';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email is required.';
+        if (strlen($password) < 6) $errors[] = 'Password must be at least 6 characters.';
+        
+        if ($errors) return false;
 
-		$mysqli = self::db();
+        // Duplicate email check
+        $existing = self::fetchValue('SELECT id FROM users WHERE email = ? LIMIT 1', 's', [$email]);
+        if ($existing) {
+            $errors[] = 'Email already registered.';
+            return false;
+        }
 
-		$check = $mysqli->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
-		if (!$check) {
-			self::redirect(['error' => 'Server error (prep1).']);
-		}
-		$check->bind_param('s', $email);
-		$check->execute();
-		$check->store_result();
-		if ($check->num_rows > 0) {
-			$check->close();
-			self::redirect(['error' => 'Email already registered.']);
-		}
-		$check->close();
+        $hash = password_hash($password, PASSWORD_BCRYPT);
 
-		$passwordHash = password_hash($password, PASSWORD_DEFAULT);
-		if ($passwordHash === false) {
-			self::redirect(['error' => 'Failed to process password.']);
-		}
-
-		$ins = $mysqli->prepare('INSERT INTO users (full_name, email, password_hash) VALUES (?, ?, ?)');
-		if (!$ins) {
-			self::redirect(['error' => 'Server error (prep2).']);
-		}
-		$ins->bind_param('sss', $fullName, $email, $passwordHash);
-		if (!$ins->execute()) {
-			$ins->close();
-			self::redirect(['error' => 'Insert failed.']);
-		}
-		$ins->close();
-
-		self::redirect(['success' => '1']);
-	}
-
-	private static function redirect(array $params): void {
-		$base = '../user-authentication/authentication-signup.php';
-		$query = http_build_query($params);
-		header('Location: ' . $base . ($query ? ('?' . $query) : ''));
-		exit();
-	}
+        $sql = 'INSERT INTO users (full_name, birthday, gender, email, password_hash, contact_number, created_at, updated_at) VALUES (?,?,?,?,?,?,NOW(),NOW())';
+        $stmt = $mysqli->prepare($sql);
+        if (!$stmt) {
+            $errors[] = 'Failed to prepare statement.';
+            return false;
+        }
+        
+        $stmt->bind_param('ssssss', $fullName, $birthday, $gender, $email, $hash, $contactNumber);
+        $ok = $stmt->execute();
+        
+        if (!$ok) {
+            if ($mysqli->errno === 1062) {
+                $errors[] = 'Email already registered.';
+            } else {
+                $errors[] = 'Database error: ' . $mysqli->error;
+            }
+        }
+        $stmt->close();
+        return $ok;
+    }
 }
 
-PublicSignupController::handle();
+// Handle registration form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $fullName = trim($_POST['full_name'] ?? $_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? $password; // fallback if no confirm field
+    $birthday = $_POST['birthday'] ?? null;
+    $gender = $_POST['gender'] ?? 'unspecified';
+    $contactNumber = trim($_POST['contact_number'] ?? '');
+    
+    $errors = [];
+    
+    // Validation
+    if (empty($fullName)) {
+        $errors[] = 'Full name is required.';
+    }
+    
+    if (empty($email)) {
+        $errors[] = 'Email is required.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Invalid email format.';
+    }
+    
+    if (empty($password)) {
+        $errors[] = 'Password is required.';
+    } elseif (strlen($password) < 6) {
+        $errors[] = 'Password must be at least 6 characters.';
+    }
+    
+    if ($password !== $confirmPassword) {
+        $errors[] = 'Passwords do not match.';
+    }
+    
+    if (empty($errors)) {
+        // Register user
+        $registrationErrors = [];
+        $success = PublicAuthenticationSignupController::register([
+            'full_name' => $fullName,
+            'email' => strtolower($email),
+            'password' => $password,
+            'birthday' => $birthday,
+            'gender' => $gender,
+            'contact_number' => $contactNumber
+        ], $registrationErrors);
+        
+        if ($success) {
+            // Auto-login after registration
+            require_once __DIR__ . '/authentication-login-controller.php';
+            $user = PublicAuthenticationLoginController::authenticate($email, $password);
+            
+            if ($user) {
+                SessionManager::login($user);
+                SessionManager::setFlash('success', 'Registration successful! Welcome to Hope4Pets!');
+                header('Location: ../views/index.php');
+                exit;
+            }
+        } else {
+            foreach ($registrationErrors as $error) {
+                $errors[] = $error;
+            }
+        }
+    }
+    
+    // Store errors in session and redirect back
+    if (!empty($errors)) {
+        SessionManager::setFlash('error', implode('<br>', $errors));
+        header('Location: ../user-authentication/authentication-signup.php');
+        exit;
+    }
+}
+?>
+}
+
+class PublicAuthenticationSignupController extends BaseController {
+    /**
+     * Register a new user according to users table schema.
+     */
+    public static function register(array $data, array &$errors = []): bool {
+        $mysqli = self::db();
+
+        // Basic validation
+        $fullName = trim($data['full_name'] ?? '');
+        $email = strtolower(trim($data['email'] ?? ''));
+        $password = $data['password'] ?? '';
+        $birthday = $data['birthday'] ?? null;
+        $gender = $data['gender'] ?? 'unspecified';
+        $contactNumber = $data['contact_number'] ?? null;
+
+        if ($fullName === '') $errors[] = 'Full name is required.';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email is required.';
+        if (strlen($password) < 6) $errors[] = 'Password must be at least 6 characters.';
+        
+        if ($errors) return false;
+
+        // Duplicate email check
+        $existing = self::fetchValue('SELECT id FROM users WHERE email = ? LIMIT 1', 's', [$email]);
+        if ($existing) {
+            $errors[] = 'Email already registered.';
+            return false;
+        }
+
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+
+        $sql = 'INSERT INTO users (full_name, birthday, gender, email, password_hash, contact_number, created_at, updated_at) VALUES (?,?,?,?,?,?,NOW(),NOW())';
+        $stmt = $mysqli->prepare($sql);
+        if (!$stmt) {
+            $errors[] = 'Failed to prepare statement.';
+            return false;
+        }
+        
+        $stmt->bind_param('ssssss', $fullName, $birthday, $gender, $email, $hash, $contactNumber);
+        $ok = $stmt->execute();
+        
+        if (!$ok) {
+            if ($mysqli->errno === 1062) {
+                $errors[] = 'Email already registered.';
+            } else {
+                $errors[] = 'Database error: ' . $mysqli->error;
+            }
+        }
+        $stmt->close();
+        return $ok;
+    }
+}
+?>

@@ -1,33 +1,68 @@
 <?php
-// Public User Login Controller (Refactored to use BaseController)
-// Processes login form submission, verifies credentials, starts session.
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-	header('Location: ../user-authentication/authentication-login.php');
-	exit();
-}
+/**
+ * Login Controller
+ * 
+ * Handles user authentication and session initialization.
+ * Validates credentials and creates isolated session per user.
+ */
 
 require_once __DIR__ . '/../../controllers/BaseController.php';
-session_start();
+require_once __DIR__ . '/../../config/SessionManager.php';
 
-class PublicLoginController extends BaseController {
-	public static function handle(): void {
-		$email = isset($_POST['email']) ? strtolower(trim($_POST['email'])) : '';
-		$password = isset($_POST['password']) ? $_POST['password'] : '';
-		if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
-			self::redirect(['error' => 'Invalid credentials.']);
-		}
+// Define the controller class FIRST
+class PublicAuthenticationLoginController extends BaseController {
+    /**
+     * Attempt to authenticate a user by email/password.
+     * Returns user data (without password_hash) or null.
+     */
+    public static function authenticate(string $email, string $password): ?array {
+        $user = self::fetchOne(
+            'SELECT id, full_name, email, password_hash, is_verified, profile_photo, birthday, gender, location, contact_number FROM users WHERE email = ? LIMIT 1',
+            's',
+            [$email]
+        );
+        
+        if (!$user) return null;
+        if (!password_verify($password, $user['password_hash'] ?? '')) return null;
+        
+        // Remove sensitive data
+        unset($user['password_hash']);
+        
+        return $user;
+    }
+}
 
-		$mysqli = self::db();
-		$stmt = $mysqli->prepare('SELECT id, full_name, email, password_hash, is_verified FROM users WHERE email = ? LIMIT 1');
-		if (!$stmt) {
-			self::redirect(['error' => 'Server error.']);
-		}
-		$stmt->bind_param('s', $email);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$user = $result->fetch_assoc();
-		$stmt->close();
+// Handle login form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    
+    if (empty($email) || empty($password)) {
+        SessionManager::setFlash('error', 'Please provide both email and password.');
+        header('Location: ../user-authentication/authentication-login.php');
+        exit;
+    }
+    
+    // Authenticate user
+    $user = PublicAuthenticationLoginController::authenticate($email, $password);
+    
+    if ($user) {
+        // Login successful - create session
+        SessionManager::login($user);
+        SessionManager::setFlash('success', 'Welcome back, ' . htmlspecialchars($user['full_name']) . '!');
+        
+        // Redirect to dashboard or requested page
+        $redirect = $_GET['redirect'] ?? '../views/index.php';
+        header('Location: ' . $redirect);
+        exit;
+    } else {
+        // Login failed
+        SessionManager::setFlash('error', 'Invalid email or password.');
+        header('Location: ../user-authentication/authentication-login.php');
+        exit;
+    }
+}
+?>
 
 		if (!$user || !password_verify($password, $user['password_hash'])) {
 			self::redirect(['error' => 'Invalid credentials.']);

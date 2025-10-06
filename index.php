@@ -1,23 +1,22 @@
-<?php /* Landing page for Hope4Pets */ ?>
-<!doctype html>
-<html lang="en">
+<?php
+/**
+ * Root Landing Page
+ * Redirects to appropriate location based on authentication status
+ */
+require_once __DIR__ . '/config/SessionManager.php';
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hope4Pets — Adopt, Rehome, Support</title>
-    <meta name="description"
-        content="Hope4Pets helps you adopt and rehome pets with trusted shelters and caring communities." />
-    <link rel="shortcut icon" type="image/png" href="assets/images/logos/logo-icon.png" />
-    <!-- Local theme/Bootstrap CSS -->
-    <link rel="stylesheet" href="assets/css/styles.min.css" />
-    <!-- Tabler Icons (local) -->
-    <link rel="stylesheet" href="assets/css/icons/tabler-icons/tabler-icons.css" />
-    <!-- Landing overrides -->
-    <link rel="stylesheet" href="assets/css/landing.css"/>
-</head>
+SessionManager::init();
 
-<body class="page-preload">
+// If user is logged in, redirect to dashboard
+if (SessionManager::isLoggedIn()) {
+    header('Location: public-users/views/index.php');
+    exit;
+}
+
+// Otherwise, redirect to login page
+header('Location: public-users/user-authentication/authentication-login.php');
+exit;
+?>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top reveal reveal-down reveal-slow is-visible" data-reveal-dur="800ms">
         <div class="container py-2">

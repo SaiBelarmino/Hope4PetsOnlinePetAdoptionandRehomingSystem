@@ -1,4 +1,10 @@
-<?php if (session_status() === PHP_SESSION_NONE) { session_start(); } ?>
+<?php
+/**
+ * Protected Header - Requires Authentication
+ * Include auth-guard to ensure user is logged in
+ */
+require_once __DIR__ . '/auth-guard.php';
+?>
 <!doctype html>
 <html lang="en">
 

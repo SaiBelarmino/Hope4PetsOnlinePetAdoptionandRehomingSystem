@@ -1,4 +1,30 @@
+<?php
+/**
+ * Login Page
+ * Public page - no authentication required
+ */
+require_once __DIR__ . '/../../config/SessionManager.php';
 
+// If already logged in, redirect to dashboard
+SessionManager::init();
+if (SessionManager::isLoggedIn()) {
+    header('Location: ../views/index.php');
+    exit;
+}
+
+// Get flash messages
+$flash = SessionManager::getFlash();
+
+// Check for session expired message
+$errorMessage = '';
+if (!empty($_GET['error'])) {
+    if ($_GET['error'] === 'session_expired') {
+        $errorMessage = 'Your session has expired. Please login again.';
+    } else {
+        $errorMessage = htmlspecialchars($_GET['error']);
+    }
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -20,25 +46,30 @@
                     <div class="col-md-8 col-lg-6 col-xxl-3">
                         <div class="card mb-0">
                             <div class="card-body">
-                                <div class="mb-2">
-                                    <a href="../../index.php" class="text-decoration-none" aria-label="Back to Home" title="Back to Home">
-                                        <i class="ti ti-arrow-left"></i>
-                                    </a>
-                                </div>
                                 <a href="../../index.php" class="text-nowrap logo-img text-center d-block py-3 w-100">
                                     <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="Hope4Pets Logo" class="img-fluid" style="width: 260px; max-width: 100%; height: auto;">
                                 </a>
                                 <p class="text-center">Welcome back</p>
-                                                                <?php if (!empty($_GET['error'])): ?>
-                                                                    <div class="alert alert-danger" role="alert">
-                                                                        <?php echo htmlspecialchars($_GET['error']); ?>
-                                                                    </div>
-                                                                <?php elseif (!empty($_GET['registered'])): ?>
-                                                                    <div class="alert alert-success" role="alert">
-                                                                        Account created successfully. Please log in.
-                                                                    </div>
-                                                                <?php endif; ?>
-                                                                <form method="post" action="../authentication-controllers/authentication-login-controller.php">
+                                
+                                <?php if ($flash): ?>
+                                    <div class="alert alert-<?php echo $flash['type']; ?>" role="alert">
+                                        <?php echo $flash['message']; ?>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if ($errorMessage): ?>
+                                    <div class="alert alert-danger" role="alert">
+                                        <?php echo $errorMessage; ?>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($_GET['registered'])): ?>
+                                    <div class="alert alert-success" role="alert">
+                                        Account created successfully. Please log in.
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <form method="post" action="../authentication-controllers/authentication-login-controller.php">
                                     <div class="mb-3">
                                         <label for="email" class="form-label">Email</label>
                                         <input type="email" class="form-control" id="email" name="email" required autofocus>

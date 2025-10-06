@@ -1,12 +1,14 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/../../config/SessionManager.php';
+require_once __DIR__ . '/../controllers/my-posts-controller.php';
+SessionManager::requireLogin();
 /**
  * View: my_posts.php
- * Tables: posts, post_photos, post_reactions, post_comments
- * Expected Variables:
- *  - $posts => [ {'id','content','created_at','photo_count','reaction_count','comment_count','pet_id','pet_name'}, ... ]
  */
 $pageTitle = 'My Posts';
+$userId = SessionManager::getUserId();
+$posts = MyPostsController::list($userId, 200);
 $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']) || !empty($_SESSION['user']['shelter_id']);
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>

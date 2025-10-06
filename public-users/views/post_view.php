@@ -1,15 +1,25 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
-/**
- * View: post_view.php
- * Tables: posts, post_photos, post_comments, post_reactions, pets (optional link)
- * Expected Variables:
- *  - $post => ['id','user_id','user_name','content','created_at','pet_id','pet_name']
- *  - $photos => [ {'photo_path'}, ... ]
- *  - $comments => [ {'id','user_id','user_name','content','created_at'}, ... ]
- *  - $reactionCount, $userReacted
- */
-$pageTitle = 'Post';
+require_once __DIR__ . '/../../config/SessionManager.php';
+require_once __DIR__ . '/../../config/app.php';
+require_once __DIR__ . '/../controllers/post-view-controller.php';
+SessionManager::requireLogin();
+
+// Bootstrap fetch
+$postId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$post = $postId ? PostViewController::get($postId) : null;
+if (!$post) {
+  // Early simple not found output (still include header for layout)
+  $pageTitle = 'Post Not Found';
+  $photos = $comments = [];
+  $reactionCount = 0; $userReacted = false;
+} else {
+  $photos = PostViewController::photos($postId);
+  $comments = PostViewController::comments($postId);
+  $reactionCount = (int)($post['reaction_count'] ?? 0);
+  $userReacted = PostViewController::userReacted($postId, SessionManager::getUserId());
+  $pageTitle = 'Post';
+}
 $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']) || !empty($_SESSION['user']['shelter_id']);
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
@@ -40,6 +50,9 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
         <div class="card-body">
       <div class="card mb-3">
         <div class="card-body">
+          <?php if(!$post): ?>
+            <div class="alert alert-warning mb-0">Post not found or has been removed.</div>
+          <?php else: ?>
           <div class="d-flex align-items-center mb-2">
             <img src="../../assets/images/profile/user-placeholder.png" class="rounded-circle me-2" width="44" height="44" alt="User">
             <div>
@@ -50,10 +63,23 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
           <p class="mb-3"><?php echo nl2br(htmlspecialchars($post['content'] ?? '')); ?></p>
           <?php if(!empty($photos)): ?>
             <div class="row g-2 mb-2">
-              <?php foreach($photos as $ph): ?>
+               <?php foreach($photos as $ph): ?>
+                 <?php 
+                   $rawPath = $ph['photo_path'];
+                   // Normalize to /storage/... web path
+                   $norm = str_replace('\\', '/', $rawPath); // Windows backslash to forward
+                   // If absolute Windows path (C:/ or similar), extract from 'storage' onward
+                   if (preg_match('/^[A-Za-z]:\//', $norm)) {
+                       $pos = stripos($norm, 'storage/');
+                       if ($pos !== false) { $norm = substr($norm, $pos); }
+                   }
+                   // Ensure leading slash for web path
+                   if (strpos($norm, 'storage/') === 0) { $norm = '/' . $norm; }
+                   $imgPath = $norm ?: '';
+                 ?>
                 <div class="col-6 col-md-4">
                   <div class="ratio ratio-4x3 bg-light rounded overflow-hidden">
-                    <img src="<?php echo htmlspecialchars($ph['photo_path']); ?>" class="object-fit-cover" alt="Post photo">
+                    <img src="<?php echo htmlspecialchars($imgPath); ?>" class="object-fit-cover" alt="Post photo">
                   </div>
                 </div>
               <?php endforeach; ?>
@@ -73,8 +99,10 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
             </form>
             <a href="#comments" class="btn btn-sm btn-outline-secondary"><i class="ti ti-message-circle"></i> <?php echo count($comments ?? []); ?></a>
           </div>
+          <?php endif; ?>
         </div>
       </div>
+  <?php if($post): ?>
   <div class="card" id="comments">
         <div class="card-header bg-white border-0 pb-0"><h6 class="mb-0">Comments (<?php echo count($comments ?? []); ?>)</h6></div>
         <div class="card-body">
@@ -93,6 +121,7 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
           </form>
         </div>
       </div>
+  <?php endif; ?>
     </div>
     <!-- Right Sidebar -->
     <div class="col-12 col-lg-3">

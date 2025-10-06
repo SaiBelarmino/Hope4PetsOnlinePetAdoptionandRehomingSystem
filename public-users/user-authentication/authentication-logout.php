@@ -1,23 +1,22 @@
 <?php
-// Secure logout for public users
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
+/**
+ * Logout Handler
+ * Destroys user session and redirects to login page
+ */
 
-// Regenerate ID to mitigate fixation (optional defensive step pre-destroy)
-if (function_exists('session_regenerate_id')) {
-	@session_regenerate_id(true);
-}
+require_once __DIR__ . '/../../config/SessionManager.php';
 
-// Unset all session variables
-$_SESSION = [];
+// Logout user (destroys session)
+SessionManager::logout();
 
-// Delete the session cookie if it exists
-if (ini_get('session.use_cookies')) {
-	$params = session_get_cookie_params();
-	setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
-}
+// Set success message
+SessionManager::init();
+SessionManager::setFlash('success', 'You have been logged out successfully.');
+
+// Redirect to login page
+header('Location: ./authentication-login.php');
+exit;
+?>
 
 // Destroy the session
 session_destroy();
