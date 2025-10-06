@@ -1,7 +1,38 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+// Simple messaging UI wired to PublicMessagesController WITHOUT using PHP sessions.
+// TEMP auth: pass ?uid=<yourUserId> in the query string. DO NOT use this in production.
+require_once __DIR__ . '/../controllers/messages-controller.php';
+
 $pageTitle = 'Messages';
-$displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : 'Type a message';
+$authUserId = isset($_GET['uid']) ? (int)$_GET['uid'] : 0; // temporary user identification
+$otherId = isset($_GET['u']) ? (int)$_GET['u'] : 0;       // conversation partner
+
+// If no uid supplied, we'll keep UI disabled.
+$authReady = $authUserId > 0;
+
+// Handle send POST
+$sendError = '';
+if ($authReady && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action']==='send') {
+    $recipient = (int)($_POST['recipient_id'] ?? 0); // trust only from form for temp
+    $body = trim($_POST['body'] ?? '');
+    if ($recipient <=0 || $body==='') {
+        $sendError = 'Message cannot be empty.';
+    } else {
+        $sent = PublicMessagesController::send($authUserId, $recipient, $body);
+        if ($sent) {
+            header('Location: ./messages.php?uid=' . $authUserId . '&u=' . $recipient);
+            exit;
+        } else {
+            $sendError = 'Failed to send.';
+        }
+    }
+}
+
+// Load inbox & conversation only if temp auth provided
+$inbox = $authReady ? PublicMessagesController::inbox($authUserId, 50) : [];
+$conversation = ($authReady && $otherId) ? PublicMessagesController::conversation($authUserId, $otherId, 300) : [];
+if ($authReady && $otherId) { PublicMessagesController::markAsRead($authUserId, $otherId); }
+$otherUser = ($authReady && $otherId) ? PublicMessagesController::userSummary($otherId) : null;
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
@@ -35,162 +66,66 @@ $displayName = !empty($_SESSION['user']['name']) ? $_SESSION['user']['name'] : '
                             <div class="p-3 border-bottom fw-semibold small text-uppercase text-muted">Conversations
                             </div>
                             <ul class="list-unstyled mb-0 friend-list overflow-auto flex-grow-1">
-                                <!-- Existing static members retained -->
-                                <li class="active">
-                                    <a href="#" class="d-flex align-items-start px-3 py-2 text-decoration-none">
-                                        <img src="../../assets/images/profile/user-1.jpg" alt=""
-                                            class="rounded-circle me-2" width="44" height="44">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between">
-                                                <strong>Hope Animal Shelter</strong>
-                                                <small class="text-muted">2d</small>
+                                <?php if (empty($inbox)): ?>
+                                    <li class="px-3 py-2 text-muted small">No conversations yet.</li>
+                                <?php else: foreach ($inbox as $row): 
+                                    $active = ($otherId === (int)$row['other_user_id']);
+                                    $preview = htmlspecialchars(mb_strimwidth($row['last_message'] ?? '', 0, 60, '…'));
+                                    $unread = (int)$row['unread_count'];
+                                    $time = htmlspecialchars(date('M d H:i', strtotime($row['last_time'])));
+                                ?>
+                                    <li class="<?php echo $active ? 'active' : ''; ?>">
+                                        <a href="./messages.php?u=<?php echo (int)$row['other_user_id']; ?>" class="d-flex align-items-start px-3 py-2 text-decoration-none">
+                                            <img src="../../assets/images/profile/user-placeholder.png" alt="" class="rounded-circle me-2" width="44" height="44">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between">
+                                                    <strong>User #<?php echo (int)$row['other_user_id']; ?></strong>
+                                                    <small class="text-muted"><?php echo $time; ?></small>
+                                                </div>
+                                                <div class="small text-muted"><?php echo $preview ?: 'No text'; ?></div>
                                             </div>
-                                            <div class="small text-muted">Thanks — we received your adoption inquiry
-                                                about Luna.</div>
-                                        </div>
-                                        <span class="badge bg-danger ms-2 align-self-start">2</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" class="d-flex align-items-start px-3 py-2 text-decoration-none">
-                                        <img src="../../assets/images/profile/user-2.jpg" alt=""
-                                            class="rounded-circle me-2" width="44" height="44">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between">
-                                                <strong>Maria Santos</strong>
-                                                <small class="text-muted">5h</small>
-                                            </div>
-                                            <div class="small text-muted">I'm available to visit the shelter this
-                                                Saturday.</div>
-                                        </div>
-                                        <i class="fa fa-check text-muted ms-2 mt-1"></i>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" class="d-flex align-items-start px-3 py-2 text-decoration-none">
-                                        <img src="../../assets/images/profile/user-3.jpg" alt=""
-                                            class="rounded-circle me-2" width="44" height="44">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between">
-                                                <strong>Volunteer Coordinator</strong>
-                                                <small class="text-muted">1d</small>
-                                            </div>
-                                            <div class="small text-muted">Can you help with weekend transport for
-                                                rescued dogs?</div>
-                                        </div>
-                                        <i class="fa fa-reply text-muted ms-2 mt-1"></i>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" class="d-flex align-items-start px-3 py-2 text-decoration-none">
-                                        <img src="../../assets/images/profile/user-1.jpg" alt=""
-                                            class="rounded-circle me-2" width="44" height="44">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between">
-                                                <strong>Admin Team</strong>
-                                                <small class="text-muted">3d</small>
-                                            </div>
-                                            <div class="small text-muted">Your ID verification was approved.</div>
-                                        </div>
-                                        <i class="fa fa-check text-muted ms-2 mt-1"></i>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" class="d-flex align-items-start px-3 py-2 text-decoration-none">
-                                        <img src="../../assets/images/profile/user-2.jpg" alt=""
-                                            class="rounded-circle me-2" width="44" height="44">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between">
-                                                <strong>Green Paws Rescue</strong>
-                                                <small class="text-muted">4d</small>
-                                            </div>
-                                            <div class="small text-muted">Do you have photos of the dog available for
-                                                fostering?</div>
-                                        </div>
-                                        <i class="fa fa-reply text-muted ms-2 mt-1"></i>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" class="d-flex align-items-start px-3 py-2 text-decoration-none">
-                                        <img src="../../assets/images/profile/user-3.jpg" alt=""
-                                            class="rounded-circle me-2" width="44" height="44">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between">
-                                                <strong>Foster Volunteer</strong>
-                                                <small class="text-muted">6d</small>
-                                            </div>
-                                            <div class="small text-muted">I can foster for two weeks starting next
-                                                Monday.</div>
-                                        </div>
-                                        <i class="fa fa-reply text-muted ms-2 mt-1"></i>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" class="d-flex align-items-start px-3 py-2 text-decoration-none">
-                                        <img src="../../assets/images/profile/user-placeholder.png" alt=""
-                                            class="rounded-circle me-2" width="44" height="44">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between">
-                                                <strong>Dr. Reyes</strong>
-                                                <small class="text-muted">1w</small>
-                                            </div>
-                                            <div class="small text-muted">Vaccinations for adopted pets are scheduled
-                                                next week.</div>
-                                        </div>
-                                        <i class="fa fa-reply text-muted ms-2 mt-1"></i>
-                                    </a>
-                                </li>
+                                            <?php if ($unread>0): ?><span class="badge bg-danger ms-2 align-self-start"><?php echo $unread; ?></span><?php endif; ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; endif; ?>
                             </ul>
                         </div>
                         <!-- Active chat -->
                         <div class="col-12 col-md-7 d-flex flex-column h-100">
                             <div class="flex-grow-1 p-3 overflow-auto">
-                                <ul class="list-unstyled chat mb-0">
-                                    <li class="mb-3 d-flex">
-                                        <img src="https://bootdey.com/img/Content/user_3.jpg"
-                                            class="rounded-circle me-2" width="40" height="40" alt="User">
-                                        <div>
-                                            <div class="small text-muted">John Doe • 12 mins ago</div>
-                                            <div class="p-2 bg-light rounded">Lorem ipsum dolor sit amet, consectetur
-                                                adipiscing elit.</div>
-                                        </div>
-                                    </li>
-                                    <li class="mb-3 d-flex flex-row-reverse text-end">
-                                        <img src="https://bootdey.com/img/Content/user_1.jpg"
-                                            class="rounded-circle ms-2" width="40" height="40" alt="User">
-                                        <div>
-                                            <div class="small text-muted">You • 13 mins ago</div>
-                                            <div class="p-2 bg-primary text-white rounded">Lorem ipsum dolor sit amet,
-                                                consectetur adipiscing elit. Curabitur bibendum ornare dolor.</div>
-                                        </div>
-                                    </li>
-                                    <li class="mb-3 d-flex">
-                                        <img src="https://bootdey.com/img/Content/user_3.jpg"
-                                            class="rounded-circle me-2" width="40" height="40" alt="User">
-                                        <div>
-                                            <div class="small text-muted">John Doe • 10 mins ago</div>
-                                            <div class="p-2 bg-light rounded">Lorem ipsum dolor sit amet, consectetur
-                                                adipiscing elit.</div>
-                                        </div>
-                                    </li>
-                                    <li class="mb-3 d-flex flex-row-reverse text-end">
-                                        <img src="https://bootdey.com/img/Content/user_1.jpg"
-                                            class="rounded-circle ms-2" width="40" height="40" alt="User">
-                                        <div>
-                                            <div class="small text-muted">You • 9 mins ago</div>
-                                            <div class="p-2 bg-primary text-white rounded">Lorem ipsum dolor sit amet,
-                                                consectetur adipiscing elit.</div>
-                                        </div>
-                                    </li>
-                                </ul>
+                                <?php if (!$otherId): ?>
+                                    <div class="text-muted small">Select a conversation or start a new one below.</div>
+                                <?php else: ?>
+                                    <ul class="list-unstyled chat mb-0">
+                                        <?php if (empty($conversation)): ?>
+                                            <li class="text-muted small">No messages yet. Say hello!</li>
+                                        <?php else: foreach ($conversation as $msg):
+                                            $isOutgoing = (int)$msg['is_outgoing'] === 1;
+                                            $time = htmlspecialchars(date('M d H:i', strtotime($msg['created_at'])));
+                                            $bodyHtml = nl2br(htmlspecialchars($msg['body']));
+                                        ?>
+                                            <li class="mb-3 d-flex <?php echo $isOutgoing ? 'flex-row-reverse text-end' : ''; ?>">
+                                                <img src="https://bootdey.com/img/Content/user_<?php echo $isOutgoing ? '1' : '3'; ?>.jpg" class="rounded-circle <?php echo $isOutgoing ? 'ms-2' : 'me-2'; ?>" width="40" height="40" alt="User">
+                                                <div>
+                                                    <div class="small text-muted"><?php echo $isOutgoing ? 'You' : 'User #' . (int)$msg['sender_id']; ?> • <?php echo $time; ?></div>
+                                                    <div class="p-2 rounded <?php echo $isOutgoing ? 'bg-primary text-white' : 'bg-light'; ?>"><?php echo $bodyHtml; ?></div>
+                                                </div>
+                                            </li>
+                                        <?php endforeach; endif; ?>
+                                    </ul>
+                                <?php endif; ?>
                             </div>
                             <div class="border-top p-2">
-                                <form class="d-flex gap-2">
-                                    <input type="text" class="form-control" placeholder="Type your message here"
-                                        aria-label="Message">
-                                    <button class="btn btn-success" type="button"><i class="ti ti-send"></i><span
-                                            class="d-none d-sm-inline ms-1">Send</span></button>
+                                <form class="d-flex gap-2" method="post" action="./messages.php?u=<?php echo (int)$otherId; ?>">
+                                    <input type="hidden" name="action" value="send" />
+                                    <input type="hidden" name="recipient_id" value="<?php echo (int)$otherId; ?>" />
+                                    <input type="text" name="body" class="form-control" placeholder="Type your message" aria-label="Message" autocomplete="off" <?php echo $otherId? '' : 'disabled'; ?>>
+                                    <button class="btn btn-success" type="submit" <?php echo $otherId? '' : 'disabled'; ?>><i class="ti ti-send"></i><span class="d-none d-sm-inline ms-1">Send</span></button>
                                 </form>
+                                <?php if ($sendError): ?><div class="text-danger small mt-1"><?php echo htmlspecialchars($sendError); ?></div><?php endif; ?>
+                                <?php if (!$otherId): ?>
+                                    <div class="small text-muted mt-1">Choose a user from the left to start chatting.</div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

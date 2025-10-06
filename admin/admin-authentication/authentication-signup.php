@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sign Up - Hope4Pets</title>
-    <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/seodashlogo.png" />
+    <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/logo-icon.png" />
     <link rel="stylesheet" href="../../assets/css/styles.min.css" />
     <link rel="stylesheet" href="../../assets/css/icons/tabler-icons/tabler-icons.css" />
 </head>
@@ -25,8 +25,8 @@
                                         <i class="ti ti-arrow-left"></i>
                                     </a>
                                 </div>
-                                <a href="./admin-dashboard.php" class="text-nowrap logo-img text-center d-block py-3 w-100">
-                                    <img src="../../assets/images/logos/logo-light.svg" alt="">
+                                 <a href="./admin-dashboard.php" class="text-nowrap logo-img text-center d-block py-3 w-100">
+                                    <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="">
                                 </a>
                                 <p class="text-center">Create your account</p>
                                 <?php if (!empty($_GET['error'])): ?>
@@ -48,10 +48,6 @@
                                         <input type="password" class="form-control" id="password" name="password" minlength="6" required>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-3">Sign Up</button>
-                                    <a href="../api/google_oauth_start.php" class="btn btn-outline-secondary w-100 py-8 fs-4 mb-4">
-                                        <span class="me-2"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style="width:20px;height:20px"></span>
-                                        Sign up with Google
-                                    </a>
                                     <div class="d-flex align-items-center justify-content-center">
                                         <p class="fs-4 mb-0 fw-bold">Already have an Account?</p>
                                         <a class="text-primary fw-bold ms-2" href="./authentication-login.php">Sign In</a>
