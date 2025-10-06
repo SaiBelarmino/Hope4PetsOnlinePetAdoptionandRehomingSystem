@@ -8,6 +8,48 @@
  */
 // existing logic below retained
 require_once __DIR__ . '/../controllers/messages-controller.php';
+
+// Initialize variables
+$authUserId = $_SESSION['user_id'] ?? 0;
+$otherId = isset($_GET['u']) ? (int)$_GET['u'] : null;
+$sendError = '';
+$inbox = [];
+$conversation = [];
+$otherUser = null;
+$pageTitle = 'Messages';
+
+// Handle sending a message
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'send') {
+    $recipientId = (int)($_POST['recipient_id'] ?? 0);
+    $body = trim($_POST['body'] ?? '');
+    
+    if ($authUserId > 0 && $recipientId > 0 && $body !== '') {
+        $result = PublicMessagesController::send($authUserId, $recipientId, $body);
+        if (!$result) {
+            $sendError = 'Failed to send message. Please try again.';
+        } else {
+            // Redirect to avoid form resubmission
+            header("Location: ./messages.php?u={$recipientId}");
+            exit;
+        }
+    } else {
+        $sendError = 'Invalid message or recipient.';
+    }
+}
+
+// Load inbox for current user
+if ($authUserId > 0) {
+    $inbox = PublicMessagesController::inbox($authUserId);
+}
+
+// Load conversation if otherId is set
+if ($otherId && $otherId > 0 && $authUserId > 0) {
+    $conversation = PublicMessagesController::conversation($authUserId, $otherId);
+    $otherUser = PublicMessagesController::userSummary($otherId);
+    
+    // Mark messages as read
+    PublicMessagesController::markAsRead($authUserId, $otherId);
+}
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
