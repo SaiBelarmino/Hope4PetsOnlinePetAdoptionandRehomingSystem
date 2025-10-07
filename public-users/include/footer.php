@@ -12,3 +12,14 @@
 </body>
 
 </html>
+<?php if (empty($pageTitle) || strtolower($pageTitle) !== 'messages') { ?>
+<script>
+	// Hide preloader when page is fully loaded
+	window.addEventListener('load', function() {
+		var preloader = document.getElementById('preloader');
+		if (preloader) {
+			preloader.style.display = 'none';
+		}
+	});
+</script>
+<?php } ?>
