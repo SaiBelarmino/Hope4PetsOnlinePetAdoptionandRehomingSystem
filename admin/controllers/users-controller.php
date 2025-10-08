@@ -168,6 +168,30 @@ class UsersController extends BaseController {
     }
 
     /**
+     * Update user fields.
+     * Accepts subset of columns: full_name, email, gender, location, contact_number, birthday, is_verified
+     */
+    public static function update(int $id, array $data): bool {
+        $allowed = ['full_name'=>'s','email'=>'s','gender'=>'s','location'=>'s','contact_number'=>'s','birthday'=>'s','is_verified'=>'i'];
+        $fields = [];
+        $types = '';
+        $params = [];
+        foreach ($allowed as $col => $typ) {
+            if (array_key_exists($col, $data)) {
+                $fields[] = "{$col} = ?";
+                $types .= $typ;
+                // coerce types
+                if ($typ === 'i') $params[] = (int)$data[$col]; else $params[] = $data[$col];
+            }
+        }
+        if (empty($fields)) return false;
+        $sql = 'UPDATE users SET ' . implode(', ', $fields) . ' WHERE id = ?';
+        $types .= 'i';
+        $params[] = $id;
+        return (bool) self::execute($sql, $types, $params);
+    }
+
+    /**
      * Activate (verify) user.
      */
     public static function activate(int $id): bool {

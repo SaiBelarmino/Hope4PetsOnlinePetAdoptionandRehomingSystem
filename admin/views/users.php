@@ -43,7 +43,7 @@ include __DIR__ . '/../include/sidebar.php'; ?>
   <div class="d-sm-flex align-items-center justify-content-between mb-3">
     <h3 class="mb-0">User Monitoring</h3>
     <div>
-  <a class="btn btn-sm btn-primary" id="btn-export-users" href="?export=csv"><i class="ti ti-download"></i> Export CSV</a>
+  <a class="btn btn-sm btn-outline-primary" id="btn-export-users" href="?export=csv"><i class="ti ti-download"></i> Export CSV</a>
     </div>
   </div>
 
@@ -220,9 +220,9 @@ include __DIR__ . '/../include/sidebar.php'; ?>
               <td class="small text-muted"><?= $created; ?></td>
               <td>
                 <div class="btn-group btn-group-sm" role="group">
-                  <button type="button" class="btn btn-outline-secondary" title="View" data-id="<?= $id; ?>"><i class="ti ti-eye"></i></button>
-                  <button type="button" class="btn btn-outline-secondary" title="Edit" data-id="<?= $id; ?>"><i class="ti ti-edit"></i></button>
-                  <button type="button" class="btn btn-outline-danger" title="Delete" data-id="<?= $id; ?>"><i class="ti ti-trash"></i></button>
+                  <button type="button" class="btn btn-outline-secondary action-btn" data-action="view" title="View" data-id="<?= $id; ?>"><i class="ti ti-eye"></i></button>
+                  <button type="button" class="btn btn-outline-secondary action-btn" data-action="edit" title="Edit" data-id="<?= $id; ?>"><i class="ti ti-edit"></i></button>
+                  <button type="button" class="btn btn-outline-danger action-btn" data-action="delete" title="Delete" data-id="<?= $id; ?>"><i class="ti ti-trash"></i></button>
                 </div>
               </td>
             </tr>
@@ -307,10 +307,117 @@ include __DIR__ . '/../include/sidebar.php'; ?>
     const ids = Array.from(table.querySelectorAll('tbody .row-check:checked')).map(cb=>cb.value);
     if(ids.length===0) return;
     if(!confirm('Apply "'+action+'" to '+ids.length+' selected user(s)?')) return;
-    // Placeholder: send AJAX / form submission
-    console.log('Bulk action', action, ids);
+    // send AJAX to perform bulk action
+    fetch('../controllers/users-action.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({action:'bulk', bulk_action: action, ids: ids.join(',')})
+    }).then(async r=>{
+      const txt = await r.text();
+      try { const res = JSON.parse(txt); if(res.success){ alert('Bulk action applied. Affected: '+(res.affected||0)); location.reload(); } else alert('Failed: '+(res.message||txt)); }
+      catch(e){ alert('Unexpected response: '+txt); }
+    }).catch(e=>alert('Request failed: '+e.message));
   });
 
   update();
+})();
+</script>
+
+<!-- User modal for view/edit -->
+<div class="modal" id="userModal" tabindex="-1" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">User</h5>
+        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="user-form">
+          <input type="hidden" name="id" id="u-id">
+          <div class="mb-2"><label class="form-label small">Full name</label><input class="form-control form-control-sm" name="full_name" id="u-full_name"></div>
+          <div class="mb-2"><label class="form-label small">Email</label><input class="form-control form-control-sm" name="email" id="u-email"></div>
+          <div class="mb-2"><label class="form-label small">Gender</label><input class="form-control form-control-sm" name="gender" id="u-gender"></div>
+          <div class="mb-2"><label class="form-label small">Location</label><input class="form-control form-control-sm" name="location" id="u-location"></div>
+          <div class="mb-2"><label class="form-label small">Contact</label><input class="form-control form-control-sm" name="contact_number" id="u-contact_number"></div>
+          <div class="mb-2"><label class="form-label small">Birthday</label><input type="date" class="form-control form-control-sm" name="birthday" id="u-birthday"></div>
+          <div class="mb-2"><label class="form-label small">Verified</label>
+            <select class="form-select form-select-sm" name="is_verified" id="u-is_verified"><option value="1">Yes</option><option value="0">No</option></select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-sm btn-primary" id="save-user">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Modal helpers (minimal, no dependency on bootstrap JS)
+  function showModal(id){
+    const m = document.getElementById(id); if(!m) return; m.style.display='block';
+  }
+  function hideModal(id){
+    const m = document.getElementById(id); if(!m) return; m.style.display='none';
+  }
+
+  const table = document.getElementById('users-table');
+  if(!table) return;
+  table.addEventListener('click', e=>{
+    const btn = e.target.closest('.action-btn');
+    if(!btn) return;
+    const action = btn.getAttribute('data-action');
+    const id = btn.getAttribute('data-id');
+    if(!action || !id) return;
+    if(action === 'view' || action === 'edit'){
+        fetch('../controllers/users-action.php?action=get&id='+encodeURIComponent(id), {credentials: 'same-origin'})
+          .then(async r=>{
+            const txt = await r.text();
+            try {
+              const res = JSON.parse(txt);
+              if(!res.success){ alert(res.message||'Failed to load'); return; }
+              const d = res.data;
+              document.getElementById('u-id').value = d.id;
+              document.getElementById('u-full_name').value = d.full_name || '';
+              document.getElementById('u-email').value = d.email || '';
+              document.getElementById('u-gender').value = d.gender || '';
+              document.getElementById('u-location').value = d.location || '';
+              document.getElementById('u-contact_number').value = d.contact_number || '';
+              document.getElementById('u-birthday').value = d.birthday || '';
+              document.getElementById('u-is_verified').value = d.is_verified ? '1' : '0';
+              showModal('userModal');
+            } catch(e) {
+              alert('Unexpected response: '+txt);
+            }
+          }).catch(e=>alert('Request failed: '+e.message));
+    } else if(action === 'delete'){
+      if(!confirm('Delete user #'+id+'?')) return;
+      fetch('../controllers/users-action.php', {
+        method:'POST', credentials: 'same-origin', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({action:'delete', id: id})
+      }).then(async r=>{
+        const txt = await r.text(); try { const res = JSON.parse(txt); if(res.success){ alert('Deleted'); location.reload(); } else alert('Failed: '+(res.message||txt)); } catch(e){ alert('Unexpected response: '+txt); }
+      }).catch(e=>alert('Request failed: '+e.message));
+    }
+  });
+
+  document.getElementById('save-user')?.addEventListener('click', ()=>{
+    const form = document.getElementById('user-form');
+    const data = new FormData(form);
+    data.append('action','update');
+    fetch('../controllers/users-action.php', {
+      method:'POST', credentials: 'same-origin', body: data
+    }).then(async r=>{
+      const txt = await r.text(); try { const res = JSON.parse(txt); if(res.success){ alert('Saved'); hideModal('userModal'); location.reload(); } else alert('Failed to save: '+(res.message||txt)); } catch(e){ alert('Unexpected response: '+txt); }
+    }).catch(e=>alert('Request failed: '+e.message));
+  });
+
+  // Close modal when clicking close buttons
+  document.querySelectorAll('[data-dismiss="modal"]').forEach(btn=>btn.addEventListener('click', ()=>{
+    hideModal('userModal');
+  }));
 })();
 </script>

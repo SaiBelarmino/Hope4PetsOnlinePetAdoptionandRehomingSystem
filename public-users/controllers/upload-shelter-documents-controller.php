@@ -67,7 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Insert into DB
-    $mysqli = BaseController::db();
+    $controller = new UploadShelterDocumentsController();
+    $mysqli = $controller->getDb(); // Assuming getDb() is a public/protected method in BaseController
+
     $stmt = $mysqli->prepare("INSERT INTO shelter_documents (shelter_id, doc_type, file_path, status, uploaded_at) VALUES (?, ?, ?, 'pending', NOW())");
     if (!$stmt) {
         SessionManager::setFlash('error', 'Database error.');
@@ -89,7 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Class for possible future use
 class UploadShelterDocumentsController extends BaseController {
-    // ...existing code...
+    // Add getDb() method to return the database connection
+    public function getDb() {
+        // Assuming BaseController has a protected $db property
+        return $this->db;
+    }
 }
 
 ?>
