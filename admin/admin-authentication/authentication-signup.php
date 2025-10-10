@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 
@@ -18,39 +17,37 @@
             <div class="d-flex align-items-center justify-content-center w-100">
                 <div class="row justify-content-center w-100">
                     <div class="col-md-8 col-lg-6 col-xxl-3">
-                        <div class="card mb-0">
-                            <div class="card-body">
-                                <div class="mb-2">
-                                    <a href="../../index.php" class="text-decoration-none" aria-label="Back to Home" title="Back to Home">
-                                        <i class="ti ti-arrow-left"></i>
-                                    </a>
-                                </div>
-                                 <a href="./admin-dashboard.php" class="text-nowrap logo-img text-center d-block py-3 w-100">
-                                    <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="">
-                                </a>
-                                <p class="text-center">Create your account</p>
-                                <?php if (!empty($_GET['error'])): ?>
-                                  <div class="alert alert-danger" role="alert">
-                                    <?php echo htmlspecialchars($_GET['error']); ?>
-                                  </div>
-                                <?php endif; ?>
-                                <form method="post" action="../admin-authetication-controller/authentication-signup-controller.php">
+                        <div class="card mb-0 shadow-lg border-0">
+                            <div class="card-body py-4">
+                                <h4 class="text-center mb-2">Admin Portal</h4>
+                                                                <?php if (!empty($_GET['error'])): ?>
+                                                                    <div class="alert alert-danger" role="alert">
+                                                                        <?php echo htmlspecialchars($_GET['error']); ?>
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                                <?php if (!empty($_GET['success'])): ?>
+                                                                    <div class="alert alert-success" role="alert">
+                                                                        <?php echo htmlspecialchars($_GET['success']); ?>
+                                                                    </div>
+                                                                <?php endif; ?>
+                                <form method="post" action="../admin-authetication-controller/authentication-signup-controller.php" aria-label="Admin create account form">
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username</label>
-                                        <input type="text" class="form-control" id="username" name="username" required>
+                                        <input type="text" class="form-control form-control-lg" id="username" name="username" required>
                                     </div>
                                     <div class="mb-3">
                                         <label for="email" class="form-label">Email Address</label>
-                                        <input type="email" class="form-control" id="email" name="email" required>
+                                        <input type="email" class="form-control form-control-lg" id="email" name="email" required>
                                     </div>
                                     <div class="mb-4">
                                         <label for="password" class="form-label">Password</label>
-                                        <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+                                        <input type="password" class="form-control form-control-lg" id="password" name="password" minlength="6" required>
                                     </div>
-                                    <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-3">Sign Up</button>
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <p class="fs-4 mb-0 fw-bold">Already have an Account?</p>
-                                        <a class="text-primary fw-bold ms-2" href="./authentication-login.php">Sign In</a>
+                                    <button type="submit" class="btn btn-danger w-100 py-3 fs-5 mb-3">Sign Up</button>
+                                    <div class="text-center">
+                                        <a href="./authentication-login.php" class="btn btn-outline-primary w-100 py-3 fs-5">
+                                            Already have an account? Sign In
+                                        </a>
                                     </div>
                                 </form>
                             </div>

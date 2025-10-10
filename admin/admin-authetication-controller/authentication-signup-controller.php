@@ -102,22 +102,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ], $registrationErrors);
 
         if ($success) {
-            // Auto-login after registration (use normalized email)
-            require_once __DIR__ . '/authentication-login-controller.php';
-            // Auto-login by email; login controller will accept email or username
-            $admin = AdminAuthenticationLoginController::authenticate(strtolower($email), $password);
-
-            if ($admin) {
-                SessionManager::login($admin, true);
-                SessionManager::setFlash('success', 'Registration successful! Welcome to the admin panel!');
-                header('Location: ../views/index.php');
-                exit;
-            } else {
-                // Account created but auto-login failed; send user to login page with a notice
-                SessionManager::setFlash('warning', 'Account created. Please sign in to continue.');
-                header('Location: ../admin-authentication/authentication-login.php');
-                exit;
+            // Account created: do NOT auto-login. Redirect to login page with success message.
+            // Use a URL param so the signup page can display it, and also set a flash for consistency.
+            if (class_exists('SessionManager')) {
+                SessionManager::setFlash('success', 'Registered successfully. Please sign in to continue.');
             }
+            $params = http_build_query(['success' => 'Registered successfully. Please sign in to continue.']);
+            header('Location: ../admin-authentication/authentication-signup.php?' . $params);
+            exit;
         } else {
             foreach ($registrationErrors as $error) {
                 $errors[] = $error;
