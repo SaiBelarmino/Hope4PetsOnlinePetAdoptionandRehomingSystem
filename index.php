@@ -15,6 +15,7 @@
     <!-- Landing overrides -->
     <link rel="stylesheet" href="assets/css/landing.css" />
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top reveal reveal-down reveal-slow is-visible" data-reveal-dur="800ms">
