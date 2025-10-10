@@ -41,11 +41,14 @@ $posts = IndexController::getRecentPosts(20);
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-start">
-                        <img src="<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>" class="rounded-circle me-3 object-fit-cover" width="44"
-                            height="44" alt="<?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>'s avatar" style="object-fit:cover;" />
+                        <img src="<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>"
+                            class="rounded-circle me-3 object-fit-cover" width="44" height="44"
+                            alt="<?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>'s avatar"
+                            style="object-fit:cover;" />
                         <a href="./create_post.php" class="form-control text-start text-muted text-decoration-none"
                             style="text-decoration:none;">
-                            <i class="ti ti-edit me-2" aria-hidden="true"></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
+                            <i class="ti ti-edit me-2"
+                                aria-hidden="true"></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
                         </a>
                     </div>
                     <div class="d-flex gap-2 mt-3 composer-actions btn-stack-sm">
@@ -59,17 +62,17 @@ $posts = IndexController::getRecentPosts(20);
 
             <!-- Feed items from database -->
             <?php if (empty($posts)): ?>
-                <div class="card mb-3">
-                    <div class="card-body text-center py-5">
-                        <i class="ti ti-mood-empty" style="font-size: 48px; color: #ccc;"></i>
-                        <p class="text-muted mt-3">No posts yet. Be the first to share something!</p>
-                        <a href="./create_post.php" class="btn btn-primary mt-2">
-                            <i class="ti ti-plus me-1"></i> Create Post
-                        </a>
-                    </div>
+            <div class="card mb-3">
+                <div class="card-body text-center py-5">
+                    <i class="ti ti-mood-empty" style="font-size: 48px; color: #ccc;"></i>
+                    <p class="text-muted mt-3">No posts yet. Be the first to share something!</p>
+                    <a href="./create_post.php" class="btn btn-primary mt-2">
+                        <i class="ti ti-plus me-1"></i> Create Post
+                    </a>
                 </div>
+            </div>
             <?php else: ?>
-                <?php foreach ($posts as $post): 
+            <?php foreach ($posts as $post): 
                     // Get post photos
                     $photos = IndexController::getPostPhotos($post['id']);
                     
@@ -95,81 +98,90 @@ $posts = IndexController::getRecentPosts(20);
                     // Get profile photo or default using helper
                     $profilePhoto = resolve_profile_photo($post['profile_photo'] ?? null);
                 ?>
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
-                                <img src="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>" 
-                                     class="rounded-circle me-2 object-fit-cover" 
-                                     width="36" height="36" 
-                                     style="object-fit: cover; aspect-ratio: 1/1; min-width:36px; min-height:36px; max-width:36px; max-height:36px;" 
-                                     alt="Profile picture" 
-                                     onerror="this.src='../../assets/images/profile/user-1.jpg'" />
+
+        <!-- Single post card -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
+                            <img src="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>"
+                                class="rounded-circle me-2 object-fit-cover" width="36" height="36"
+                                style="object-fit: cover; aspect-ratio: 1/1; min-width:36px; min-height:36px; max-width:36px; max-height:36px;"
+                                alt="Profile picture" onerror="this.src='../../assets/images/profile/user-1.jpg'" />
+                        </a>
+                        <div>
+                            <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>"
+                                class="fw-bold text-decoration-none text-dark">
+                                <?php echo htmlspecialchars($post['full_name']); ?>
                             </a>
-                            <div>
-                                <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>" class="fw-bold text-decoration-none text-dark">
-                                    <?php echo htmlspecialchars($post['full_name']); ?>
-                                </a>
-                                <div class="text-muted small"><?php echo $timeAgo; ?></div>
-                            </div>
+                            <div class="text-muted small"><?php echo $timeAgo; ?></div>
                         </div>
-                        
-                        <?php if (!empty($post['content'])): ?>
-                            <?php if (count($photos) == 1): ?>
-                          <img src="../../<?php echo htmlspecialchars($photos[0]['photo_path']); ?>" 
-                              class="rounded mb-3 object-fit-cover w-100 d-block mx-auto" 
-                              style="max-width:400px; max-height:400px; width:100%; height:400px; object-fit:cover;" 
-                              alt="Post photo"
-                              onerror="this.style.display='none'" />
-                            <?php else: ?>
-                                <div class="row g-2 mb-3">
-                                    <?php foreach (array_slice($photos, 0, 4) as $index => $photo): ?>
-                                        <div class="col-6 position-relative">
-                                            <a href="../../<?php echo htmlspecialchars($photo['photo_path']); ?>" target="_blank" rel="noopener">
-                                                <img src="../../<?php echo htmlspecialchars($photo['photo_path']); ?>" 
-                                                     class="rounded object-fit-cover" 
-                                                     style="width:120px; height:120px; object-fit:cover;" 
-                                                     alt="Post photo"
-                                                     onerror="this.style.display='none'" />
-                                            </a>
-                                            <?php if ($index == 3 && count($photos) > 4): ?>
-                                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 rounded">
-                                                    <span class="text-white fs-4">+<?php echo count($photos) - 4; ?></span>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
-                        <?php endif; ?>
-                        
-                        <div class="d-flex justify-content-between post-actions-sm mt-2">
-                            <div class="action-group d-flex flex-wrap">
-                                <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border me-1 mb-1">
-                                    <i class="ti ti-thumb-up"></i> 
-                                    <span class="d-none d-sm-inline">Like</span>
-                                    <?php if ($post['reaction_count'] > 0): ?>
-                                        <span class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span>
-                                    <?php endif; ?>
-                                </a>
-                                <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border me-1 mb-1">
-                                    <i class="ti ti-message-circle"></i> 
-                                    <span class="d-none d-sm-inline">Comment</span>
-                                    <?php if ($post['comment_count'] > 0): ?>
-                                        <span class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span>
-                                    <?php endif; ?>
-                                </a>
-                                <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border mb-1">
-                                    <i class="ti ti-share"></i>
-                                    <span class="d-none d-sm-inline">Share</span>
-                                </a>
+                    </div>
+
+                    <?php if (!empty($post['content'])): ?>
+                    <?php if (count($photos) == 1): ?>
+                    <img src="../../<?php echo htmlspecialchars($photos[0]['photo_path']); ?>"
+                        class="rounded mb-3 object-fit-cover w-100 d-block mx-auto"
+                        style="max-width:400px; max-height:400px; width:100%; height:400px; object-fit:cover;"
+                        alt="Post photo" onerror="this.style.display='none'" />
+                    <?php else: ?>
+                    <div class="row g-2 mb-3">
+                        <?php foreach (array_slice($photos, 0, 4) as $index => $photo): ?>
+                        <div class="col-6 position-relative">
+                            <a href="../../<?php echo htmlspecialchars($photo['photo_path']); ?>" target="_blank"
+                                rel="noopener">
+                                <img src="../../<?php echo htmlspecialchars($photo['photo_path']); ?>"
+                                    class="rounded object-fit-cover"
+                                    style="width:120px; height:120px; object-fit:cover;" alt="Post photo"
+                                    onerror="this.style.display='none'" />
+                            </a>
+                            <?php if ($index == 3 && count($photos) > 4): ?>
+                            <div
+                                class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 rounded">
+                                <span class="text-white fs-4">+<?php echo count($photos) - 4; ?></span>
                             </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                    <?php endif; ?>
+
+                    <div class="d-flex justify-content-between post-actions-sm mt-2">
+                        <div class="action-group d-flex flex-wrap">
+                            <a href="./post_view.php?id=<?php echo $post['id']; ?>"
+                                class="btn btn-light border me-1 mb-1">
+                                <i class="ti ti-thumb-up"></i>
+                                <span class="d-none d-sm-inline">Like</span>
+                                <?php if ($post['reaction_count'] > 0): ?>
+                                <span
+                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span>
+                                <?php endif; ?>
+                            </a>
+                            <a href="./post_view.php?id=<?php echo $post['id']; ?>"
+                                class="btn btn-light border me-1 mb-1">
+                                <i class="ti ti-message-circle"></i>
+                                <span class="d-none d-sm-inline">Comment</span>
+                                <?php if ($post['comment_count'] > 0): ?>
+                                <span
+                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span>
+                                <?php endif; ?>
+                            </a>
+                            <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border mb-1">
+                                <i class="ti ti-share"></i>
+                                <span class="d-none d-sm-inline">Share</span>
+                            </a>
                         </div>
                     </div>
                 </div>
-                <?php endforeach; ?>
+            </div>
+        <!-- End single post card -->
+
+        
+            <?php endforeach; ?>
             <?php endif; ?>
         </div>
+    
 
         <!-- Right sidebar: suggestions -->
         <div class="col-12 col-lg-3">
