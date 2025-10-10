@@ -216,3 +216,112 @@ class SessionManager {
         return $_SESSION[$key] ?? $default;
     }
 }
+
+
+
+/**
+ * Admin SessionManager Extension
+ * Adds admin session management and access control.
+ */
+class AdminSessionManager extends SessionManager {
+
+    /**
+     * Login admin and store session data
+     * @param array $admin Admin data from database
+     */
+    public static function loginAdmin(array $admin): void {
+        self::init();
+        session_regenerate_id(true);
+        $_SESSION['admin_id'] = $admin['id'];
+        $_SESSION['admin_name'] = $admin['name'];
+        $_SESSION['admin_email'] = $admin['email'];
+        $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_login_time'] = time();
+        // Optionally store admin role
+        $_SESSION['admin_role'] = $admin['role'] ?? 'admin';
+        // Store admin array for easier access and isolation
+        $_SESSION['admin'] = [
+            'id' => $admin['id'],
+            'name' => $admin['name'] ?? '',
+            'email' => $admin['email'] ?? '',
+            'role' => $admin['role'] ?? 'admin'
+        ];
+    }
+
+    /**
+     * Check if admin is logged in
+     */
+    public static function isAdminLoggedIn(): bool {
+        self::init();
+        return !empty($_SESSION['admin_logged_in']) && !empty($_SESSION['admin_id']);
+    }
+
+    /**
+     * Require admin to be logged in (redirect if not)
+     */
+    public static function requireAdminLogin(string $redirect = null): void {
+        if (!self::isAdminLoggedIn()) {
+            $redirectUrl = $redirect ?? ($_SERVER['REQUEST_URI'] ?? '/');
+            header('Location: ../admin-authentication/login.php?redirect=' . urlencode($redirectUrl));
+            exit;
+        }
+    }
+
+    /**
+     * Get current admin ID
+     */
+    public static function getAdminId(): ?int {
+        self::init();
+        return $_SESSION['admin_id'] ?? null;
+    }
+
+    /**
+     * Get current admin data
+     */
+    public static function getAdmin(): array {
+        self::init();
+        return [
+            'id' => $_SESSION['admin_id'] ?? ($_SESSION['admin']['id'] ?? null),
+            'name' => $_SESSION['admin_name'] ?? ($_SESSION['admin']['name'] ?? ''),
+            'email' => $_SESSION['admin_email'] ?? ($_SESSION['admin']['email'] ?? ''),
+            'role' => $_SESSION['admin_role'] ?? ($_SESSION['admin']['role'] ?? 'admin'),
+        ];
+    }
+
+    /**
+     * Logout admin and destroy session
+     */
+    public static function logoutAdmin(): void {
+        self::init();
+        // Unset admin-related session keys while keeping user session intact
+        $keys = ['admin_id','admin_name','admin_email','admin_logged_in','admin_login_time','admin_role','admin'];
+        foreach ($keys as $k) {
+            if (isset($_SESSION[$k])) unset($_SESSION[$k]);
+        }
+        // Regenerate session id after logout to prevent fixation
+        session_regenerate_id(true);
+    }
+
+    /**
+     * Check if current admin has a specific role
+     */
+    public static function hasAdminRole(string $role): bool {
+        self::init();
+        $current = $_SESSION['admin_role'] ?? ($_SESSION['admin']['role'] ?? null);
+        return $current === $role;
+    }
+
+    /**
+     * Update admin session data
+     */
+    public static function updateAdmin(array $data): void {
+        self::init();
+        if (!self::isAdminLoggedIn()) return;
+        // Merge into admin array
+        $_SESSION['admin'] = array_merge($_SESSION['admin'] ?? [], $data);
+        if (isset($data['id'])) $_SESSION['admin_id'] = $data['id'];
+        if (isset($data['name'])) $_SESSION['admin_name'] = $data['name'];
+        if (isset($data['email'])) $_SESSION['admin_email'] = $data['email'];
+        if (isset($data['role'])) $_SESSION['admin_role'] = $data['role'];
+    }
+}

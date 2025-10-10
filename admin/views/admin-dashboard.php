@@ -1,4 +1,9 @@
-
+<?php
+// Protect this admin view from direct URL access
+require_once __DIR__ . '/../../config/SessionManager.php';
+SessionManager::init();
+AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
+?>
 <?php 
     // Include sidebar (contains HTML skeleton and left sidebar)
     include __DIR__ . '/../include/sidebar.php';

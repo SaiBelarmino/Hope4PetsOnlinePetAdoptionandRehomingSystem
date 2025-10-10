@@ -1,4 +1,10 @@
 <?php
+// Protect this admin view from direct URL access
+require_once __DIR__ . '/../../config/SessionManager.php';
+SessionManager::init();
+AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
+
+//
 // Bootstrap: auto load data if not pre-set by a controller script.
 if (!isset($users) || !isset($stats)) {
   $controllerPath = __DIR__ . '/../controllers/users-controller.php';

@@ -62,10 +62,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $admin = AdminAuthenticationLoginController::authenticate($identity, $password);
 
         if ($admin) {
-            // Log the user in and redirect to admin dashboard.
-            SessionManager::login($admin, true);
+            // Log the admin in and redirect to admin dashboard or requested page.
+            AdminSessionManager::loginAdmin($admin);
             SessionManager::setFlash('success', 'Login successful! Welcome to the admin panel!');
-            header('Location: ../views/admin-dashboard.php');
+            // Respect a redirect parameter (POST or GET)
+            $redirect = $_POST['redirect'] ?? $_GET['redirect'] ?? null;
+            if ($redirect) {
+                header('Location: ' . $redirect);
+            } else {
+                header('Location: ../views/admin-dashboard.php');
+            }
             exit;
         } else {
             $errors[] = 'Invalid credentials.';
