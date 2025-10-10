@@ -134,18 +134,6 @@ $pageTitle = 'Browse Pets';
         </nav>
       <?php endif; ?>
     </div>
-    <!-- Right Sidebar -->
-    <div class="col-12 col-lg-3">
-      <div class="card mb-3">
-        <div class="card-body">
-          <h6 class="mb-2">Trending Tags</h6>
-          <div class="d-flex flex-wrap gap-2">
-            <a href="./community.php" class="btn btn-sm btn-light border">#adoptDontShop</a>
-            <a href="./community.php" class="btn btn-sm btn-light border">#rescue</a>
-            <a href="./community.php" class="btn btn-sm btn-light border">#pets</a>
-          </div>
-        </div>
-      </div>
       <div class="card">
         <div class="card-body">
           <h6 class="text-muted mb-2">Tips</h6>

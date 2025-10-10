@@ -176,54 +176,7 @@ $posts = IndexController::getRecentPosts(20);
                 </div>
             </div>
         <!-- End single post card -->
-
         
             <?php endforeach; ?>
             <?php endif; ?>
-        </div>
-    
-
-        <!-- Right sidebar: suggestions -->
-        <div class="col-12 col-lg-3">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0">Suggested Shelters</h6>
-                        <a href="./shelters.php" class="small">See all</a>
-                    </div>
-                    <div class="list-group list-group-flush">
-                        <a class="list-group-item px-0 d-flex align-items-center" href="./shelter_view.php?id=1">
-                            <img src="../../assets/images/profile/user-4.jpg" class="rounded-circle me-2" width="28"
-                                height="28" alt="" />
-                            <span>Paws Rescue PH</span>
-                        </a>
-                        <a class="list-group-item px-0 d-flex align-items-center" href="./shelter_view.php?id=2">
-                            <img src="../../assets/images/profile/user-5.jpg" class="rounded-circle me-2" width="28"
-                                height="28" alt="" />
-                            <span>Cat Haven QC</span>
-                        </a>
-                        <a class="list-group-item px-0 d-flex align-items-center" href="./shelter_view.php?id=3">
-                            <img src="../../assets/images/profile/user-6.jpg" class="rounded-circle me-2" width="28"
-                                height="28" alt="" />
-                            <span>Happy Tails</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="mb-2">Trending</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="./community.php" class="btn btn-sm btn-light border">#adoptDontShop</a>
-                        <a href="./community.php" class="btn btn-sm btn-light border">#rescue</a>
-                        <a href="./community.php" class="btn btn-sm btn-light border">#catsofph</a>
-                        <a href="./community.php" class="btn btn-sm btn-light border">#dogsofph</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <?php include __DIR__ . '/../include/footer.php'; ?>
