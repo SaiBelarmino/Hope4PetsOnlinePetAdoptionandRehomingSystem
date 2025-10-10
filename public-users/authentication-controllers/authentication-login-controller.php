@@ -62,29 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
-?>
 
-		if (!$user || !password_verify($password, $user['password_hash'])) {
-			self::redirect(['error' => 'Invalid credentials.']);
-		}
+// Remove duplicate/stray code below this line
 
-		session_regenerate_id(true);
-		$_SESSION['user_id'] = (int)$user['id'];
-		$_SESSION['user_name'] = $user['full_name'];
-		$_SESSION['user_email'] = $user['email'];
-		$_SESSION['user_verified'] = (int)$user['is_verified'];
-
-		header('Location: ../views/index.php');
-		exit();
-	}
-
-	private static function redirect(array $params): void {
-		$base = '../user-authentication/authentication-login.php';
-		$query = http_build_query($params);
-		header('Location: ' . $base . ($query ? ('?' . $query) : ''));
-		exit();
-	}
-}
-
-PublicLoginController::handle();
 

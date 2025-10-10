@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - Hope4Pets</title>
+    <title>Admin Portal</title>
     <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/logo-icon.png" />
     <link rel="stylesheet" href="../../assets/css/styles.min.css" />
     <link rel="stylesheet" href="../../assets/css/icons/tabler-icons/tabler-icons.css" />
@@ -34,10 +34,10 @@
                                     <?php echo htmlspecialchars($_GET['error']); ?>
                                   </div>
                                 <?php endif; ?>
-                                <form method="post" action="../api/login.php">
+                                <form method="post" action="../admin-authetication-controller/authentication-login-controller.php">
                                     <div class="mb-3">
-                                        <label for="email" class="form-label">Email</label>
-                                        <input type="email" class="form-control" id="email" name="email" required autofocus>
+                                        <label for="email" class="form-label">Email or Username</label>
+                                        <input type="text" class="form-control" id="email" name="email" required autofocus>
                                     </div>
                                     <div class="mb-4">
                                         <label for="password" class="form-label">Password</label>
