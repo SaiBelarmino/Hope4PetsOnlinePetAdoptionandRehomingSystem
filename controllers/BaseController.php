@@ -21,21 +21,27 @@ abstract class BaseController {
 
     protected static function fetchAll(string $sql, string $types = '', array $params = []): array {
         $mysqli = self::db();
-        if ($types !== '' && !empty($params)) {
-            $stmt = $mysqli->prepare($sql);
-            if (!$stmt) return [];
-            $stmt->bind_param($types, ...$params);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $rows = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
-            $stmt->close();
+        try {
+            if ($types !== '' && !empty($params)) {
+                $stmt = $mysqli->prepare($sql);
+                if (!$stmt) return [];
+                $stmt->bind_param($types, ...$params);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $rows = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+                $stmt->close();
+                return $rows;
+            }
+            $result = $mysqli->query($sql);
+            if (!$result) return [];
+            $rows = $result->fetch_all(MYSQLI_ASSOC);
+            $result->free();
             return $rows;
+        } catch (mysqli_sql_exception $e) {
+            // Log the SQL error for debugging but do not throw to the user.
+            error_log('DB error in fetchAll: ' . $e->getMessage() . ' -- SQL: ' . $sql);
+            return [];
         }
-        $result = $mysqli->query($sql);
-        if (!$result) return [];
-        $rows = $result->fetch_all(MYSQLI_ASSOC);
-        $result->free();
-        return $rows;
     }
 
     protected static function fetchOne(string $sql, string $types = '', array $params = []): ?array {
