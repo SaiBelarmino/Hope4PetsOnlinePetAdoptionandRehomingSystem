@@ -26,40 +26,7 @@ require_once __DIR__ . '/profile_helpers.php';
     <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/logo-icon.png" />
     <link rel="stylesheet" href="../../assets/css/styles.css" />
 
-    <!-- Preloader CSS -->
-    <style>
-    #preloader {
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 100vw;
-        height: 100vh;
-        background: #fff;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .loader {
-        border: 8px solid #f3f3f3;
-        border-top: 8px solid #3498db;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-    </style>
+    <!-- preloader removed -->
 </head>
 
 <?php
@@ -75,9 +42,4 @@ if (!empty($pageTitle)) {
 
 <body<?php echo $bodyClass; ?>>
 
-    <?php if (empty($pageTitle) || strtolower($pageTitle) !== 'messages') { ?>
-    <!-- Preloader Markup -->
-    <div id="preloader">
-        <div class="loader"></div>
-    </div>
-    <?php } ?>
+    <!-- preloader removed -->
