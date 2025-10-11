@@ -32,13 +32,22 @@
 
 	// Ensure preloader hidden on full page load (non-SPA navigation)
 	window.addEventListener('load', function(){ hidePreloader(0); });
+	// Fallback: hide on DOMContentLoaded in case 'load' never fires on some devices
+	document.addEventListener('DOMContentLoaded', function(){ hidePreloader(300); });
+
+	// matches helper for older browsers
+	function matches(el, selector){
+		if (!el) return false;
+		var m = el.matches || el.webkitMatchesSelector || el.msMatchesSelector || el.mozMatchesSelector;
+		return m ? m.call(el, selector) : false;
+	}
 
 	// Delegate clicks: only show for same-origin navigations that open in same tab
 	document.body.addEventListener('click', function(e){
 		var el = e.target;
 		while(el && el !== document.body){
-			if (el.matches && el.matches('a[href]')){
-				if (el.classList.contains('no-preloader') || el.dataset.preloader === 'false') return;
+			if (matches(el, 'a[href]')){
+				try { if (el.classList && (el.classList.contains('no-preloader') || el.dataset.preloader === 'false')) return; } catch(e) { }
 				var href = el.getAttribute('href');
 				if (!href) return;
 				if (href.indexOf('#') === 0 || href.indexOf('javascript:') === 0) return;
@@ -72,18 +81,40 @@
 		})(window.jQuery);
 	}
 
-	// Fetch wrapper with counter and finally handling (modern browsers)
+	// Fetch wrapper with compatibility-safe handling (avoid Promise.finally)
 	if (window.fetch){
-		var _fetch = window.fetch;
-		var fetchCounter = 0;
-		window.fetch = function(){
-			fetchCounter++;
-			showPreloader();
-			return _fetch.apply(this, arguments).finally(function(){
-				fetchCounter--;
-				if (fetchCounter <= 0) { fetchCounter = 0; hidePreloader(150); }
-			});
-		};
+		try {
+			var _fetch = window.fetch;
+			var fetchCounter = 0;
+			window.fetch = function(){
+				fetchCounter++;
+				try{ showPreloader(); }catch(e){}
+				var p = _fetch.apply(this, arguments);
+				try {
+					if (p && typeof p.then === 'function'){
+						return p.then(function(res){
+							try{ fetchCounter--; }catch(e){}
+							if (fetchCounter <= 0){ fetchCounter = 0; try{ hidePreloader(150); }catch(e){} }
+							return res;
+						}, function(err){
+							try{ fetchCounter--; }catch(e){}
+							if (fetchCounter <= 0){ fetchCounter = 0; try{ hidePreloader(150); }catch(e){} }
+							return Promise.reject(err);
+						});
+					} else {
+						// Non-promise fetch result (very unlikely), hide quickly
+						try{ fetchCounter--; hidePreloader(150); }catch(e){}
+						return p;
+					}
+				} catch(innerErr){
+					// If something unexpected happens, ensure counter is decremented and preloader hidden
+					try{ fetchCounter = Math.max(0, fetchCounter-1); hidePreloader(150); }catch(e){}
+					return p;
+				}
+			};
+		} catch(e){
+			// If wrapping fails, don't break site — leave native fetch
+		}
 	}
 
 	// Safety fallback: ensure preloader doesn't stay visible forever
