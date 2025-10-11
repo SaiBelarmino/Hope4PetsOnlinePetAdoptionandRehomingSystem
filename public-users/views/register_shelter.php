@@ -9,6 +9,12 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
+<?php
+// Get flash message (if any) and session info via SessionManager for consistent checks
+require_once __DIR__ . '/../../config/SessionManager.php';
+$flash = SessionManager::getFlash();
+$authHasShelter = SessionManager::hasShelter();
+?>
 <div class="pu-scroll-wrapper"><div class="container-fluid py-3">
   <div class="row g-3">
     <!-- Left Sidebar -->
@@ -29,29 +35,48 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
       </div>
       <div class="card">
         <div class="card-body">
-          <form action="../controllers/register-shelter-controller.php" method="post" class="row g-3">
-            <div class="col-12 col-md-6">
-              <label class="form-label">Shelter Name</label>
-              <input type="text" name="shelter_name" class="form-control" required>
+          <?php if (!empty($flash['message'])): ?>
+            <div class="alert alert-<?php echo htmlspecialchars($flash['type'] ?? 'info'); ?> alert-dismissible fade show" id="autoHideAlert">
+              <?php echo htmlspecialchars($flash['message']); ?>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div class="col-12 col-md-6">
-              <label class="form-label">Contact Number</label>
-              <input type="text" name="contact_number" class="form-control" required>
+            <script>
+              // Auto-hide after 4s
+              setTimeout(function(){ var a = document.getElementById('autoHideAlert'); if(a){ a.classList.remove('show'); a.classList.add('hide'); } }, 4000);
+            </script>
+          <?php endif; ?>
+
+          <?php if ($authHasShelter): ?>
+            <div class="alert alert-info">You already have a registered shelter. You can manage it from your profile or upload verification documents.</div>
+            <div class="d-flex justify-content-end">
+              <a href="./upload_shelter_documents.php" class="btn btn-secondary btn-sm me-2">Upload Documents</a>
+              <a href="./profile.php" class="btn btn-outline-secondary btn-sm">Go to Profile</a>
             </div>
-            <div class="col-12">
-              <label class="form-label">Address</label>
-              <input type="text" name="address" class="form-control" required>
-            </div>
-            <div class="col-12">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="agree" required>
-                <label class="form-check-label" for="agree">I confirm the information provided is accurate.</label>
+          <?php else: ?>
+            <form action="../controllers/register-shelter-controller.php" method="post" class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label">Shelter Name</label>
+                <input type="text" name="shelter_name" class="form-control" required maxlength="255" placeholder="e.g. Happy Paws Shelter">
               </div>
-            </div>
-            <div class="col-12 d-flex justify-content-end">
-              <button class="btn btn-primary"><i class="ti ti-building-community"></i> Submit</button>
-            </div>
-          </form>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Contact Number</label>
+                <input type="text" name="contact_number" class="form-control" required maxlength="50" placeholder="e.g. +63 912 345 6789">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Address</label>
+                <input type="text" name="address" class="form-control" required maxlength="255" placeholder="Street, City, Province">
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="agree" required>
+                  <label class="form-check-label" for="agree">I confirm the information provided is accurate.</label>
+                </div>
+              </div>
+              <div class="col-12 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary"><i class="ti ti-building-community"></i> Register Shelter</button>
+              </div>
+            </form>
+          <?php endif; ?>
         </div>
       </div>
     </div>
