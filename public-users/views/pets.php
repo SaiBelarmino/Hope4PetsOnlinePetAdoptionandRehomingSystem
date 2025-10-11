@@ -33,8 +33,6 @@ $pageTitle = 'Browse Pets';
     <div class="col-12 col-lg-6">
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <h3 class="mb-0"><?php echo htmlspecialchars($pageTitle); ?></h3>
-        <a href="./create_post.php?type=pet" class="btn btn-sm btn-primary"><i class="ti ti-plus"></i> Add Pet</a>
-      </div>
       <div class="card mb-3">
         <div class="card-body">
           <form method="get" class="row g-2 align-items-end">
