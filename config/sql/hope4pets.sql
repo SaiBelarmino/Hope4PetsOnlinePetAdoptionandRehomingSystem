@@ -63,7 +63,9 @@ CREATE TABLE shelters (
   shelter_name VARCHAR(255) NOT NULL,
   address VARCHAR(255),
   contact_number VARCHAR(50),
-  verified_badge TINYINT(1) DEFAULT 0,
+  is_verified TINYINT(1) NOT NULL DEFAULT 0,
+  verified_at TIMESTAMP NULL DEFAULT NULL,
+  verified_by BIGINT UNSIGNED NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_shelters_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

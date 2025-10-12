@@ -145,6 +145,16 @@ if ($hasShelter) {
                                             renderSelectedFiles();
                                         }
 
+                                        function resetSelectionControls() {
+                                            // reset doc_type select and file input so user can pick next file type easily
+                                            const sel = document.querySelector('select[name="doc_type"]');
+                                            const input = document.getElementById('documentInput');
+                                            if (sel) sel.value = '';
+                                            if (input) {
+                                                try { input.value = null; } catch(e) { /* ignore */ }
+                                            }
+                                        }
+
                                         function renderSelectedFiles() {
                                             const preview = document.getElementById('selectedFilesPreview');
                                             const info = document.getElementById('selectedFilesInfo');
@@ -273,6 +283,7 @@ if ($hasShelter) {
                                                     const docType = (document.querySelector('select[name="doc_type"]').value || 'document').replace(/[^a-z0-9_\-]/gi,'_');
                                                     selectedFiles.push({ file: file, docType: docType });
                                                     updateInputFiles();
+                                                    resetSelectionControls();
                                                 closeCameraModal();
                                             }, 'image/jpeg', 0.95);
                                         }
@@ -307,6 +318,7 @@ if ($hasShelter) {
                                                 if (selectedFiles.length > maxFiles) selectedFiles =
                                                     selectedFiles.slice(0, maxFiles);
                                                 updateInputFiles();
+                                                resetSelectionControls();
                                             });
                                             // create preview container if not present
                                             if (!document.getElementById('selectedFilesPreview')) {
