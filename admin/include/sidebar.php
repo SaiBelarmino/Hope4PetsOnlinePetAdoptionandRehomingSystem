@@ -114,14 +114,6 @@
                                 <span class="hide-menu">Shelter Verification</span>
                             </a>
                         </li>
-                        <li class="sidebar-item">
-                            <a class="sidebar-link" href="./shelter-pets.php" aria-expanded="false">
-                                <span>
-                                    <i class="ti ti-paw fs-6"></i>
-                                </span>
-                                <span class="hide-menu">Pets under Shelter</span>
-                            </a>
-                        </li>
                          <li class="nav-small-cap">
                             <i class="ti ti-dots nav-small-cap-icon fs-6"></i>
                             <span class="hide-menu">Pet Management</span>
