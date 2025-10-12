@@ -1,15 +1,18 @@
 <?php
-require_once __DIR__ . '/../../config/SessionManager.php';
+require_once __DIR__ . '/../../../config/SessionManager.php';
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 ?>
-<?php include __DIR__ . '/../include/sidebar.php'; ?>
-<div class="body-wrapper">
-<?php include __DIR__ . '/../include/header.php'; ?>
 <?php
-include '../controllers/Shelter/shelter-verification-requests-controller.php';
+include dirname(__DIR__, 2) . '/sidebar.php';
+?>
+<?php
+include dirname(__DIR__, 2) . '/controllers/Shelter/shelter-verification-requests-controller.php';
 $docs = ShelterVerificationRequestsController::fetchDocuments(null, 200);
 ?>
+
+<div class="body-wrapper">
+<?php include dirname(__DIR__, 2) . '/header.php'; ?>
 <div class="container-fluid">
 	<div class="d-flex align-items-center justify-content-between mb-3">
 		<h3 class="mb-0">Pending Shelter Verification Documents</h3>
@@ -57,8 +60,7 @@ $docs = ShelterVerificationRequestsController::fetchDocuments(null, 200);
         </div>
     </div>
 </div>
-<?php include __DIR__ . '/../include/footer.php'; ?>
-</div>
+<?php include dirname(__DIR__, 2) . '/footer.php'; ?>
 
 <!-- Document Viewer Modal -->
 <div id="docViewerModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">

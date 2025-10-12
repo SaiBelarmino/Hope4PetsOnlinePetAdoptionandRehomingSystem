@@ -1,9 +1,9 @@
 <?php
-namespace App\Controllers\Shelter;
+
 
 // Serve shelter document file by id (admin only)
-require_once __DIR__ . '/../../controllers/BaseController.php';
-require_once __DIR__ . '/../../config/SessionManager.php';
+require_once __DIR__ . '/../../../controllers/BaseController.php';
+require_once __DIR__ . '/../../../config/SessionManager.php';
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 

@@ -1,7 +1,7 @@
 <?php
-namespace App\Controllers\Shelter;
 
-require_once __DIR__ . '/../../config/SessionManager.php';
+
+require_once __DIR__ . '/../../../config/SessionManager.php';
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 

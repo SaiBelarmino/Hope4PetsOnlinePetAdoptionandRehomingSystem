@@ -1,7 +1,7 @@
 <?php
-namespace App\Controllers\Admin;
 
-require_once __DIR__ . '/../../controllers/BaseController.php';
+
+require_once __DIR__ . '/../../../controllers/BaseController.php';
 
 class AdminAccountsController extends BaseController {
     public static function listAll(): array {

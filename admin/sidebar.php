@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 
@@ -6,10 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hope4Pets</title>
-    <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/logo-icon.png" />
-    <link rel="stylesheet" href="../../assets/css/styles.min.css" />
+    <link rel="shortcut icon" type="image/png" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/logos/logo-icon.png" />
+    <link rel="stylesheet" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/css/styles.min.css" />
     <!-- Dark/Light theme overrides -->
-    <link rel="stylesheet" href="../../assets/css/admin-theme.css" />
+    <link rel="stylesheet" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/css/admin-theme.css"/>
 </head>
 
 <?php
@@ -52,8 +51,8 @@
             <!-- Sidebar scroll-->
             <div>
                 <div class="brand-logo d-flex align-items-center justify-content-between">
-                    <a href="./admin-dashboard.php" class="text-nowrap logo-img">
-                        <img src="../../assets/images/logos/HOPE4PETSlogo.png" alt="logo" class="img-fluid" style="max-height: 40px;" />
+                    <a href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Admin/admin-dashboard.php" class="text-nowrap logo-img">
+                        <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/logos/HOPE4PETSlogo.png" alt="logo" class="img-fluid" style="max-height: 40px;" />
                     </a>
                     <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
                         <i class="ti ti-x fs-8"></i>
@@ -67,7 +66,7 @@
                             <span class="hide-menu">Admin Tools</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./admin-dashboard.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Admin/admin-dashboard.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-layout-dashboard fs-6"></i>
                                 </span>
@@ -79,7 +78,7 @@
                             <span class="hide-menu">User Management</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./users.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/User/users.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-users fs-6"></i>
                                 </span>
@@ -87,7 +86,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./id-verification-requests.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/User/id-verification-requests.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-id fs-6"></i>
                                 </span>
@@ -99,7 +98,7 @@
                             <span class="hide-menu">Shelter Management</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./shelters.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Shelter/shelters.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-building fs-6"></i>
                                 </span>
@@ -107,7 +106,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./shelter-verification-requests.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Shelter/shelter-verification-requests.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-file-check fs-6"></i>
                                 </span>
@@ -119,7 +118,7 @@
                             <span class="hide-menu">Pet Management</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./pets.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Pet/pets.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-paw fs-6"></i>
                                 </span>
@@ -127,7 +126,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./pet-photos-reports.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Pet/pet-photos-reports.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-photo fs-6"></i>
                                 </span>
@@ -135,7 +134,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./adoption-requests.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Adoption/adoption-requests.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-file-description fs-6"></i>
                                 </span>
@@ -147,7 +146,7 @@
                             <span class="hide-menu">Community/Post</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./posts.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Post/posts.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-news fs-6"></i>
                                 </span>
@@ -155,7 +154,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./post-comments.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Post/post-comments.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-message-circle fs-6"></i>
                                 </span>
@@ -163,7 +162,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./post-reactions.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Post/post-reactions.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-thumb-up fs-6"></i>
                                 </span>
@@ -175,7 +174,7 @@
                             <span class="hide-menu">Reports</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./user-reports.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/User/user-reports.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-report fs-6"></i>
                                 </span>
@@ -183,7 +182,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./pet-reports.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Pet/pet-reports.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-report-analytics fs-6"></i>
                                 </span>
@@ -191,7 +190,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./post-reports.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Post/post-reports.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-report-analytics fs-6"></i>
                                 </span>
@@ -203,7 +202,7 @@
                             <span class="hide-menu">Donations</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./donations.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Adoption/donations.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-currency-dollar fs-6"></i>
                                 </span>
@@ -211,7 +210,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./donations-by-shelter.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Adoption/donations-by-shelter.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-building fs-6"></i>
                                 </span>
@@ -223,7 +222,7 @@
                             <span class="hide-menu">Messages</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./messages.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/User/messages.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-mail fs-6"></i>
                                 </span>
@@ -236,7 +235,7 @@
                             <span class="hide-menu">Activity Logs</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./activity-logs.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Admin/activity-logs.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-clipboard-list fs-6"></i>
                                 </span>
@@ -249,7 +248,7 @@
                             <span class="hide-menu">Account</span>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="./profile-settings.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Admin/profile-settings.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-settings fs-6"></i>
                                 </span>
@@ -257,7 +256,7 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="../admin-authentication/authentication-logout.php" aria-expanded="false">
+                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/admin-authentication/authentication-logout.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-logout fs-6"></i>
                                 </span>

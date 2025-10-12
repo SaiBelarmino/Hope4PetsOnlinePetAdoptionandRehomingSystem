@@ -1,7 +1,7 @@
 <?php
-namespace App\Controllers\Adoption;
 
-require_once __DIR__ . '/../../controllers/BaseController.php';
+
+require_once __DIR__ . '/../../../controllers/BaseController.php';
 
 class DonationsController extends BaseController {
     public static function recent(int $limit = 100): array {

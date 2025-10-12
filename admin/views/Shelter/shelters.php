@@ -1,19 +1,26 @@
 <?php
-require_once __DIR__ . '/../../config/SessionManager.php';
+require_once __DIR__ . '/../../../config/SessionManager.php';
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 
-include '../controllers/Shelter/shelters-controller.php';
+$controllerPath = dirname(__DIR__, 2) . '/controllers/Shelter/shelters-controller.php';
+if (file_exists($controllerPath)) {
+    include $controllerPath;
+} else {
+    throw new RuntimeException('Shelter controller not found: ' . $controllerPath);
+}
 $shelters = ShelterVerificationRequestsController::listSheltersWithOwnerAndCount();
 ?>
-<?php include __DIR__ . '/../include/sidebar.php'; ?>
-<div class="body-wrapper">
-<?php include __DIR__ . '/../include/header.php'; ?>
+<?php
+include dirname(__DIR__, 2) . '/sidebar.php';
+?>
 
-<div class="container-fluid">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <h3 class="mb-0">Shelters</h3>
-    </div>
+<div class="body-wrapper">
+    <?php include dirname(__DIR__, 2) . '/header.php'; ?>
+    <div class="container-fluid">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h3 class="mb-0">Shelters</h3>
+        </div>
 
     <?php if (empty($shelters)): ?>
         <div class="alert alert-info">No shelters found.</div>
@@ -133,5 +140,4 @@ function viewPets(shelterId) {
 }
 </script>
 
-<?php include __DIR__ . '/../include/footer.php'; ?>
-</div>
+<?php include dirname(__DIR__, 2) . '/footer.php'; ?>

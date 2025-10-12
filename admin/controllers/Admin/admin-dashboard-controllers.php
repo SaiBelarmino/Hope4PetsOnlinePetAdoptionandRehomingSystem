@@ -1,8 +1,8 @@
 <?php
-namespace App\Controllers\Admin;
+
 
 	// Legacy filename kept (plural) for compatibility. Provides AdminDashboardController.
-	require_once __DIR__ . '/../../controllers/BaseController.php';
+	require_once __DIR__ . '/../../../controllers/BaseController.php';
 
 	class AdminDashboardController extends BaseController {
 		/**

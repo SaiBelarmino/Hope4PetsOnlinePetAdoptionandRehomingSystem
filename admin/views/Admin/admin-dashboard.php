@@ -1,18 +1,15 @@
 <?php
 // Protect this admin view from direct URL access
-require_once __DIR__ . '/../../config/SessionManager.php';
+require_once __DIR__ . '/../../../config/SessionManager.php';
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 ?>
-<?php 
-    // Include sidebar (contains HTML skeleton and left sidebar)
-    include __DIR__ . '/../include/sidebar.php';
+<?php
+include dirname(__DIR__, 2) . '/sidebar.php';
 ?>
 <!--  Main wrapper -->
 <div class="body-wrapper">
-    <!--  Header Start -->
-    <?php include __DIR__ . '/../include/header.php'; ?>
-    <!--  Header End -->
+    <?php include dirname(__DIR__, 2) . '/header.php'; ?>
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-8">
@@ -34,7 +31,7 @@ AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-body text-center">
-                        <img src="../../assets/images/backgrounds/product-tip.png" alt="image" class="img-fluid" width="205">
+                        <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/backgrounds/product-tip.png" alt="image" class="img-fluid" width="205">
                         <h4 class="mt-7">Productivity Tips!</h4>
                         <p class="card-subtitle mt-2 mb-3">Duis at orci justo nulla in libero id leo molestie sodales phasellus justo.</p>
                         <button class="btn btn-primary mb-3">View All Tips</button>
@@ -174,10 +171,10 @@ AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
                 <div class="card overflow-hidden hover-img">
                     <div class="position-relative">
                         <a href="javascript:void(0)">
-                            <img src="../../assets/images/blog/blog-img1.jpg" class="card-img-top" alt="matdash-img">
+                            <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/blog/blog-img1.jpg" class="card-img-top" alt="matdash-img">
                         </a>
                         <span class="badge text-bg-light text-dark fs-2 lh-sm mb-9 me-9 py-1 px-2 fw-semibold position-absolute bottom-0 end-0">2 min Read</span>
-                        <img src="../../assets/images/profile/user-3.jpg" alt="matdash-img" class="img-fluid rounded-circle position-absolute bottom-0 start-0 mb-n9 ms-9" width="40" height="40" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Georgeanna Ramero">
+                        <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/profile/user-3.jpg" alt="matdash-img" class="img-fluid rounded-circle position-absolute bottom-0 start-0 mb-n9 ms-9" width="40" height="40" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Georgeanna Ramero">
                     </div>
                     <div class="card-body p-4">
                         <span class="badge text-bg-light fs-2 py-1 px-2 lh-sm  mt-3">Social</span>
@@ -200,10 +197,10 @@ AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
                 <div class="card overflow-hidden hover-img">
                     <div class="position-relative">
                         <a href="javascript:void(0)">
-                            <img src="../../assets/images/blog/blog-img2.jpg" class="card-img-top" alt="matdash-img">
+                            <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/blog/blog-img2.jpg" class="card-img-top" alt="matdash-img">
                         </a>
                         <span class="badge text-bg-light text-dark fs-2 lh-sm mb-9 me-9 py-1 px-2 fw-semibold position-absolute bottom-0 end-0">2 min Read</span>
-                        <img src="../../assets/images/profile/user-2.jpg" alt="matdash-img" class="img-fluid rounded-circle position-absolute bottom-0 start-0 mb-n9 ms-9" width="40" height="40" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Georgeanna Ramero">
+                        <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/profile/user-2.jpg" alt="matdash-img" class="img-fluid rounded-circle position-absolute bottom-0 start-0 mb-n9 ms-9" width="40" height="40" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Georgeanna Ramero">
                     </div>
                     <div class="card-body p-4">
                         <span class="badge text-bg-light fs-2 py-1 px-2 lh-sm  mt-3">Gadget</span>
@@ -226,10 +223,10 @@ AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
                 <div class="card overflow-hidden hover-img">
                     <div class="position-relative">
                         <a href="javascript:void(0)">
-                            <img src="../../assets/images/blog/blog-img3.jpg" class="card-img-top" alt="matdash-img">
+                            <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/blog/blog-img3.jpg" class="card-img-top" alt="matdash-img">
                         </a>
                         <span class="badge text-bg-light text-dark fs-2 lh-sm mb-9 me-9 py-1 px-2 fw-semibold position-absolute bottom-0 end-0">2 min Read</span>
-                        <img src="../../assets/images/profile/user-3.jpg" alt="matdash-img" class="img-fluid rounded-circle position-absolute bottom-0 start-0 mb-n9 ms-9" width="40" height="40" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Georgeanna Ramero">
+                        <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/profile/user-3.jpg" alt="matdash-img" class="img-fluid rounded-circle position-absolute bottom-0 start-0 mb-n9 ms-9" width="40" height="40" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Georgeanna Ramero">
                     </div>
                     <div class="card-body p-4">
                         <span class="badge text-bg-light fs-2 py-1 px-2 lh-sm  mt-3">Health</span>
@@ -249,9 +246,6 @@ AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
                 </div>
             </div>
         </div>
-        <?php 
-            // Include footer using an absolute path to avoid relative path issues
-            include __DIR__ . '/../include/footer.php';
-        ?>
+        <?php include dirname(__DIR__, 2) . '/footer.php';  ?>
     </div>
 </div>

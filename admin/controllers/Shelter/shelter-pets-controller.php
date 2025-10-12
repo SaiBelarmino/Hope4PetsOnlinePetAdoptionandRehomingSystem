@@ -1,7 +1,7 @@
 <?php
-namespace App\Controllers\Pet;
 
-require_once __DIR__ . '/../../controllers/BaseController.php';
+
+require_once __DIR__ . '/../../../controllers/BaseController.php';
 
 class ShelterPetsController extends BaseController {
     public static function forShelter(int $shelterId, int $limit = 200): array {

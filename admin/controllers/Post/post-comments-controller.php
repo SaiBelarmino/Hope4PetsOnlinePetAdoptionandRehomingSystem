@@ -1,7 +1,7 @@
 <?php
-namespace App\Controllers\Post;
 
-require_once __DIR__ . '/../../controllers/BaseController.php';
+
+require_once __DIR__ . '/../../../controllers/BaseController.php';
 
 class PostCommentsController extends BaseController {
     public static function forPost(int $postId, int $limit = 200): array {

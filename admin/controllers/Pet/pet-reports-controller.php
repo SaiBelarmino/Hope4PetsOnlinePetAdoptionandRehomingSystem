@@ -1,7 +1,7 @@
 <?php
-namespace App\Controllers\Pet;
 
-require_once __DIR__ . '/../../controllers/BaseController.php';
+
+require_once __DIR__ . '/../../../controllers/BaseController.php';
 
 class PetReportsController extends BaseController {
     public static function listOpen(int $limit = 100): array {

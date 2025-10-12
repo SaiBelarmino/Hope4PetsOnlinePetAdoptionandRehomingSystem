@@ -1,13 +1,13 @@
 <?php
 // Protect this admin view from direct URL access
-require_once __DIR__ . '/../../config/SessionManager.php';
+require_once __DIR__ . '/../../../config/SessionManager.php';
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 
 //
 // Bootstrap: auto load data if not pre-set by a controller script.
 if (!isset($users) || !isset($stats)) {
-  include '../controllers/User/users-controller.php';
+  include __DIR__ . '/../../controllers/User/users-controller.php';
   // Build filters from GET
   $filters = [];
   if (!empty($_GET['q'])) $filters['q'] = trim($_GET['q']);
@@ -38,14 +38,15 @@ if (!isset($users) || !isset($stats)) {
   $users = $list['data'];
   $stats = UsersController::stats();
 }
-include __DIR__ . '/../include/sidebar.php'; ?>
+include dirname(__DIR__, 2) . '/sidebar.php';
+?>
 <div class="body-wrapper">
-<?php include __DIR__ . '/../include/header.php'; ?>
-<div class="container-fluid">
-  <div class="d-sm-flex align-items-center justify-content-between mb-3">
-    <h3 class="mb-0">User Monitoring</h3>
-    <div>
-  <a class="btn btn-sm btn-outline-primary" id="btn-export-users" href="?export=csv"><i class="ti ti-download"></i> Export CSV</a>
+  <?php include dirname(__DIR__, 2) . '/header.php'; ?>
+  <div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-3">
+      <h3 class="mb-0">User Monitoring</h3>
+      <div>
+        <a class="btn btn-sm btn-outline-primary" id="btn-export-users" href="?export=csv"><i class="ti ti-download"></i> Export CSV</a>
     </div>
   </div>
 
@@ -244,7 +245,7 @@ include __DIR__ . '/../include/sidebar.php'; ?>
     </div>
   </div>
 </div>
-<?php include __DIR__ . '/../include/footer.php'; ?>
+<?php include dirname(__DIR__, 2) . '/footer.php'; ?>
 </div>
 
 <script>

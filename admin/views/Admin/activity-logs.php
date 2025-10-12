@@ -1,14 +1,16 @@
 <?php
 // Protect this admin view from direct access: require admin session
-require_once __DIR__ . '/../../config/SessionManager.php';
+require_once __DIR__ . '/../../../config/SessionManager.php';
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
+require_once dirname(__DIR__, 2) . '/controllers/Admin/activity-logs-controller.php';
 ?>
 
-<?php include __DIR__ . '/../include/sidebar.php'; ?>
+<?php
+include dirname(__DIR__, 2) . '/header.php';
+include dirname(__DIR__, 2) . '/sidebar.php';
+?>
 <div class="body-wrapper">
-<?php include __DIR__ . '/../include/header.php'; ?>
 <div class="container-fluid"><h3>Activity Logs</h3><p>Recent admin activities from admin_logs.</p></div>
-<?php include __DIR__ . '/../include/footer.php'; ?>
+<?php include dirname(__DIR__, 2) . '/footer.php'; ?>
 </div>
-<?php include '../controllers/Admin/activity-logs-controller.php'; ?>

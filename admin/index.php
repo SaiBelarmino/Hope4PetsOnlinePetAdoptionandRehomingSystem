@@ -11,7 +11,7 @@ SessionManager::init();
 // If admin is logged in, send to admin dashboard. Otherwise redirect to login.
 if (class_exists('AdminSessionManager') && AdminSessionManager::isAdminLoggedIn()) {
     // You may want to change to the actual dashboard path in your project
-    header('Location: views/admin-dashboard.php');
+    header('Location: views/Admin/admin-dashboard.php');
     exit;
 } else {
     // redirect to admin login and include requested URL to return after login
