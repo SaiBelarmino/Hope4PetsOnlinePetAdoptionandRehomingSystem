@@ -4,10 +4,10 @@ SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 ?>
 <?php
-include dirname(__DIR__, 2) . '/header.php';
 include dirname(__DIR__, 2) . '/sidebar.php';
 ?>
 <div class="body-wrapper">
+<?php include dirname(__DIR__, 2) . '/header.php'; ?>
 <div class="container-fluid">
 	<div class="d-flex align-items-center justify-content-between mb-3">
 		<h3 class="mb-0">Pets under Shelter</h3>

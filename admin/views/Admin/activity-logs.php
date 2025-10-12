@@ -7,10 +7,10 @@ require_once dirname(__DIR__, 2) . '/controllers/Admin/activity-logs-controller.
 ?>
 
 <?php
-include dirname(__DIR__, 2) . '/header.php';
 include dirname(__DIR__, 2) . '/sidebar.php';
 ?>
 <div class="body-wrapper">
+<?php include dirname(__DIR__, 2) . '/header.php'; ?>
 <div class="container-fluid"><h3>Activity Logs</h3><p>Recent admin activities from admin_logs.</p></div>
 <?php include dirname(__DIR__, 2) . '/footer.php'; ?>
 </div>

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <?php
 require_once __DIR__ . '/../../../config/SessionManager.php';
 SessionManager::init();
@@ -15,3 +16,5 @@ include dirname(__DIR__, 2) . '/sidebar.php';
     <?php include dirname(__DIR__, 2) . '/footer.php'; ?>
 </div>
 <?php include '../controllers/Post/posts-controller.php'; ?>
+=======
+>>>>>>> Stashed changes
