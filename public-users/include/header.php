@@ -40,3 +40,17 @@ if (!empty($pageTitle)) {
 ?>
 
 <body<?php echo $bodyClass; ?>>
+<style>
+/* FIX: Stop page from shifting when Bootstrap modals open */
+/* 1. Force the vertical scrollbar to always be present. */
+/* This reserves the space, stopping content expansion/shift. */
+body {
+  overflow-y: scroll !important;
+}
+
+/* 2. Remove Bootstrap's default padding compensation. */
+/* This prevents a slight push/shift to the left. */
+.modal-open {
+  padding-right: 0 !important;
+}
+</style>
