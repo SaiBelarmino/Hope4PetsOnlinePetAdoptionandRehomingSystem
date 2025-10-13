@@ -18,19 +18,18 @@ function set_flash($message, $type = 'info') {
 
 // Add controller class that uses BaseController's protected db() method
 class ShelterRegistrationController extends BaseController {
-    public static function insertShelter(int $userId, string $shelter_name, string $address, string $contact_number, string $created_at): array {
+    public static function insertShelter(int $userId, string $shelter_name, string $address, string $contact_number, string $created_at, string $status): array {
         // returns [bool $inserted, ?string $errorMessage, ?int $insertId]
         $inserted = false; $error = null; $insertId = null;
         try {
             $mysqli = self::db();
-            $sql = 'INSERT INTO shelters (user_id, shelter_name, address, contact_number, is_verified, created_at) VALUES (?, ?, ?, ?, ?, ?)';
+            $sql = 'INSERT INTO shelters (user_id, shelter_name, address, contact_number, created_at, status) VALUES (?, ?, ?, ?, ?, ?)';
             $stmt = $mysqli->prepare($sql);
             if (!$stmt) {
                 $error = 'Prepare failed: ' . $mysqli->error;
                 return [$inserted, $error, $insertId];
             }
-            $is_verified = 0;
-            $stmt->bind_param('isssis', $userId, $shelter_name, $address, $contact_number, $is_verified, $created_at);
+            $stmt->bind_param('isssss', $userId, $shelter_name, $address, $contact_number, $created_at, $status);
             if ($stmt->execute()) {
                 $insertId = $mysqli->insert_id;
                 $inserted = true;
@@ -88,7 +87,7 @@ $inserted = false;
 $dbError = null;
 $lastId = null;
 try {
-    list($inserted, $dbError, $lastId) = ShelterRegistrationController::insertShelter($userId, $shelter_name, $address, $contact_number, $now);
+    list($inserted, $dbError, $lastId) = ShelterRegistrationController::insertShelter($userId, $shelter_name, $address, $contact_number, $now, $status);
     if ($inserted && $lastId) {
         $_SESSION['shelter_id'] = (int)$lastId;
         $_SESSION['has_shelter'] = true;
