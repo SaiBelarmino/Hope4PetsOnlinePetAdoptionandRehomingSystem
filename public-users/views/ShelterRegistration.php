@@ -10,10 +10,27 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
 <?php
-// Get flash message (if any) and session info via SessionManager for consistent checks
-require_once __DIR__ . '/../../config/SessionManager.php';
-$flash = SessionManager::getFlash();
-$authHasShelter = SessionManager::hasShelter();
+// Get flash message (if any) and load shelter using the controller
+require_once __DIR__ . '/../controllers/ShelterManagementController.php';
+
+// Try to use SessionManager if available for flash; otherwise use $_SESSION fallback
+$flash = [];
+if (class_exists('SessionManager') && method_exists('SessionManager','getFlash')) {
+    try { $flash = SessionManager::getFlash() ?? []; } catch(Exception $e) { $flash = []; }
+}
+if (empty($flash) && !empty($_SESSION['flash'])) {
+    $flash = $_SESSION['flash'];
+    unset($_SESSION['flash']);
+}
+
+// Load shelter for current user (if logged in)
+$userId = $_SESSION['user']['id'] ?? null;
+$shelter = null;
+$authHasShelter = false;
+if ($userId && class_exists('ShelterManagementController') && method_exists('ShelterManagementController','getShelterByUser')) {
+    $shelter = ShelterManagementController::getShelterByUser($userId);
+    $authHasShelter = !empty($shelter);
+}
 ?>
 <div class="pu-scroll-wrapper"><div class="container-fluid py-3">
   <div class="row g-3">
@@ -53,7 +70,7 @@ $authHasShelter = SessionManager::hasShelter();
               <a href="./profile.php" class="btn btn-outline-secondary btn-sm">Go to Profile</a>
             </div>
           <?php else: ?>
-            <form action="../controllers/register-shelter-controller.php" method="post" class="row g-3">
+            <form action="../controllers/ShelterRegistrationController.php" method="post" class="row g-3">
               <div class="col-12 col-md-6">
                 <label class="form-label">Shelter Name</label>
                 <input type="text" name="shelter_name" class="form-control" required maxlength="255" placeholder="e.g. Happy Paws Shelter">

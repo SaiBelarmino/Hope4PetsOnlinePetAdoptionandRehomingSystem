@@ -26,7 +26,6 @@ require_once __DIR__ . '/profile_helpers.php';
     <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/logo-icon.png" />
     <link rel="stylesheet" href="../../assets/css/styles.css" />
 
-    <!-- preloader removed -->
 </head>
 
 <?php
@@ -41,5 +40,3 @@ if (!empty($pageTitle)) {
 ?>
 
 <body<?php echo $bodyClass; ?>>
-
-    <!-- preloader removed -->

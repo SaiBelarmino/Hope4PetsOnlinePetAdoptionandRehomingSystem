@@ -9,6 +9,7 @@
 <script src="../../assets/js/sidebarmenu.js"></script>
 <script src="../../assets/js/app.min.js"></script>
 <script src="../../assets/js/dashboard.js"></script>
+<script src="../../assets/js/sweetalert2@11.js"></script>
 </body>
 
 </html>

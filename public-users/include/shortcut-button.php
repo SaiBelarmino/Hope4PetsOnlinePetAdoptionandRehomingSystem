@@ -43,15 +43,12 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
         <?php if($pendingDocsCount>0): ?><span class="badge bg-warning text-dark ms-2"><?php echo $pendingDocsCount; ?></span><?php endif; ?>
       </a>
       <?php if(!$hasShelter): ?>
-        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./register_shelter.php">
+        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./ShelterRegistration.php">
           <span><i class="ti ti-building-arch me-2 text-info"></i>Register Shelter</span>
         </a>
       <?php else: ?>
-        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./my_shelter.php">
+        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./ShelterManagement.php">
           <span><i class="ti ti-home-heart me-2 text-info"></i>My Shelter</span>
-        </a>
-        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./shelter_verification_status.php">
-          <span><i class="ti ti-shield-check me-2 text-success"></i>Verification</span>
         </a>
       <?php endif; ?>
     </div>
