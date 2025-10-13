@@ -176,7 +176,7 @@ var APP_BASE = '<?php echo addslashes($appBase); ?>';
         <div class="col-12 col-lg-9">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h3 class="mb-0 d-flex align-items-center gap-2">
-                    <?php echo htmlspecialchars($shelter['shelter_name'] ?? 'My Shelter'); ?>
+                    <?php echo htmlspecialchars($shelter['shelter_name'] ?? ''); ?>
                     <?php if (!empty($shelter['is_verified'])): ?>
                     <span
                         class="badge rounded-pill d-inline-flex align-items-center px-2 py-1 bg-success text-white shadow-sm"
@@ -202,9 +202,9 @@ var APP_BASE = '<?php echo addslashes($appBase); ?>';
                     </span>
                     <?php endif; ?>
                 </h3>
-                <div class="d-flex gap-2">
-                    <button id="editShelterBtn" type="button" class="btn btn-sm btn-primary"><i class="ti ti-edit"></i>
-                        Edit</button>
+                <div class="d-flex gap-1 align-items-center">
+                    <a href="PetManagement.php" class="btn btn-sm btn-primary"><i class="ti ti-paw"></i> Manage Pets</a>
+                    <button id="editShelterBtn" type="button" class="btn btn-sm btn-outline-secondary"><i class="ti ti-edit"></i> Edit</button>
                 </div>
             </div>
             <div class="row g-3 mb-3">
@@ -1004,7 +1004,7 @@ function notifyMessage(msg) {
                     document.querySelector('h3.mb-0.d-flex').textContent = data.shelter_name ||
                         'My Shelter';
                     document.getElementById('shelterNameDisplay').textContent = data.shelter_name ||
-                    '—';
+                        '—';
                     document.getElementById('shelterAddressDisplay').textContent = data.address || '—';
                     document.getElementById('shelterContactDisplay').textContent = data
                         .contact_number || '—';
@@ -1148,7 +1148,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showCancelButton: true,
             confirmButtonText: 'Save',
             cancelButtonText: 'Cancel',
-            width: 600,                 // wider for horizontal feel
+            width: 600, // wider for horizontal feel
             padding: '1.5em',
             scrollbarPadding: false,
             focusConfirm: false,
@@ -1196,7 +1196,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     try {
                         if (nameEl) nameEl.textContent = data.shelter_name || '—';
                         if (addrEl) addrEl.textContent = data.address || '—';
-                        if (contactEl) contactEl.textContent = data.contact_number || '—';
+                        if (contactEl) contactEl.textContent = data.contact_number ||
+                            '—';
                     } catch (e) {}
 
                     Swal.fire({
@@ -1209,7 +1210,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         focusConfirm: false
                     });
                 } else {
-                    notifyMessage((json && (json.error || json.message)) ? (json.error || json.message) : 'Failed to update shelter');
+                    notifyMessage((json && (json.error || json.message)) ? (json
+                        .error || json.message) : 'Failed to update shelter');
                 }
             }).catch(function(err) {
                 console.error('Edit shelter error', err);

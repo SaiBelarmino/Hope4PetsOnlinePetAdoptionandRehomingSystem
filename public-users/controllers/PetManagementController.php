@@ -11,6 +11,24 @@ require_once __DIR__ . '/../../config/SessionManager.php';
 
 class PetManagementController extends BaseController {
     /**
+     * Build a storage-relative photo path for a given owner and stored value.
+     * If $photo already looks like a URL or starts with '/' it is returned unchanged.
+     * Otherwise it returns /storage/uploads/images/{ownerId}/{basename(photo)}
+     */
+    private static function buildPhotoPath(?int $ownerId, string $photo): string {
+        $photo = trim((string)$photo);
+        if ($photo === '') return '';
+        if (strpos($photo, 'http://') === 0 || strpos($photo, 'https://') === 0) return $photo;
+        // if already absolute site-root path, keep
+        if (strpos($photo, '/') === 0) return $photo;
+        $base = '/storage/uploads/images';
+        if ($ownerId && $ownerId > 0) {
+            return $base . '/' . (int)$ownerId . '/' . basename($photo);
+        }
+        return $base . '/' . basename($photo);
+    }
+
+    /**
      * Create a new pet listing
      */
     public static function createPet(int $ownerId, array $data): array {
@@ -92,8 +110,7 @@ class PetManagementController extends BaseController {
      */
     public static function getPetsByOwnerId(int $ownerId): array {
         return self::fetchAll(
-            "SELECT p.*, 
-                    (SELECT photo_path FROM pet_photos WHERE pet_id = p.id AND is_primary = 1 LIMIT 1) as primary_photo,
+            "SELECT p.*, p.pet_photos as primary_photo,
                     (SELECT COUNT(*) FROM adoptions WHERE pet_id = p.id) as adoption_requests
              FROM pets p
              WHERE p.owner_id = ?
@@ -102,14 +119,14 @@ class PetManagementController extends BaseController {
             [$ownerId]
         );
     }
-    
+
     /**
      * Get all available pets (public view)
      */
     public static function getAvailablePets(int $limit = 20, int $offset = 0): array {
         return self::fetchAll(
             "SELECT p.*, u.full_name as owner_name, s.shelter_name,
-                    (SELECT photo_path FROM pet_photos WHERE pet_id = p.id AND is_primary = 1 LIMIT 1) as primary_photo
+                    p.pet_photos as primary_photo
              FROM pets p
              JOIN users u ON p.owner_id = u.id
              LEFT JOIN shelters s ON p.shelter_id = s.id
@@ -141,12 +158,95 @@ class PetManagementController extends BaseController {
      * Get pet photos
      */
     public static function getPetPhotos(int $petId): array {
-        return self::fetchAll(
-            "SELECT * FROM pet_photos WHERE pet_id = ? ORDER BY is_primary DESC, id ASC",
-            'i',
-            [$petId]
-        );
+        // New schema stores the primary photo path in pets.pet_photos (varchar).
+        $pet = self::fetchOne("SELECT pet_photos FROM pets WHERE id = ? LIMIT 1", 'i', [$petId]);
+        if (!$pet) return [];
+        $path = $pet['pet_photos'] ?? '';
+        if (empty($path)) return [];
+        return [ ['photo_path' => $path, 'is_primary' => 1] ];
     }
+
+    /**
+     * Converts a site-root relative path (e.g., /storage/...) into a full absolute HTTP URL,
+     * specifically handling the XAMPP sub-directory project structure.
+     */
+    public static function getPhotoUrl(?int $ownerId, string $photoPath): string {
+        // Use existing helper to get the site-root relative path, which is your database value.
+        $relativePath = self::buildPhotoPath($ownerId, $photoPath);
+
+        // Fallback to a simple path if none is found.
+        if (empty($relativePath) || $relativePath === '/storage/uploads/images') {
+             // Default image path. Kung walang default image, palitan ng blank string.
+             $relativePath = '/storage/uploads/images/default.png'; 
+        }
+        
+        // If it's already a full URL (http/https), return it
+        if (strpos($relativePath, 'http') === 0 || strpos($relativePath, 'https') === 0) {
+            return $relativePath;
+        }
+
+        // --- CRITICAL XAMPP URL CONSTRUCTION ---
+        $scheme = (!empty($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http'));
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        
+        // **Ito ang pinakamahalagang linya:** Explicitly define the project folder name.
+        $projectFolderName = 'Hope4PetsOnlinePetAdoptionandRehomingSystem';
+
+        // 1. Clean the relative path (e.g., /storage/uploads... -> storage/uploads...)
+        $relativePathClean = ltrim($relativePath, '/');
+
+        // 2. Tiyakin na ang Project Folder Name ay nakalagay sa unahan, maliban kung nandoon na.
+        // Dapat maging: /Hope4PetsOnlinePetAdoptionandRehomingSystem/storage/uploads/images/7/file.jpg
+        
+        $finalWebPath = '';
+        if (strpos($relativePathClean, $projectFolderName . '/') === 0) {
+             // Kung kasama na ang Project Folder, gamitin na lang ang nalalabi
+             $finalWebPath = '/' . $relativePathClean;
+        } else {
+             // Idagdag ang Project Folder
+             $finalWebPath = '/' . $projectFolderName . '/' . $relativePathClean;
+        }
+
+        // Return the full absolute HTTP URL
+        return rtrim($scheme . '://' . $host, '/') . $finalWebPath;
+    }
+
+    /**
+     * Show pet management page for an owner (connects controller to view)
+     * - Fetches pets for the owner
+     * - Attaches photos and resolves a primary photo per pet
+     * - Includes the PetManagement view
+     */
+    public static function showManagement(int $ownerId): void {
+        // fetch pets
+        $pets = self::getPetsByOwnerId($ownerId);
+
+        // attach photos and resolve primary (normalize stored filenames to storage path)
+        foreach ($pets as &$pet) {
+            $photos = self::getPetPhotos((int)$pet['id']);
+            $pet['photos'] = $photos;
+
+            // determine source value (pets.pet_photos or joined primary_photo or photos list)
+            $source = '';
+            if (!empty($pet['primary_photo'])) $source = $pet['primary_photo'];
+            elseif (!empty($photos[0]['photo_path'])) $source = $photos[0]['photo_path'];
+            elseif (!empty($pet['pet_photos'])) $source = $pet['pet_photos'];
+
+            // normalize into full URL using the centralized helper function
+            $source = $source ?: ''; // Ensure $source is a string for the helper
+
+            // Determine the final photo source (pet_photos column, or fallback)
+            // Note: The logic before this replacement block already correctly finds $source.
+            // We just need to use the helper to get the final URL.
+            $pet['photo'] = self::getPhotoUrl((int)($pet['owner_id'] ?? $ownerId), $source);
+            $pet['photo_raw'] = $source; // Keep raw for debug/reference
+        }
+        unset($pet);
+
+         // make $pets available to the view
+         // view expects $pets variable
+         include __DIR__ . '/../views/PetManagement.php';
+     }
     
     /**
      * Update pet
@@ -162,7 +262,7 @@ class PetManagementController extends BaseController {
         
         $stmt = $mysqli->prepare(
             "UPDATE pets SET name = ?, species = ?, breed = ?, age = ?, gender = ?, size = ?, 
-                    vaccine_status = ?, health_status = ?, location = ?, description = ?, updated_at = NOW() 
+                    vaccine_status = ?, health_status = ?, location = ?, description = ?, status = ? 
              WHERE id = ? AND owner_id = ?"
         );
         
@@ -171,7 +271,7 @@ class PetManagementController extends BaseController {
         }
         
         $stmt->bind_param(
-            'ssssssssssii',
+            'sssssssssssii',
             $data['name'],
             $data['species'],
             $data['breed'],
@@ -182,6 +282,7 @@ class PetManagementController extends BaseController {
             $data['health_status'],
             $data['location'],
             $data['description'],
+            $data['status'],
             $petId,
             $ownerId
         );
@@ -204,8 +305,8 @@ class PetManagementController extends BaseController {
             return ['success' => false, 'message' => 'You do not have permission to delete this pet.'];
         }
         
-        // Mark as removed instead of deleting
-        $stmt = $mysqli->prepare("UPDATE pets SET status = 'removed' WHERE id = ? AND owner_id = ?");
+        // Delete the pet
+        $stmt = $mysqli->prepare("DELETE FROM pets WHERE id = ? AND owner_id = ?");
         if (!$stmt) {
             return ['success' => false, 'message' => 'Database error.'];
         }
@@ -214,7 +315,7 @@ class PetManagementController extends BaseController {
         $success = $stmt->execute();
         $stmt->close();
         
-        return ['success' => $success, 'message' => $success ? 'Pet removed!' : 'Failed to remove pet.'];
+        return ['success' => $success, 'message' => $success ? 'Pet deleted!' : 'Failed to delete pet.'];
     }
     
     /**
