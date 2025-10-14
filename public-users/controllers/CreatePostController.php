@@ -344,11 +344,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             SessionManager::setFlash('error', $result['message']);
-            header('Location: ../views/create_post.php?edit=' . $postId);
+            header('Location: ../views/PostManagement.php?edit=' . $postId);
             exit;
         }
         SessionManager::setFlash('error', implode('<br>', $errors));
-        header('Location: ../views/create_post.php?edit=' . $postId);
+        header('Location: ../views/PostManagement.php?edit=' . $postId);
         exit;
     }
 
@@ -425,17 +425,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'video' => $uploadedVideo
         ]);
         if (!empty($result['success'])) {
-            // Redirect back to the create post view and show the newly created post in a modal
-            $pid = (int)($result['post_id'] ?? 0);
-            header('Location: ../views/create_post.php?created=' . $pid);
+            SessionManager::setFlash('success', $result['message']);
+            header('Location: ../views/index.php');
             exit;
         }
         SessionManager::setFlash('error', $result['message'] ?? 'Failed to create post.');
-        header('Location: ../views/create_post.php');
+        header('Location: ../views/PostManagement.php');
         exit;
     }
     SessionManager::setFlash('error', implode('<br>', $errors));
-    header('Location: ../views/create_post.php');
+    header('Location: ../views/PostManagement.php');
     exit;
 }
 ?>
