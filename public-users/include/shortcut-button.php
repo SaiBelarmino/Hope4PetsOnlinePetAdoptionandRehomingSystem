@@ -13,7 +13,7 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
   <div class="card-body">
     <h6 class="text-uppercase text-muted small mb-3"><i class="ti ti-flash me-1"></i> Quick Actions</h6>
     <div class="list-group list-group-flush">
-      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./create_post.php">
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="#" data-bs-toggle="modal" data-bs-target="#createPostModal">
         <span><i class="ti ti-square-plus me-2 text-primary"></i>Create Post</span>
       </a>
       <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./pets.php">

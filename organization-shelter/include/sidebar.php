@@ -125,7 +125,7 @@
                             <i class="ti ti-dots nav-small-cap-icon fs-6"></i>
                             <span class="hide-menu">Community Posts</span>
                         </li>
-                        <li class="sidebar-item"><a class="sidebar-link" href="./create_post.php"><span><i class="ti ti-square-plus fs-6"></i></span><span class="hide-menu">Create Post</span></a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="#" data-bs-toggle="modal" data-bs-target="#createPostModal"><span><i class="ti ti-square-plus fs-6"></i></span><span class="hide-menu">Create Post</span></a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="./upload_post_photos.php"><span><i class="ti ti-photo-plus fs-6"></i></span><span class="hide-menu">Upload Photos</span></a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="./delete_post.php"><span><i class="ti ti-trash fs-6"></i></span><span class="hide-menu">Delete Own Post</span></a></li>
                     </ul>

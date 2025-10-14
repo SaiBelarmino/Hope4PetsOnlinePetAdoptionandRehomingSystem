@@ -270,8 +270,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $errors = [];
 
-        if ($content === '') {
-            $errors[] = 'Post content is required.';
+        // Allow empty content if user uploads photos/video or if the post already has media.
+        $hasNewPhotos = !empty($_FILES['photos']['name'][0]);
+        $hasNewVideo = (!empty($_FILES['video']) && !empty($_FILES['video']['tmp_name']));
+        $existingPost = self::getPostForEdit($postId, $userId);
+        $hasExistingMedia = !empty($existingPost['photos']);
+
+        if ($content === '' && !$hasNewPhotos && !$hasNewVideo && !$hasExistingMedia) {
+            $errors[] = 'Please add text or attach images/videos.';
         }
 
         // Photo uploads for update
@@ -352,8 +358,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $errors = [];
 
-    if ($content === '') {
-        $errors[] = 'Post content is required.';
+    // Allow empty content if user uploads photos or video
+    $hasPhotosInRequest = !empty($_FILES['photos']['name'][0]);
+    $hasVideoInRequest = (!empty($_FILES['video']) && !empty($_FILES['video']['tmp_name']));
+    if ($content === '' && !$hasPhotosInRequest && !$hasVideoInRequest) {
+        $errors[] = 'Please add text or attach images/videos.';
     }
 
     // Photo uploads
@@ -416,8 +425,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'video' => $uploadedVideo
         ]);
         if (!empty($result['success'])) {
-            SessionManager::setFlash('success', 'Post created successfully!');
-            header('Location: ../views/index.php');
+            // Redirect back to the create post view and show the newly created post in a modal
+            $pid = (int)($result['post_id'] ?? 0);
+            header('Location: ../views/create_post.php?created=' . $pid);
             exit;
         }
         SessionManager::setFlash('error', $result['message'] ?? 'Failed to create post.');

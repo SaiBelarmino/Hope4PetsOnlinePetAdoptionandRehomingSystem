@@ -259,7 +259,7 @@ class AdminSessionManager extends SessionManager {
     /**
      * Require admin to be logged in (redirect if not)
      */
-    public static function requireAdminLogin(string $redirect = null): void {
+    public static function requireAdminLogin(?string $redirect = null): void {
         if (!self::isAdminLoggedIn()) {
             $redirectUrl = $redirect ?? ($_SERVER['REQUEST_URI'] ?? '/');
             header('Location: ../admin-authentication/login.php?redirect=' . urlencode($redirectUrl));

@@ -58,6 +58,31 @@ class IndexController extends BaseController {
             [$postId]
         );
     }
+
+    /**
+     * Get a single post with user info
+     */
+    public static function getPostById(int $postId): ?array {
+        return self::fetchOne(
+            "SELECT p.*, u.full_name, u.profile_photo
+             FROM posts p
+             JOIN users u ON p.user_id = u.id
+             WHERE p.id = ? LIMIT 1",
+            'i',
+            [$postId]
+        );
+    }
+
+    /**
+     * Get post videos
+     */
+    public static function getPostVideos(int $postId): array {
+        return self::fetchAll(
+            "SELECT * FROM post_videos WHERE post_id = ? ORDER BY id ASC",
+            'i',
+            [$postId]
+        );
+    }
     
     /**
      * Get user statistics (if logged in)
