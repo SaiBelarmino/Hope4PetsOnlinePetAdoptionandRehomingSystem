@@ -13,8 +13,8 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
 <div class="card mb-3 bg-transparent shadow-none">
   <div class="card-body py-2" style="font-size:0.95rem;">
     <div class="list-group list-group-flush">
-      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="#" data-bs-toggle="modal" data-bs-target="#createPostModal">
-        <span><i class="ti ti-square-plus me-2 text-primary"></i>Create Post</span>
+      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./MyProfile.php">
+        <span><i class="ti ti-user me-2 text-secondary"></i>My Profile</span>
       </a>
       <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./pets.php">
         <span><i class="ti ti-paw me-2 text-success"></i>Browse Pets</span>
@@ -37,10 +37,6 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
       <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./messages.php">
         <span><i class="ti ti-message-circle me-2 text-primary"></i>Messages</span>
         <?php if($unreadMessagesCount>0): ?><span class="badge bg-danger ms-2"><?php echo $unreadMessagesCount; ?></span><?php endif; ?>
-      </a>
-      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./upload_id.php">
-        <span><i class="ti ti-id me-2 text-dark"></i>Verification ID</span>
-        <?php if($pendingDocsCount>0): ?><span class="badge bg-warning text-dark ms-2"><?php echo $pendingDocsCount; ?></span><?php endif; ?>
       </a>
       <?php if(!$hasShelter): ?>
         <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center py-3" href="./ShelterRegistration.php">
