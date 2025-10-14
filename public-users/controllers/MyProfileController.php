@@ -8,9 +8,23 @@ class ProfileController extends BaseController {
      */
     public static function get(int $userId): ?array {
         $sql = "SELECT id, full_name, email, birthday, gender, profile_photo, location, 
-                       contact_number, is_verified, created_at
+                       contact_number, is_verified, created_at, updated_at
                 FROM users WHERE id = ?";
-        return self::fetchOne($sql, 'i', [$userId]);
+        $user = self::fetchOne($sql, 'i', [$userId]);
+        if ($user) {
+            $user['age'] = self::calculateAge($user['birthday']);
+        }
+        return $user;
+    }
+
+    /**
+     * Calculate age from birthday
+     */
+    private static function calculateAge(?string $birthday): ?int {
+        if (!$birthday) return null;
+        $birthDate = new DateTime($birthday);
+        $today = new DateTime('today');
+        return $birthDate->diff($today)->y;
     }
 
     /**

@@ -164,7 +164,7 @@ var APP_BASE = '<?php echo addslashes($appBase); ?>';
 </script>
 
 <!-- Main content: My Shelter summary and quick actions -->
-<div class="container-fluid py-3">
+<div class="container-fluid">
     <!-- alert container for upload messages -->
     <div id="uploadAlertContainer" class="mb-3"></div>
     <div class="row g-3">
@@ -1125,6 +1125,7 @@ window.performDelete = function(docId, btnEl) {
 
 <!-- Edit shelter modal using SweetAlert2 for a modern look -->
 <script>
+// Edit shelter modal
 document.addEventListener('DOMContentLoaded', function() {
     var btn = document.getElementById('editShelterBtn');
     if (!btn) return;
@@ -1139,88 +1140,211 @@ document.addEventListener('DOMContentLoaded', function() {
         var curAddr = addrEl ? addrEl.textContent.trim() : '';
         var curContact = contactEl ? contactEl.textContent.trim() : '';
 
-        Swal.fire({
-            title: 'Edit Shelter',
-            html: `
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <input id="swName" class="swal2-input" placeholder="Shelter name">
-                    <input id="swAddress" class="swal2-input" placeholder="Address">
-                    <input id="swContact" class="swal2-input" placeholder="Contact number">
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Save',
-            cancelButtonText: 'Cancel',
-            width: 600, // wider for horizontal feel
-            padding: '1.5em',
-            scrollbarPadding: false,
-            focusConfirm: false,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: function() {
-                try {
-                    document.getElementById('swName').value = curName;
-                    document.getElementById('swAddress').value = curAddr;
-                    document.getElementById('swContact').value = curContact;
-                    document.getElementById('swName').focus();
-                } catch (e) {}
+        // Parse address parts
+        var parts = curAddr.split(', ');
+        document.querySelector('#editShelterModal input[name="shelter_name"]').value = curName;
+        document.querySelector('#editShelterModal input[name="contact_number"]').value = curContact;
+        document.querySelector('#editShelterModal input[name="shelter_unit"]').value = '';
+        document.querySelector('#editShelterModal input[name="purok_subdivision"]').value = parts[0] || '';
+        document.querySelector('#editShelterModal input[name="barangay"]').value = parts[1] || '';
+        document.querySelector('#editShelterModal input[name="city"]').value = parts[2] || '';
+        document.querySelector('#editShelterModal input[name="province"]').value = parts[3] || '';
+        document.querySelector('#editShelterModal input[name="postal_code"]').value = parts[4] || '';
+        document.querySelector('#editShelterModal input[name="shelter_id"]').value = shelterId;
+
+        // Show modal
+        var modal = new bootstrap.Modal(document.getElementById('editShelterModal'));
+        modal.show();
+    });
+
+    // Handle form submit
+    document.getElementById('editShelterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // combine address
+        const address = [
+            document.querySelector('#editShelterModal input[name="shelter_unit"]').value.trim(),
+            document.querySelector('#editShelterModal input[name="purok_subdivision"]').value.trim(),
+            document.querySelector('#editShelterModal input[name="barangay"]').value.trim(),
+            document.querySelector('#editShelterModal input[name="city"]').value.trim(),
+            document.querySelector('#editShelterModal input[name="province"]').value.trim(),
+            document.querySelector('#editShelterModal input[name="postal_code"]').value.trim()
+        ].filter(v => v).join(', ');
+
+        const data = {
+            shelter_id: document.querySelector('#editShelterModal input[name="shelter_id"]').value,
+            shelter_name: document.querySelector('#editShelterModal input[name="shelter_name"]').value,
+            address: address,
+            contact_number: document.querySelector('#editShelterModal input[name="contact_number"]').value
+        };
+
+        if (!data.shelter_id) {
+            notifyMessage('Shelter ID is missing.');
+            return;
+        }
+        if (!data.shelter_name.trim()) {
+            notifyMessage('Shelter name is required.');
+            return;
+        }
+
+        fetch(controllerUrl('EditShelterController.php'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
-            preConfirm: function() {
-                var newName = (document.getElementById('swName') || {}).value || '';
-                var newAddr = (document.getElementById('swAddress') || {}).value || '';
-                var newContact = (document.getElementById('swContact') || {}).value || '';
-                if (!newName.trim()) {
-                    Swal.showValidationMessage('Shelter name is required');
-                    return false;
-                }
-                return {
-                    shelter_id: shelterId,
-                    shelter_name: newName.trim(),
-                    address: newAddr.trim(),
-                    contact_number: newContact.trim()
-                };
+            body: JSON.stringify(data)
+        }).then(res => res.json()).then(json => {
+            if (json.success) {
+                // Update the page
+                document.querySelector('h3.mb-0.d-flex').textContent = data.shelter_name || 'My Shelter';
+                document.getElementById('shelterNameDisplay').textContent = data.shelter_name || '—';
+                document.getElementById('shelterAddressDisplay').textContent = data.address || '—';
+                document.getElementById('shelterContactDisplay').textContent = data.contact_number || '—';
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('editShelterModal')).hide();
+                notifyMessage('Shelter updated successfully.');
+            } else {
+                notifyMessage(json.error || 'Failed to update shelter.');
             }
-        }).then(function(result) {
-            if (!result || !result.value) return;
-            var data = result.value;
-
-            fetch(controllerUrl('EditShelterController.php'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify(data)
-            }).then(function(res) {
-                return res.json();
-            }).then(function(json) {
-                if (json && json.success) {
-                    try {
-                        if (nameEl) nameEl.textContent = data.shelter_name || '—';
-                        if (addrEl) addrEl.textContent = data.address || '—';
-                        if (contactEl) contactEl.textContent = data.contact_number ||
-                            '—';
-                    } catch (e) {}
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Saved',
-                        timer: 1000,
-                        showConfirmButton: false,
-                        width: 250,
-                        scrollbarPadding: false,
-                        focusConfirm: false
-                    });
-                } else {
-                    notifyMessage((json && (json.error || json.message)) ? (json
-                        .error || json.message) : 'Failed to update shelter');
-                }
-            }).catch(function(err) {
-                console.error('Edit shelter error', err);
-                notifyMessage('An error occurred while updating the shelter.');
-            });
+        }).catch(error => {
+            console.error('Error:', error);
+            notifyMessage('An error occurred while updating the shelter.');
         });
     });
+});
+</script>
+
+<!-- Leaflet CSS and JS for map functionality in the edit shelter modal -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Edit Shelter Modal -->
+<div class="modal fade" id="editShelterModal" tabindex="-1" aria-labelledby="editShelterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="z-index: 1060;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editShelterModalLabel">Edit Shelter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editShelterForm" method="post" action="../controllers/EditShelterController.php">
+                    <input type="hidden" name="shelter_id" value="<?php echo htmlspecialchars($shelter['id'] ?? ''); ?>">
+                    <div class="mb-3">
+                        <label class="form-label">Shelter Name</label>
+                        <input type="text" class="form-control" name="shelter_name" value="<?php echo htmlspecialchars($shelter['shelter_name'] ?? ''); ?>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" class="form-control" name="contact_number" value="<?php echo htmlspecialchars($shelter['contact_number'] ?? ''); ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control mb-2" name="shelter_unit" value="<?php echo htmlspecialchars($shelter_unit); ?>" placeholder="Shelter/Unit Name (e.g., 2nd Floor)">
+                                <input type="text" class="form-control mb-2" name="purok_subdivision" value="<?php echo htmlspecialchars($shelter_purok); ?>" placeholder="Purok/Subdivision">
+                                <input type="text" class="form-control mb-2" name="barangay" value="<?php echo htmlspecialchars($shelter_barangay); ?>" placeholder="Barangay">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control mb-2" name="city" value="<?php echo htmlspecialchars($shelter_city); ?>" placeholder="City">
+                                <input type="text" class="form-control mb-2" name="province" value="<?php echo htmlspecialchars($shelter_province); ?>" placeholder="Province">
+                                <input type="text" class="form-control mb-2" name="postal_code" value="<?php echo htmlspecialchars($shelter_postal); ?>" placeholder="Postal Code">
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-1">Location is used for accurate place name via geolocation.</small>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary" id="getShelterLocationBtn">Get Current Location</button>
+                        </div>
+                        <div id="shelterMap" style="height: 300px; margin-top: 10px; display: none;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy"></i> Update Shelter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+  #shelterMap {
+    height: 300px;
+  }
+</style>
+
+<script>
+// Leaflet map for shelter location
+var shelterMap;
+var shelterMarker;
+document.getElementById('getShelterLocationBtn').addEventListener('click', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            // Reverse geocode using BigDataCloud
+            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`)
+                .then(response => response.json())
+                .then(data => {
+                    // Fill the address fields
+                    const admin = data.localityInfo?.administrative || [];
+                    document.querySelector('#editShelterModal input[name="province"]').value = admin[2]?.name || data.countryName || '';
+                    document.querySelector('#editShelterModal input[name="city"]').value = admin[3]?.name || data.city || '';
+                    document.querySelector('#editShelterModal input[name="barangay"]').value = admin[4]?.name || '';
+                    document.querySelector('#editShelterModal input[name="purok_subdivision"]').value = data.locality || '';
+                    document.querySelector('#editShelterModal input[name="postal_code"]').value = data.postcode || '';
+                    document.querySelector('#editShelterModal input[name="shelter_unit"]').value = ''; // Leave empty
+                    // Show map with satellite tiles
+                    document.getElementById('shelterMap').style.display = 'block';
+                    if (!shelterMap) {
+                        shelterMap = L.map('shelterMap').setView([lat, lng], 18);
+                        L.tileLayer('https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                            attribution: '© Google'
+                        }).addTo(shelterMap);
+                        shelterMarker = L.marker([lat, lng], { draggable: true }).addTo(shelterMap);
+                        shelterMarker.on('dragend', function(e) {
+                            const pos = e.target.getLatLng();
+                            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.lat}&longitude=${pos.lng}&localityLanguage=en`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    // Fill the fields with new location
+                                    const admin = data.localityInfo?.administrative || [];
+                                    document.querySelector('#editShelterModal input[name="province"]').value = admin[2]?.name || data.countryName || '';
+                                    document.querySelector('#editShelterModal input[name="city"]').value = admin[3]?.name || data.city || '';
+                                    document.querySelector('#editShelterModal input[name="barangay"]').value = admin[4]?.name || '';
+                                    document.querySelector('#editShelterModal input[name="purok_subdivision"]').value = data.locality || '';
+                                    document.querySelector('#editShelterModal input[name="postal_code"]').value = data.postcode || '';
+                                    document.querySelector('#editShelterModal input[name="shelter_unit"]').value = '';
+                                });
+                        });
+                    } else {
+                        shelterMap.setView([lat, lng], 18);
+                        shelterMarker.setLatLng([lat, lng]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Reverse geocoding error:', error);
+                    // Still show map
+                    document.getElementById('shelterMap').style.display = 'block';
+                    if (!shelterMap) {
+                        shelterMap = L.map('shelterMap').setView([lat, lng], 18);
+                        L.tileLayer('https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                            attribution: '© Google'
+                        }).addTo(shelterMap);
+                        shelterMarker = L.marker([lat, lng], { draggable: true }).addTo(shelterMap);
+                        shelterMarker.on('dragend', function(e) {
+                            const pos = e.target.getLatLng();
+                            // No alert
+                        });
+                    } else {
+                        shelterMap.setView([lat, lng], 18);
+                        shelterMarker.setLatLng([lat, lng]);
+                    }
+                });
+        }, function(error) {
+            alert('Error getting location: ' + error.message);
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
 });
 </script>

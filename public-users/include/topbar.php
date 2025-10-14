@@ -1,7 +1,6 @@
 <!-- External topbar styles -->
-<link rel="stylesheet" href="../../assets/css/topbar.css" />
 <nav class="topbar navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top shadow-sm py-2 py-lg-2"
-    style="z-index:100000;"
+    style="z-index:1000;"
     role="navigation" aria-label="Primary">
     <div class="container-fluid align-items-center d-flex gap-2 gap-lg-3">
         <!-- Left: Brand -->
@@ -78,7 +77,6 @@
                             class="rounded-circle profile-avatar" />
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenu">
-                        <li><a class="dropdown-item" href="./profile.php"><i class="ti ti-user me-1"></i> Profile</a>
                         </li>
                         <?php if(isset($_SESSION['user']['full_name'])): ?>
                           <div class="dropdown-item text-center small text-muted">

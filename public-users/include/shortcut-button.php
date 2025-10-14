@@ -9,9 +9,9 @@ if (!isset($hasShelter)) { $hasShelter = !empty($_SESSION['shelter_id']); }
 $pendingDocsCount = isset($pendingDocsCount)? (int)$pendingDocsCount : 0;
 $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 0;
 ?>
-<div class="card mb-3">
-  <div class="card-body">
-    <h6 class="text-uppercase text-muted small mb-3"><i class="ti ti-flash me-1"></i> Quick Actions</h6>
+
+<div class="card mb-3 bg-transparent shadow-none">
+  <div class="card-body py-2" style="font-size:0.95rem;">
     <div class="list-group list-group-flush">
       <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="#" data-bs-toggle="modal" data-bs-target="#createPostModal">
         <span><i class="ti ti-square-plus me-2 text-primary"></i>Create Post</span>
@@ -43,12 +43,12 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
         <?php if($pendingDocsCount>0): ?><span class="badge bg-warning text-dark ms-2"><?php echo $pendingDocsCount; ?></span><?php endif; ?>
       </a>
       <?php if(!$hasShelter): ?>
-        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./ShelterRegistration.php">
-          <span><i class="ti ti-building-arch me-2 text-info"></i>Register Shelter</span>
+        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center py-3" href="./ShelterRegistration.php">
+          <span class="d-flex align-items-center"><i class="ti ti-building-arch text-info fs-5 me-1"></i>Register Shelter</span>
         </a>
       <?php else: ?>
-        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./ShelterManagement.php">
-          <span><i class="ti ti-home-heart me-2 text-info"></i>My Shelter</span>
+        <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center py-3" href="./ShelterManagement.php">
+          <span class="d-flex align-items-center"><i class="ti ti-home-heart text-info fs-5 me-1"></i>My Shelter</span>
         </a>
       <?php endif; ?>
     </div>

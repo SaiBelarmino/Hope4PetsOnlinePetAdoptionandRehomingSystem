@@ -68,24 +68,12 @@ function resolve_media_path(?string $path): string {
         <!-- Left sidebar: shortcuts -->
         <div class="col-12 col-lg-3">
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="text-muted mb-2">Explore</h6>
-                    <div class="d-grid gap-2">
-                        <a href="./shelters.php" class="btn btn-outline-primary"><i
-                                class="ti ti-building-community me-1"></i> Find Shelters</a>
-                        <a href="./pets.php" class="btn btn-outline-secondary"><i class="ti ti-search me-1"></i> Browse
-                            Pets</a>
-                    </div>
-                </div>
-            </div>
         </div>
-
         <!-- Center: composer and feed -->
         <div class="col-12 col-lg-6">
             <!-- Composer -->
             <div class="card mb-3">
-                <div class="card-body">
+                <div class="card-body" style="max-height:620px; overflow-y:auto; overflow-x:hidden;">
                     <div class="d-flex align-items-start">
                         <img src="<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>"
                             class="rounded-circle me-3 object-fit-cover" width="44" height="44"
@@ -147,7 +135,8 @@ function resolve_media_path(?string $path): string {
 
         <!-- Single post card -->
             <div class="card mb-3">
-                <div class="card-body">
+                <!-- Make only this card body scrollable -->
+                <div class="card-body" style="max-height:520px; overflow-y:auto; overflow-x:hidden;">
                     <div class="d-flex align-items-center mb-2">
                         <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
                             <img src="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>"
