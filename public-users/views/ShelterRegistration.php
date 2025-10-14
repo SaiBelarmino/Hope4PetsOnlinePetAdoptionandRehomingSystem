@@ -13,6 +13,11 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
 // Get flash message (if any) and load shelter using the controller
 require_once __DIR__ . '/../controllers/ShelterManagementController.php';
 
+// Ensure the class exists before using it
+if (!class_exists('ShelterManagementController')) {
+    require_once __DIR__ . '/../controllers/ShelterManagementController.php';
+}
+
 // Try to use SessionManager if available for flash; otherwise use $_SESSION fallback
 $flash = [];
 if (class_exists('SessionManager') && method_exists('SessionManager','getFlash')) {
