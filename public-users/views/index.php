@@ -101,7 +101,8 @@ $posts = IndexController::getRecentPosts(20);
 
         <!-- Single post card -->
             <div class="card mb-3">
-                <div class="card-body">
+                <!-- Make only this card body scrollable -->
+                <div class="card-body" style="max-height:520px; overflow-y:auto; overflow-x:hidden;">
                     <div class="d-flex align-items-center mb-2">
                         <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
                             <img src="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>"

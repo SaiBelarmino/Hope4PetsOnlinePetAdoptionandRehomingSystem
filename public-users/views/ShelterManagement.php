@@ -173,7 +173,9 @@ var APP_BASE = '<?php echo addslashes($appBase); ?>';
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
         </div>
         <!-- Center Content -->
-        <div class="col-12 col-lg-9">
+        <div class="col-12 col-lg-9 center-scroll"
+            style="max-height:calc(100vh - 140px); overflow:auto; -webkit-overflow-scrolling:touch;" tabindex="0"
+            aria-label="Main shelter content (scrollable)">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h3 class="mb-0 d-flex align-items-center gap-2">
                     <?php echo htmlspecialchars($shelter['shelter_name'] ?? ''); ?>
@@ -204,7 +206,8 @@ var APP_BASE = '<?php echo addslashes($appBase); ?>';
                 </h3>
                 <div class="d-flex gap-1 align-items-center">
                     <a href="PetManagement.php" class="btn btn-sm btn-primary"><i class="ti ti-paw"></i> Manage Pets</a>
-                    <button id="editShelterBtn" type="button" class="btn btn-sm btn-outline-secondary"><i class="ti ti-edit"></i> Edit</button>
+                    <button id="editShelterBtn" type="button" class="btn btn-sm btn-outline-secondary"><i
+                            class="ti ti-edit"></i> Edit</button>
                 </div>
             </div>
             <div class="row g-3 mb-3">
@@ -266,32 +269,32 @@ var APP_BASE = '<?php echo addslashes($appBase); ?>';
                         </div>
 
                         <?php
-                  // Determine overall documents status: any rejected -> Rejected, else any pending -> Pending, else any approved -> Approved, else No documents
-                  $overallStatus = 'No documents';
+              // Determine overall documents status: any rejected -> Rejected, else any pending -> Pending, else any approved -> Approved, else No documents
+              $overallStatus = 'No documents';
+              $badgeType = 'light';
+              if (!empty($documents) && is_array($documents)) {
+                $hasPending = $hasApproved = $hasRejected = false;
+                foreach ($documents as $d) {
+                  $st = strtolower($d['status'] ?? '');
+                  if ($st === 'rejected') { $hasRejected = true; break; }
+                  if ($st === 'pending') $hasPending = true;
+                  if ($st === 'approved') $hasApproved = true;
+                }
+                if ($hasRejected) {
+                  $overallStatus = 'Rejected';
+                  $badgeType = 'danger';
+                } elseif ($hasPending) {
+                  $overallStatus = 'Pending';
+                  $badgeType = 'warning';
+                } elseif ($hasApproved) {
+                  $overallStatus = 'Approved';
+                  $badgeType = 'success';
+                } else {
+                  $overallStatus = 'Unknown';
                   $badgeType = 'light';
-                  if (!empty($documents) && is_array($documents)) {
-                    $hasPending = $hasApproved = $hasRejected = false;
-                    foreach ($documents as $d) {
-                      $st = strtolower($d['status'] ?? '');
-                      if ($st === 'rejected') { $hasRejected = true; break; }
-                      if ($st === 'pending') $hasPending = true;
-                      if ($st === 'approved') $hasApproved = true;
-                    }
-                    if ($hasRejected) {
-                      $overallStatus = 'Rejected';
-                      $badgeType = 'danger';
-                    } elseif ($hasPending) {
-                      $overallStatus = 'Pending';
-                      $badgeType = 'warning';
-                    } elseif ($hasApproved) {
-                      $overallStatus = 'Approved';
-                      $badgeType = 'success';
-                    } else {
-                      $overallStatus = 'Unknown';
-                      $badgeType = 'light';
-                    }
-                  }
-                  ?>
+                }
+              }
+              ?>
                         <div class="col-6 col-sm-6 col-lg-1 text-lg-end">
                             <div class="small text-muted">Document Status</div>
                             <div>
@@ -377,10 +380,10 @@ var APP_BASE = '<?php echo addslashes($appBase); ?>';
                                                     <select name="optional_doc_type" class="form-select">
                                                         <option value="">Select (optional)</option>
                                                         <?php
-                                                        $allDocs = ['dtiregistration','mayors_permit','bir_registration','business_permit','articles_of_incorporation','barangay_clearance','contract_of_lease','other_business_documents'];
-                                                        $requiredDocs = ['business_permit','mayors_permit','bir_registration','barangay_clearance'];
-                                                        $optional = array_values(array_filter($allDocs, function($v) use ($requiredDocs){ return !in_array($v, $requiredDocs); }));
-                                                        foreach($optional as $t): ?>
+                                $allDocs = ['dtiregistration','mayors_permit','bir_registration','business_permit','articles_of_incorporation','barangay_clearance','contract_of_lease','other_business_documents'];
+                                $requiredDocs = ['business_permit','mayors_permit','bir_registration','barangay_clearance'];
+                                $optional = array_values(array_filter($allDocs, function($v) use ($requiredDocs){ return !in_array($v, $requiredDocs); }));
+                                foreach($optional as $t): ?>
                                                         <option value="<?php echo htmlspecialchars($t); ?>">
                                                             <?php echo ucwords(str_replace('_',' ', $t)); ?></option>
                                                         <?php endforeach; ?>

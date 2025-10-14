@@ -1,15 +1,4 @@
-<?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
-/**
- * View: adopt.php
- * Table: adoptions, pets
- * Expected Variables:
- *  - $pet (same structure as pet_view subset)
- *  - $existingApplication (nullable) => ['status','created_at'] if already applied
- */
-$pageTitle = 'Adopt Pet';
-$hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']) || !empty($_SESSION['user']['shelter_id']);
-?>
+
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
 <div class="container-fluid py-3">

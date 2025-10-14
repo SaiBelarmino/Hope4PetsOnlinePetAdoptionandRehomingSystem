@@ -93,64 +93,67 @@ if (!isset($pets)) {
         </div>
       </div>
 
-      <div class="row g-3" id="pet-grid">
-        <?php if (empty($pets)): ?>
-          <div class="col-12">
-            <div class="card"><div class="card-body text-center text-muted py-5">No pets found.</div></div>
+      <!-- Scrollable pets area: only the pet cards will scroll -->
+      <div class="pet-grid-scroll" style="max-height:60vh; overflow-y:auto; overscroll-behavior:y-contain; padding-right:8px;">
+        <div class="row g-3" id="pet-grid">
+          <?php if (empty($pets)): ?>
+        <div class="col-12">
+          <div class="card"><div class="card-body text-center text-muted py-5">No pets found.</div></div>
+        </div>
+          <?php else: foreach ($pets as $p):
+        // The controller now provides the full URL in $p['photo']
+        $status = $p['status'] ?? 'available';
+        $photoFullUrl = $p['photo'] ?? '/storage/uploads/images/default.png';
+        
+        // Set $p_data for use with the View Modal button
+        $p_data = $p;
+        $p_data['photo'] = $photoFullUrl; // Ensure p_data uses the correct URL
+          ?>
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card h-100 pet-card" data-name="<?php echo htmlspecialchars(strtolower($p['name'] ?? '')); ?>" data-breed="<?php echo htmlspecialchars(strtolower($p['breed'] ?? '')); ?>" data-species="<?php echo htmlspecialchars(strtolower($p['species'] ?? '')); ?>" data-status="<?php echo htmlspecialchars($status); ?>">
+            <div class="ratio ratio-4x3 overflow-hidden">
+          <img src="<?php echo htmlspecialchars($photoFullUrl); ?>" alt="<?php echo htmlspecialchars($p['name'] ?? 'Pet'); ?>" class="card-img-top object-fit-cover">
+            </div>
+            <?php if (!empty($_GET['debug'])): ?>
+          <div class="small text-muted mt-1">
+            Raw: <?php echo htmlspecialchars($p['photo_raw'] ?? ($p['pet_photos'] ?? '')); ?><br>
+            URL: <?php echo htmlspecialchars($photoFullUrl); ?>
           </div>
-        <?php else: foreach ($pets as $p):
-          // The controller now provides the full URL in $p['photo']
-          $status = $p['status'] ?? 'available';
-          $photoFullUrl = $p['photo'] ?? '/storage/uploads/images/default.png';
-          
-          // Set $p_data for use with the View Modal button
-          $p_data = $p;
-          $p_data['photo'] = $photoFullUrl; // Ensure p_data uses the correct URL
-        ?>
-          <div class="col-12 col-sm-6 col-md-4">
-            <div class="card h-100 pet-card" data-name="<?php echo htmlspecialchars(strtolower($p['name'] ?? '')); ?>" data-breed="<?php echo htmlspecialchars(strtolower($p['breed'] ?? '')); ?>" data-species="<?php echo htmlspecialchars(strtolower($p['species'] ?? '')); ?>" data-status="<?php echo htmlspecialchars($status); ?>">
-              <div class="ratio ratio-4x3 overflow-hidden">
-                <img src="<?php echo htmlspecialchars($photoFullUrl); ?>" alt="<?php echo htmlspecialchars($p['name'] ?? 'Pet'); ?>" class="card-img-top object-fit-cover">
-              </div>
-              <?php if (!empty($_GET['debug'])): ?>
-                <div class="small text-muted mt-1">
-                  Raw: <?php echo htmlspecialchars($p['photo_raw'] ?? ($p['pet_photos'] ?? '')); ?><br>
-                  URL: <?php echo htmlspecialchars($photoFullUrl); ?>
-                </div>
-              <?php endif; ?>
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                  <div>
-                    <h6 class="mb-0 fw-semibold"><a href="./pet_view.php?id=<?php echo (int)$p['id']; ?>" class="text-decoration-none"><?php echo htmlspecialchars($p['name'] ?? 'Unnamed'); ?></a></h6>
-                    <div class="small text-muted"><?php echo htmlspecialchars($p['breed'] ?? 'Unknown'); ?> · <?php echo htmlspecialchars($p['age'] ?? ''); ?></div>
-                  </div>
-                  <div class="text-end">
-                    <span class="badge bg-<?php echo ($status==='available')? 'success' : (($status==='adopted')? 'secondary' : 'warning'); ?>"><?php echo htmlspecialchars(ucfirst($status)); ?></span>
-                  </div>
-                </div>
-
-                <!-- Additional details -->
-                <div class="mb-2 small">
-                  <span class="me-2"><strong>Species:</strong> <?php echo htmlspecialchars(ucfirst($p['species'] ?? 'Other')); ?></span>
-                  <span class="me-2"><strong>Gender:</strong> <?php echo htmlspecialchars(ucfirst($p['gender'] ?? 'Unknown')); ?></span>
-                  <span><strong>Size:</strong> <?php echo htmlspecialchars(ucfirst($p['size'] ?? 'Medium')); ?></span>
-                </div>
-                <div class="mb-2 small text-truncate"><strong>Vaccine:</strong> <?php echo htmlspecialchars($p['vaccine_status'] ?? 'N/A'); ?></div>
-                <div class="mb-2 small text-truncate"><strong>Health:</strong> <?php echo htmlspecialchars($p['health_status'] ?? 'N/A'); ?></div>
-                <div class="mb-2 small text-truncate text-muted"><i class="ti ti-map-pin"></i> <?php echo htmlspecialchars($p['location'] ?? 'Unknown'); ?></div>
-
-                <p class="small text-truncate mb-2"><?php echo htmlspecialchars($p['description'] ?? 'No description'); ?></p>
-                <div class="d-flex gap-2">
-                  <button class="btn btn-sm btn-outline-primary flex-grow-1 btn-view" data-pet='<?php $p_data['photo'] = htmlspecialchars($photoFullUrl); echo json_encode($p_data, JSON_HEX_APOS|JSON_HEX_QUOT); ?>' type="button">View</button>
-                  <?php if ($hasShelter): ?>
-                    <button class="btn btn-sm btn-outline-secondary btn-edit" data-pet='<?php echo json_encode($p, JSON_HEX_APOS|JSON_HEX_QUOT); ?>' data-bs-toggle="modal" data-bs-target="#editPetModal" type="button">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deletePet(<?php echo (int)$p['id']; ?>, this)" type="button">Delete</button>
-                  <?php endif; ?>
-                </div>
-              </div>
+            <?php endif; ?>
+            <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h6 class="mb-0 fw-semibold"><a href="./pet_view.php?id=<?php echo (int)$p['id']; ?>" class="text-decoration-none"><?php echo htmlspecialchars($p['name'] ?? 'Unnamed'); ?></a></h6>
+              <div class="small text-muted"><?php echo htmlspecialchars($p['breed'] ?? 'Unknown'); ?> · <?php echo htmlspecialchars($p['age'] ?? ''); ?></div>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-<?php echo ($status==='available')? 'success' : (($status==='adopted')? 'secondary' : 'warning'); ?>"><?php echo htmlspecialchars(ucfirst($status)); ?></span>
             </div>
           </div>
-        <?php endforeach; endif; ?>
+
+          <!-- Additional details -->
+          <div class="mb-2 small">
+            <span class="me-2"><strong>Species:</strong> <?php echo htmlspecialchars(ucfirst($p['species'] ?? 'Other')); ?></span>
+            <span class="me-2"><strong>Gender:</strong> <?php echo htmlspecialchars(ucfirst($p['gender'] ?? 'Unknown')); ?></span>
+            <span><strong>Size:</strong> <?php echo htmlspecialchars(ucfirst($p['size'] ?? 'Medium')); ?></span>
+          </div>
+          <div class="mb-2 small text-truncate"><strong>Vaccine:</strong> <?php echo htmlspecialchars($p['vaccine_status'] ?? 'N/A'); ?></div>
+          <div class="mb-2 small text-truncate"><strong>Health:</strong> <?php echo htmlspecialchars($p['health_status'] ?? 'N/A'); ?></div>
+          <div class="mb-2 small text-truncate text-muted"><i class="ti ti-map-pin"></i> <?php echo htmlspecialchars($p['location'] ?? 'Unknown'); ?></div>
+
+          <p class="small text-truncate mb-2"><?php echo htmlspecialchars($p['description'] ?? 'No description'); ?></p>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary flex-grow-1 btn-view" data-pet='<?php $p_data['photo'] = htmlspecialchars($photoFullUrl); echo json_encode($p_data, JSON_HEX_APOS|JSON_HEX_QUOT); ?>' type="button">View</button>
+            <?php if ($hasShelter): ?>
+              <button class="btn btn-sm btn-outline-secondary btn-edit" data-pet='<?php echo json_encode($p, JSON_HEX_APOS|JSON_HEX_QUOT); ?>' data-bs-toggle="modal" data-bs-target="#editPetModal" type="button">Edit</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deletePet(<?php echo (int)$p['id']; ?>, this)" type="button">Delete</button>
+            <?php endif; ?>
+          </div>
+            </div>
+          </div>
+        </div>
+          <?php endforeach; endif; ?>
+        </div>
       </div>
 
       <!-- Pagination placeholder (server-side preferred) -->
