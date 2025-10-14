@@ -174,7 +174,7 @@ var APP_BASE = '<?php echo addslashes($appBase); ?>';
         </div>
         <!-- Center Content -->
         <div class="col-12 col-lg-9 center-scroll"
-            style="max-height:calc(100vh - 140px); overflow:auto; -webkit-overflow-scrolling:touch;" tabindex="0"
+            style="max-height:862px; overflow:auto; -webkit-overflow-scrolling:touch;" tabindex="0"
             aria-label="Main shelter content (scrollable)">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h3 class="mb-0 d-flex align-items-center gap-2">
