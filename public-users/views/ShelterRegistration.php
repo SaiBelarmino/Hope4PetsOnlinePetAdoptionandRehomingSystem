@@ -87,15 +87,16 @@ if ($userId && class_exists('ShelterManagementController') && method_exists('She
               </div>
               <div class="col-12">
                 <label class="form-label">Address</label>
+                <input type="hidden" name="address" id="address">
                 <div class="row">
                     <div class="col-md-6">
                         <input type="text" class="form-control mb-2" name="shelter_unit" placeholder="Shelter/Unit Name (e.g., 2nd Floor)">
                         <input type="text" class="form-control mb-2" name="purok_subdivision" placeholder="Purok/Subdivision">
-                        <input type="text" class="form-control mb-2" name="barangay" placeholder="Barangay">
+                        <input type="text" class="form-control mb-2" name="barangay" placeholder="Barangay" required>
                     </div>
                     <div class="col-md-6">
-                        <input type="text" class="form-control mb-2" name="city" placeholder="City">
-                        <input type="text" class="form-control mb-2" name="province" placeholder="Province">
+                        <input type="text" class="form-control mb-2" name="city" placeholder="City" required>
+                        <input type="text" class="form-control mb-2" name="province" placeholder="Province" required>
                         <input type="text" class="form-control mb-2" name="postal_code" placeholder="Postal Code">
                     </div>
                 </div>
@@ -143,4 +144,11 @@ if ($userId && class_exists('ShelterManagementController') && method_exists('She
 </div>
 <script src="assets/js/leaflet.js"></script>
 <script src="assets/js/geolocation.js"></script>
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+    const fields = ['shelter_unit', 'purok_subdivision', 'barangay', 'city', 'province', 'postal_code'];
+    const addressParts = fields.map(id => document.querySelector(`[name="${id}"]`).value.trim()).filter(val => val);
+    document.getElementById('address').value = addressParts.join(', ');
+});
+</script>
 <?php include __DIR__ . '/../include/footer.php'; ?>

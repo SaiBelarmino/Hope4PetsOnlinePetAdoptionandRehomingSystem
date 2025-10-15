@@ -213,7 +213,17 @@ if (!isset($pets)) {
               </div>
               <div class="mb-2">
                 <label class="form-label">Breed</label>
-                <input name="breed" class="form-control">
+                <select name="breed" class="form-select">
+                  <option value="">Select Breed</option>
+                  <option value="Mixed">Mixed</option>
+                  <option value="Labrador Retriever">Labrador Retriever</option>
+                  <option value="German Shepherd">German Shepherd</option>
+                  <option value="Golden Retriever">Golden Retriever</option>
+                  <option value="Bulldog">Bulldog</option>
+                  <option value="Beagle">Beagle</option>
+                  <option value="Poodle">Poodle</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
               <div class="mb-2">
                 <label class="form-label">Age</label>
@@ -240,11 +250,21 @@ if (!isset($pets)) {
               </div>
               <div class="mb-2">
                 <label class="form-label">Vaccine Status</label>
-                <input name="vaccine_status" class="form-control">
+                <select name="vaccine_status" class="form-select">
+                  <option value="">Select Status</option>
+                  <option value="Up to date">Up to date</option>
+                  <option value="Not vaccinated">Not vaccinated</option>
+                  <option value="Partially vaccinated">Partially vaccinated</option>
+                </select>
               </div>
               <div class="mb-2">
                 <label class="form-label">Health Status</label>
-                <input name="health_status" class="form-control">
+                <select name="health_status" class="form-select">
+                  <option value="">Select Status</option>
+                  <option value="Healthy">Healthy</option>
+                  <option value="Needs medical attention">Needs medical attention</option>
+                  <option value="Under treatment">Under treatment</option>
+                </select>
               </div>
             </div>
 
@@ -308,7 +328,17 @@ if (!isset($pets)) {
               </div>
               <div class="mb-2">
                 <label class="form-label">Breed</label>
-                <input name="breed" id="editPetBreed" class="form-control">
+                <select name="breed" id="editPetBreed" class="form-select">
+                  <option value="">Select Breed</option>
+                  <option value="Mixed">Mixed</option>
+                  <option value="Labrador Retriever">Labrador Retriever</option>
+                  <option value="German Shepherd">German Shepherd</option>
+                  <option value="Golden Retriever">Golden Retriever</option>
+                  <option value="Bulldog">Bulldog</option>
+                  <option value="Beagle">Beagle</option>
+                  <option value="Poodle">Poodle</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
               <div class="mb-2">
                 <label class="form-label">Age</label>
@@ -335,11 +365,21 @@ if (!isset($pets)) {
               </div>
               <div class="mb-2">
                 <label class="form-label">Vaccine Status</label>
-                <input name="vaccine_status" id="editPetVaccine" class="form-control">
+                <select name="vaccine_status" id="editPetVaccine" class="form-select">
+                  <option value="">Select Status</option>
+                  <option value="Up to date">Up to date</option>
+                  <option value="Not vaccinated">Not vaccinated</option>
+                  <option value="Partially vaccinated">Partially vaccinated</option>
+                </select>
               </div>
               <div class="mb-2">
                 <label class="form-label">Health Status</label>
-                <input name="health_status" id="editPetHealth" class="form-control">
+                <select name="health_status" id="editPetHealth" class="form-select">
+                  <option value="">Select Status</option>
+                  <option value="Healthy">Healthy</option>
+                  <option value="Needs medical attention">Needs medical attention</option>
+                  <option value="Under treatment">Under treatment</option>
+                </select>
               </div>
             </div>
 

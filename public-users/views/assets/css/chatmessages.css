@@ -1,0 +1,53 @@
+:root {
+  /* I-define ang base value para sa taas ng buong screen na AALISIN sa 95vh */
+  --header-footer-height: 220px;
+}
+
+#chat-container {
+  /* Base Style: Dapat nasa pinakataas ang background, overflow, at position */
+  background: #f8f9fb;
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+
+  /* Kalkulahin ang max-height gamit ang variable */
+  max-height: calc(95vh - var(--header-footer-height));
+
+  /* Para mas maganda ang transition kapag nagbabago ang screen size */
+  transition: max-height 0.3s ease-out;
+  
+  /* Siguraduhin na ang width ay umaabot sa container nito */
+  width: 100%;
+}
+
+/* --- */
+
+/* BREAKPOINT 1: Tablets at Mas Maliit (<= 992px) */
+/* Mas malaking breakpoint na mas angkop sa karaniwang tablet */
+@media (max-width: 992px) {
+  :root {
+    /* Baguhin ang variable value para sa header/footer. Pwedeng mas maliit */
+    --header-footer-height: 180px; 
+  }
+  
+  #chat-container {
+    /* Ibaba ang porsyento ng screen height na gagamitin */
+    max-height: calc(90vh - var(--header-footer-height));
+  }
+}
+
+/* --- */
+
+/* BREAKPOINT 2: Mobile Phones (<= 600px) */
+/* Mas angkop na breakpoint para sa karamihan ng portrait mobile views */
+@media (max-width: 600px) {
+  :root {
+    /* Pinakamababang adjustment para sa header/footer */
+    --header-footer-height: 100px; 
+  }
+
+  #chat-container {
+    /* Mas malaking porsyento ng screen height para may mas malaking chat area */
+    max-height: calc(85vh - var(--header-footer-height));
+  }
+}

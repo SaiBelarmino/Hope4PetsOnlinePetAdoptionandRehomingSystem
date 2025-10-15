@@ -64,6 +64,18 @@ $shelter_name = trim($_POST['shelter_name'] ?? '');
 $contact_number = trim($_POST['contact_number'] ?? '');
 $address = trim($_POST['address'] ?? '');
 
+// Build address from individual fields if not provided
+if ($address === '') {
+    $address_parts = [];
+    if (!empty(trim($_POST['shelter_unit'] ?? ''))) $address_parts[] = trim($_POST['shelter_unit']);
+    if (!empty(trim($_POST['purok_subdivision'] ?? ''))) $address_parts[] = trim($_POST['purok_subdivision']);
+    if (!empty(trim($_POST['barangay'] ?? ''))) $address_parts[] = trim($_POST['barangay']);
+    if (!empty(trim($_POST['city'] ?? ''))) $address_parts[] = trim($_POST['city']);
+    if (!empty(trim($_POST['province'] ?? ''))) $address_parts[] = trim($_POST['province']);
+    if (!empty(trim($_POST['postal_code'] ?? ''))) $address_parts[] = trim($_POST['postal_code']);
+    $address = implode(', ', $address_parts);
+}
+
 $errors = [];
 if ($shelter_name === '') { $errors[] = 'Shelter name is required.'; }
 if ($contact_number === '') { $errors[] = 'Contact number is required.'; }
