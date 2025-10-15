@@ -9,8 +9,7 @@ $hasShelter = !empty($_SESSION['has_shelter']) || !empty($_SESSION['shelter_id']
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="assets/css/leaflet.css" />
 <?php
 // Get flash message (if any) and load shelter using the controller
 require_once __DIR__ . '/../controllers/ShelterManagementController.php';
@@ -104,6 +103,7 @@ if ($userId && class_exists('ShelterManagementController') && method_exists('She
                 <div class="d-flex justify-content-end">
                     <button type="button" class="btn btn-secondary" id="getLocationBtn">Get Current Location</button>
                 </div>
+                <div id="locationError" class="alert alert-warning mt-2" style="display: none;"></div>
                 <div id="map" style="height: 300px; margin-top: 10px; display: none;"></div>
               </div>
               <div class="col-12">
@@ -139,80 +139,8 @@ if ($userId && class_exists('ShelterManagementController') && method_exists('She
       </div>
     </div>
   </div>
- </div></div>
-<script>
-var map;
-var marker;
-document.getElementById('getLocationBtn').addEventListener('click', function() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            // Reverse geocode using BigDataCloud
-            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`)
-                .then(response => response.json())
-                .then(data => {
-                    // Fill the address fields
-                    const admin = data.localityInfo?.administrative || [];
-                    document.querySelector('input[name="province"]').value = admin[2]?.name || data.countryName || '';
-                    document.querySelector('input[name="city"]').value = admin[3]?.name || data.city || '';
-                    document.querySelector('input[name="barangay"]').value = admin[4]?.name || '';
-                    document.querySelector('input[name="purok_subdivision"]').value = data.locality || '';
-                    document.querySelector('input[name="postal_code"]').value = data.postcode || '';
-                    document.querySelector('input[name="shelter_unit"]').value = '';
-                    // Show map with satellite tiles
-                    document.getElementById('map').style.display = 'block';
-                    if (!map) {
-                        map = L.map('map').setView([lat, lng], 18);
-                        L.tileLayer('https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                            attribution: '© Google'
-                        }).addTo(map);
-                        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-                        marker.on('dragend', function(e) {
-                            const pos = e.target.getLatLng();
-                            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.lat}&longitude=${pos.lng}&localityLanguage=en`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    // Fill the fields with new location
-                                    const admin = data.localityInfo?.administrative || [];
-                                    document.querySelector('input[name="province"]').value = admin[2]?.name || data.countryName || '';
-                                    document.querySelector('input[name="city"]').value = admin[3]?.name || data.city || '';
-                                    document.querySelector('input[name="barangay"]').value = admin[4]?.name || '';
-                                    document.querySelector('input[name="purok_subdivision"]').value = data.locality || '';
-                                    document.querySelector('input[name="postal_code"]').value = data.postcode || '';
-                                    document.querySelector('input[name="shelter_unit"]').value = '';
-                                });
-                        });
-                    } else {
-                        map.setView([lat, lng], 18);
-                        marker.setLatLng([lat, lng]);
-                    }
-                })
-                .catch(error => {
-                    console.error('Reverse geocoding error:', error);
-                    // Still show map
-                    document.getElementById('map').style.display = 'block';
-                    if (!map) {
-                        map = L.map('map').setView([lat, lng], 18);
-                        L.tileLayer('https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                            attribution: '© Google'
-                        }).addTo(map);
-                        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-                        marker.on('dragend', function(e) {
-                            const pos = e.target.getLatLng();
-                            // No fill
-                        });
-                    } else {
-                        map.setView([lat, lng], 18);
-                        marker.setLatLng([lat, lng]);
-                    }
-                });
-        }, function(error) {
-            alert('Error getting location: ' + error.message);
-        });
-    } else {
-        alert('Geolocation is not supported by this browser.');
-    }
-});
-</script>
+ </div>
+</div>
+<script src="assets/js/leaflet.js"></script>
+<script src="assets/js/geolocation.js"></script>
 <?php include __DIR__ . '/../include/footer.php'; ?>
