@@ -34,10 +34,6 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
       <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./my_posts.php">
         <span><i class="ti ti-news me-2 text-secondary"></i>My Posts</span>
       </a>
-      <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center" href="./messages.php">
-        <span><i class="ti ti-message-circle me-2 text-primary"></i>Messages</span>
-        <?php if($unreadMessagesCount>0): ?><span class="badge bg-danger ms-2"><?php echo $unreadMessagesCount; ?></span><?php endif; ?>
-      </a>
       <?php if(!$hasShelter): ?>
         <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center py-3" href="./ShelterRegistration.php">
           <span class="d-flex align-items-center"><i class="ti ti-building-arch text-info fs-5 me-1"></i>Register Shelter</span>

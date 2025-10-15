@@ -1,5 +1,6 @@
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
+<link href="assets/css/index.css" rel="stylesheet">
 
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
@@ -36,53 +37,6 @@ function resolve_media_path(?string $path): string {
     return '../../' . $normalized;
 }
 ?>
-
-<style>
-/* Post media styling: single image fills width with controlled height and object-fit; grid thumbs are uniform */
-.post-media-single img {
-    width: 100%;
-    max-height: 420px;
-    height: 420px;
-    object-fit: cover;
-    display: block;
-    border-radius: 8px;
-    aspect-ratio: 1;
-}
-
-.post-media-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-}
-
-.post-media-grid img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 8px;
-    aspect-ratio: 1;
-}
-
-@media (min-width: 992px) {
-    .post-media-grid img {
-        height: 200px;
-    }
-}
-
-.play-overlay i {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-#imageModal .modal-backdrop, #videoModal .modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-</style>
 
 <?php
 $flash = \SessionManager::getFlash();
@@ -182,14 +136,14 @@ if ($flash && is_array($flash)) {
                 <!-- Make only this card body scrollable -->
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
-                        <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
+                        <a href="./UserProfile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
                             <img src="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>"
                                 class="rounded-circle me-2 object-fit-cover" width="36" height="36"
                                 style="object-fit: cover; aspect-ratio: 1/1; min-width:36px; min-height:36px; max-width:36px; max-height:36px;"
                                 alt="Profile picture" onerror="this.src='../../assets/images/profile/user-1.jpg'" />
                         </a>
                         <div>
-                            <a href="./profile.php?user_id=<?php echo urlencode($post['user_id']); ?>"
+                            <a href="./UserProfile.php?user_id=<?php echo urlencode($post['user_id']); ?>"
                                 class="fw-bold text-decoration-none text-dark">
                                 <?php echo htmlspecialchars($post['full_name']); ?>
                             </a>
@@ -235,8 +189,10 @@ if ($flash && is_array($flash)) {
 
                     <?php if (!empty($videos)): ?>
                     <?php foreach ($videos as $v): ?>
-                    <div class="video-container position-relative mb-3" onclick="openVideoModalWithPause('<?php echo htmlspecialchars(resolve_media_path($v['video_path']), ENT_QUOTES, 'UTF-8'); ?>', this)">
-                        <video controls class="w-100" style="max-height:420px; aspect-ratio: 1; object-fit: cover;" controlslist="nodownload">
+                    <div class="video-container position-relative mb-3"
+                        onclick="openVideoModalWithPause('<?php echo htmlspecialchars(resolve_media_path($v['video_path']), ENT_QUOTES, 'UTF-8'); ?>', this)">
+                        <video controls class="w-100" style="max-height:420px; aspect-ratio: 1; object-fit: cover;"
+                            controlslist="nodownload">
                             <source
                                 src="<?php echo htmlspecialchars(resolve_media_path($v['video_path']), ENT_QUOTES, 'UTF-8'); ?>" />
                             Your browser does not support the video tag.
@@ -327,7 +283,8 @@ if ($flash && is_array($flash)) {
             <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content bg-transparent border-0">
-                        <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                         <div class="modal-body p-0">
                             <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel">
                                 <div class="carousel-inner" id="carousel-inner"></div>
@@ -351,7 +308,8 @@ if ($flash && is_array($flash)) {
             <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content bg-transparent border-0">
-                        <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                         <div class="modal-body p-0 text-center">
                             <video id="modalVideo" controls class="w-100" style="max-height: 70vh;">
                                 <source id="modalVideoSource" src="" />
@@ -363,244 +321,4 @@ if ($flash && is_array($flash)) {
             </div>
 
             <?php include __DIR__ . '/../include/footer.php'; ?>
-
-            <script>
-            const MAX_MEDIA = 9; // 8 images + 1 video
-            const preview = document.getElementById('media-preview');
-            const mediaCountLabel = document.getElementById('media-count');
-            const dropZone = document.getElementById('drop-zone');
-            const fileInput = document.getElementById('media');
-
-            // Track seen previews to avoid duplicates
-            const previewKeys = new Set();
-
-            let dragCounter = 0;
-            let selectedFiles = [];
-            let fileMap = new Map();
-
-            function updateFileInput() {
-                const dt = new DataTransfer();
-                selectedFiles.forEach(f => dt.items.add(f));
-                fileInput.files = dt.files;
-            }
-
-            function addImageElement(src, key, file = null) {
-                if (preview.querySelectorAll('.media-container').length >= MAX_MEDIA) return false;
-                if (key && previewKeys.has(key)) return false;
-                const container = document.createElement('div');
-                container.className = 'media-container position-relative';
-                const img = document.createElement('img');
-                img.src = src;
-                img.style.width = '120px';
-                img.style.height = '120px';
-                img.style.objectFit = 'cover';
-                img.className = 'rounded';
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
-                removeBtn.textContent = '×';
-                removeBtn.onclick = function() {
-                    removeMedia(this);
-                };
-                container.appendChild(img);
-                container.appendChild(removeBtn);
-                preview.appendChild(container);
-                if (key) previewKeys.add(key);
-                updateMediaCount();
-                return true;
-            }
-
-            function addVideoElement(src, key, file = null) {
-                if (preview.querySelectorAll('.media-container').length >= MAX_MEDIA) return false;
-                if (key && previewKeys.has(key)) return false;
-                const container = document.createElement('div');
-                container.className = 'media-container position-relative';
-                const video = document.createElement('video');
-                video.src = src;
-                video.style.width = '120px';
-                video.style.height = '120px';
-                video.style.objectFit = 'cover';
-                video.className = 'rounded';
-                video.muted = true;
-                video.loop = true;
-                video.preload = 'metadata';
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
-                removeBtn.textContent = '×';
-                removeBtn.onclick = function() {
-                    removeMedia(this);
-                };
-                container.appendChild(video);
-                container.appendChild(removeBtn);
-                preview.appendChild(container);
-                if (key) previewKeys.add(key);
-                updateMediaCount();
-                return true;
-            }
-
-            function removeMedia(btn) {
-                const container = btn.parentElement;
-                const media = container.querySelector('img, video');
-                const src = media.src;
-                if (src.startsWith('blob:')) {
-                    for (let [file, index] of fileMap) {
-                        if (URL.createObjectURL(file) === src) {
-                            selectedFiles.splice(index, 1);
-                            fileMap.delete(file);
-                            // Update indices
-                            fileMap.clear();
-                            selectedFiles.forEach((f, i) => fileMap.set(f, i));
-                            break;
-                        }
-                    }
-                }
-                container.remove();
-                updateFileInput();
-                updateMediaCount();
-            }
-
-            function updateMediaCount() {
-                const count = preview.querySelectorAll('.media-container').length;
-                mediaCountLabel.textContent = count + (count === 1 ? ' selected' : ' selected');
-            }
-
-            dropZone.addEventListener('click', () => {
-                fileInput.click();
-            });
-
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-            });
-
-            dropZone.addEventListener('dragenter', (e) => {
-                e.preventDefault();
-                dragCounter++;
-                dropZone.classList.add('border-primary');
-            });
-
-            dropZone.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                dragCounter--;
-                if (dragCounter === 0) {
-                    dropZone.classList.remove('border-primary');
-                }
-            });
-
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dragCounter = 0;
-                dropZone.classList.remove('border-primary');
-                const files = Array.from(e.dataTransfer.files);
-                files.forEach((file) => {
-                    selectedFiles.push(file);
-                    fileMap.set(file, selectedFiles.length - 1);
-                    const url = URL.createObjectURL(file);
-                    if (file.type.startsWith('image/')) {
-                        addImageElement(url, file.name, file);
-                    } else if (file.type.startsWith('video/')) {
-                        addVideoElement(url, file.name, file);
-                    }
-                });
-                updateFileInput();
-            });
-
-            fileInput.addEventListener('change', (event) => {
-                const files = Array.from(event.target.files);
-                files.forEach((file) => {
-                    selectedFiles.push(file);
-                    fileMap.set(file, selectedFiles.length - 1);
-                    const url = URL.createObjectURL(file);
-                    if (file.type.startsWith('image/')) {
-                        addImageElement(url, file.name, file);
-                    } else if (file.type.startsWith('video/')) {
-                        addVideoElement(url, file.name, file);
-                    }
-                });
-                updateFileInput();
-                updateMediaCount();
-                fileInput.value = '';
-            });
-
-            // Image modal script
-            function openImageModal(images) {
-                const carouselInner = document.getElementById('carousel-inner');
-                carouselInner.innerHTML = '';
-                images.forEach((src, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'carousel-item' + (index === 0 ? ' active' : '');
-                    item.innerHTML = `<img src="${src}" class="d-block" style="max-width: 100%; max-height: 70vh; object-fit: contain; margin: 0 auto;" alt="Image">`;
-                    carouselInner.appendChild(item);
-                });
-                const modal = new bootstrap.Modal(document.getElementById('imageModal'));
-                modal.show();
-            }
-
-            // Video modal script
-            function openVideoModal(src) {
-                // Pause all videos to prevent double play
-                document.querySelectorAll('video').forEach(v => v.pause());
-                const modalVideoSource = document.getElementById('modalVideoSource');
-                modalVideoSource.src = src;
-                const modalVideo = document.getElementById('modalVideo');
-                modalVideo.load(); // Reload the video
-                const modal = new bootstrap.Modal(document.getElementById('videoModal'));
-                modal.show();
-            }
-
-            function openVideoModalWithPause(src, container) {
-                const video = container.querySelector('video');
-                video.pause();
-                openVideoModal(src);
-            }
-
-            // Video overlay script
-            document.querySelectorAll('.video-container').forEach(container => {
-                const video = container.querySelector('video');
-                const overlay = container.querySelector('.play-overlay');
-                const icon = overlay.querySelector('i');
-                let isHovering = false;
-
-                container.addEventListener('mouseenter', () => {
-                    isHovering = true;
-                    if (video.paused || video.ended) {
-                        overlay.style.display = 'flex';
-                    }
-                });
-                container.addEventListener('mouseleave', () => {
-                    isHovering = false;
-                    overlay.style.display = 'none';
-                });
-
-                video.addEventListener('playing', () => {
-                    overlay.style.display = 'none';
-                });
-                video.addEventListener('pause', () => {
-                    if (isHovering) {
-                        overlay.style.display = 'flex';
-                    }
-                    icon.className = 'ti ti-player-play text-white';
-                });
-                video.addEventListener('ended', () => {
-                    if (isHovering) {
-                        overlay.style.display = 'flex';
-                    }
-                    icon.className = 'ti ti-player-play text-white';
-                });
-                overlay.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (video.paused) {
-                        video.play();
-                    } else {
-                        video.pause();
-                    }
-                });
-                video.addEventListener('click', () => {
-                    if (video.paused) {
-                        video.play();
-                    } else {
-                        video.pause();
-                    }
-                });
-            });
-            </script>
+            <script src="assets/js/index.js"></script>

@@ -1,0 +1,18 @@
+.modal-backdrop {
+    background-color: transparent !important;
+}
+
+#map {
+    height: 300px;
+}
+
+#video {
+    border: 2px dashed #28a745;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.col-12.col-lg-6::-webkit-scrollbar {
+    display: none;
+}
+

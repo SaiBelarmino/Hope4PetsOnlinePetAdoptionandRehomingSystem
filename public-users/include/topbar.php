@@ -57,7 +57,7 @@
         <div class="d-flex align-items-center ms-auto gap-2">
             <div class="d-flex align-items-center gap-1 user-actions">
                 <a class="nav-link position-relative p-0 d-flex align-items-center justify-content-center"
-                   href="./messages.php" title="Messages" aria-label="Messages"
+                   href="./ChatMessages.php" title="Messages" aria-label="Messages"
                    style="<?= $iconStyle ?>height:40px;width:40px;border-radius:50%;background:#f0f2f5;font-size:20px;">
                     <i class="ti ti-message-circle"></i>
                 </a>

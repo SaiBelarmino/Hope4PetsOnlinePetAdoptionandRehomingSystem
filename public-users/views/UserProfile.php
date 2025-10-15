@@ -7,7 +7,9 @@ require_once __DIR__ . '/../controllers/MyProfileController.php';
 require_once __DIR__ . '/../../config/SessionManager.php';
 
 $session = new SessionManager();
-$userId = $session->get('user_id');
+$currentUserId = $session->get('user_id');
+$userId = $_GET['user_id'] ?? $currentUserId;
+$isOwnProfile = ($userId == $currentUserId);
 $user = null;
 if ($userId) {
     $user = ProfileController::get($userId);
@@ -61,11 +63,13 @@ if ($userId) {
                             class="rounded-circle border border-white border-4 position-absolute top-0 start-0"
                             style="width: 100px; height: 100px; object-fit: cover; display: none;"
                             onload="this.style.display='block'; this.previousElementSibling.style.display='none';">
+                        <?php if ($isOwnProfile): ?>
                         <button class="btn btn-light position-absolute rounded-circle p-1"
                             onclick="document.getElementById('profilePhotoInput').click();"
                             style="bottom: 5px; right: 5px; width: 30px; height: 30px;">
                             <i class="ti ti-camera" style="font-size: 14px;"></i>
                         </button>
+                        <?php endif; ?>
                     </div>
                     <div class="text-black text-center text-md-start flex-grow-1 mb-3 mb-md-0">
                         <h4 class="mb-1 h5 h4-md"><?php echo htmlspecialchars($user['full_name']); ?>
@@ -76,12 +80,18 @@ if ($userId) {
                             <?php echo htmlspecialchars(ucfirst($user['gender'])); ?></p>
                         <p class="mb-0 small"><?php echo htmlspecialchars($user['location'] ?? 'N/A'); ?></p>
                     </div>
+                    <?php if (!$isOwnProfile): ?>
+                    <div class="d-flex flex-row gap-2">
+                        <a href="ChatMessages.php?user_id=<?php echo urlencode($userId); ?>" class="btn btn-primary btn-sm"><i class="ti ti-message"></i> Message</a>
+                    </div>
+                    <?php else: ?>
                     <div class="d-flex flex-row gap-2">
                         <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal"><i
                                 class="ti ti-id"></i> Verify ID</button>
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"><i
                                 class="ti ti-edit"></i> Edit Profile</button>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <!-- Tabs -->
@@ -376,6 +386,32 @@ if ($userId) {
     </div>
 </div>
 
+<!-- Image Modal -->
+<div class="modal fade modal-fullscreen" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal"
+                aria-label="Close"></button>
+            <div class="modal-body p-0">
+                <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner" id="carousel-inner"></div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" style="z-index: 1060;">
@@ -425,11 +461,11 @@ if ($userId) {
                             <select class="form-control" name="gender">
                                 <option value="male" <?php echo ($user['gender'] == 'male') ? 'selected' : ''; ?>>Male
                                 </option>
-                                <option value="female" <?php echo ($user['gender'] == 'female') ? 'selected' : ''; ?>>
-                                    Female
+                                <option value="female" <?php echo ($user['gender'] == 'female') ? 'selected' : ''; ?>
+                                    >Female
                                 </option>
-                                <option value="other" <?php echo ($user['gender'] == 'other') ? 'selected' : ''; ?>>
-                                    Other
+                                <option value="other" <?php echo ($user['gender'] == 'other') ? 'selected' : ''; ?>
+                                    >Other
                                 </option>
                                 <option value="unspecified"
                                     <?php echo ($user['gender'] == 'unspecified') ? 'selected' : ''; ?>>Unspecified
@@ -574,32 +610,6 @@ if ($userId) {
             <div class="modal-footer">
                 <button type="submit" form="verifyIdForm" class="btn btn-primary" id="submitVerificationBtn"
                     disabled>Submit Verification</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Image Modal -->
-<div class="modal fade modal-fullscreen" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-transparent border-0">
-            <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal"
-                aria-label="Close"></button>
-            <div class="modal-body p-0">
-                <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner" id="carousel-inner"></div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel"
-                        data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel"
-                        data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                </div>
             </div>
         </div>
     </div>
