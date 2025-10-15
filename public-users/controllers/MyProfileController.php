@@ -62,15 +62,46 @@ class ProfileController extends BaseController {
     /**
      * Get user's recent posts
      */
-    public static function getPosts(int $userId, int $limit = 10): array {
-        $sql = "SELECT p.id, p.content, p.created_at,
-                       (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id) as reaction_count,
-                       (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count
-                FROM posts p
-                WHERE p.user_id = ?
-                ORDER BY p.created_at DESC
-                LIMIT ?";
-        return self::fetchAll($sql, 'ii', [$userId, $limit]);
+    public static function getPosts(int $userId): array {
+        $posts = self::fetchAll(
+            "SELECT p.*, u.full_name, u.profile_photo,
+                    (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id) as reaction_count,
+                    (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count
+             FROM posts p
+             JOIN users u ON p.user_id = u.id
+             WHERE p.user_id = ?
+             ORDER BY p.created_at DESC",
+            'i',
+            [$userId]
+        );
+
+        foreach ($posts as &$post) {
+            // Get media (photos and videos)
+            $photos = self::fetchAll(
+                "SELECT CONCAT('/Hope4PetsOnlinePetAdoptionandRehomingSystem/', photo_path) as url, 'image' as type FROM post_photos WHERE post_id = ? ORDER BY id ASC",
+                'i',
+                [$post['id']]
+            );
+            $videos = self::fetchAll(
+                "SELECT CONCAT('/Hope4PetsOnlinePetAdoptionandRehomingSystem/', video_path) as url, 'video' as type FROM post_videos WHERE post_id = ? ORDER BY id ASC",
+                'i',
+                [$post['id']]
+            );
+            $post['media'] = array_merge($photos, $videos);
+
+            // Get comments
+            $post['comments'] = self::fetchAll(
+                "SELECT c.content, c.created_at, u.full_name as user_name
+                 FROM post_comments c
+                 JOIN users u ON c.user_id = u.id
+                 WHERE c.post_id = ?
+                 ORDER BY c.created_at ASC",
+                'i',
+                [$post['id']]
+            );
+        }
+
+        return $posts;
     }
 }
 ?>

@@ -116,7 +116,7 @@ class EditMyProfileController extends BaseController {
                 SessionManager::login($userRow);
             }
 
-            redirect_with_flash('Profile updated successfully.');
+            redirect_with_flash('');
         }
 
         // If not POST, show simple 405

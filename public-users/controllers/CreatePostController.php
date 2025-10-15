@@ -20,8 +20,8 @@ class PublicCreatePostController extends BaseController {
      */
     public static function create(int $userId, array $data): array {
         $mysqli = self::db();
-    $projectRoot = realpath(__DIR__ . '/../../');
-    $storageRoot = $projectRoot . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'posts';
+        $projectRoot = realpath(__DIR__ . '/../../');
+        $storageRoot = $projectRoot . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'posts';
         
         // Insert post
         $stmt = $mysqli->prepare(
@@ -34,7 +34,7 @@ class PublicCreatePostController extends BaseController {
         }
         
         $petId = $data['pet_id'] ?? null;
-        $content = $data['content'];
+        $content = empty($data['content']) ? null : $data['content'];
         
         $stmt->bind_param('iis', $userId, $petId, $content);
         $success = $stmt->execute();
@@ -47,14 +47,14 @@ class PublicCreatePostController extends BaseController {
         $postId = $mysqli->insert_id;
         $stmt->close();
         
-    // Insert photos if any
+        // Insert photos if any
         if (!empty($data['photos'])) {
             $errorsPhotos = [];
             $inserted = 0;
             $photoStmt = $mysqli->prepare("INSERT INTO post_photos (post_id, photo_path) VALUES (?, ?)");
             $petPhotoStmt = !empty($petId) ? $mysqli->prepare("INSERT INTO pet_photos (pet_id, photo_path, is_primary) VALUES (?, ?, 0)") : null;
             foreach ($data['photos'] as $relPath) {
-                $relPathClean = self::sanitizeRelative($relPath); // storage/uploads/posts/filename.ext
+                $relPathClean = self::sanitizeRelative($relPath); // storage/uploads/posts/photos/user_id/filename.ext
                 // No further path manipulation - sanitizeRelative already cleaned it
                 $absPath = $projectRoot . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relPathClean);
                 if ($photoStmt && $photoStmt->bind_param('is', $postId, $relPathClean)) {
@@ -141,7 +141,7 @@ class PublicCreatePostController extends BaseController {
         }
 
         $petId = $data['pet_id'] ?? null;
-        $content = $data['content'];
+        $content = empty($data['content']) ? null : $data['content'];
 
         $stmt->bind_param('sii', $content, $petId, $postId);
         $success = $stmt->execute();
@@ -271,8 +271,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors = [];
 
         // Allow empty content if user uploads photos/video or if the post already has media.
-        $hasNewPhotos = !empty($_FILES['photos']['name'][0]);
-        $hasNewVideo = (!empty($_FILES['video']) && !empty($_FILES['video']['tmp_name']));
+        $hasNewPhotos = !empty($_FILES['media']['name'][0]);
+        $hasNewVideo = false; // Will be set if video uploaded
         $existingPost = self::getPostForEdit($postId, $userId);
         $hasExistingMedia = !empty($existingPost['photos']);
 
@@ -283,51 +283,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Photo uploads for update
         $uploadedPhotos = [];
         $uploadedVideo = null;
-        if (!empty($_FILES['photos']['name'][0])) {
-            $uploadDir = __DIR__ . '/../../storage/uploads/posts/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-            $allowedTypes = ['image/jpeg','image/png','image/gif','image/webp'];
-            $maxFileSize = 5 * 1024 * 1024;
-            foreach ($_FILES['photos']['tmp_name'] as $i => $tmp) {
+        if (!empty($_FILES['media']['name'][0])) {
+            foreach ($_FILES['media']['tmp_name'] as $i => $tmp) {
                 if (!$tmp) continue;
-                $name = $_FILES['photos']['name'][$i];
-                $size = $_FILES['photos']['size'][$i];
-                $type = $_FILES['photos']['type'][$i];
-                $err  = $_FILES['photos']['error'][$i];
+                $name = $_FILES['media']['name'][$i];
+                $size = $_FILES['media']['size'][$i];
+                $type = $_FILES['media']['type'][$i];
+                $err = $_FILES['media']['error'][$i];
                 if ($err !== UPLOAD_ERR_OK) { $errors[] = "Error uploading $name"; continue; }
-                if (!in_array($type, $allowedTypes, true)) { $errors[] = "$name invalid file type"; continue; }
-                if ($size > $maxFileSize) { $errors[] = "$name too large (max 5MB)"; continue; }
-                $ext = pathinfo($name, PATHINFO_EXTENSION);
-                $new = uniqid('post_') . '_' . time() . '.' . $ext;
-                if (move_uploaded_file($tmp, $uploadDir . $new)) {
-                    $uploadedPhotos[] = 'storage/uploads/posts/' . $new;
+                if (strpos($type, 'image/') === 0) {
+                    // Handle image
+                    $allowedTypes = ['image/jpeg','image/png','image/gif','image/webp'];
+                    $maxFileSize = 5 * 1024 * 1024;
+                    if (!in_array($type, $allowedTypes, true)) { $errors[] = "$name invalid file type"; continue; }
+                    if ($size > $maxFileSize) { $errors[] = "$name too large (max 5MB)"; continue; }
+                    $uploadDir = __DIR__ . '/../../storage/uploads/posts/photos/' . $userId . '/';
+                    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+                    $ext = pathinfo($name, PATHINFO_EXTENSION);
+                    $new = uniqid('post_') . '_' . time() . '.' . $ext;
+                    if (move_uploaded_file($tmp, $uploadDir . $new)) {
+                        $uploadedPhotos[] = 'storage/uploads/posts/photos/' . $userId . '/' . $new;
+                    } else {
+                        $errors[] = "Failed to upload $name";
+                    }
+                } elseif (strpos($type, 'video/') === 0) {
+                    // Handle video
+                    $allowedVideoTypes = ['video/mp4','video/webm','video/ogg','video/quicktime'];
+                    $maxVideoSize = 50 * 1024 * 1024;
+                    if (!in_array($type, $allowedVideoTypes, true)) { $errors[] = "$name invalid video type"; continue; }
+                    if ($size > $maxVideoSize) { $errors[] = "$name too large (max 50MB)"; continue; }
+                    $uploadDir = __DIR__ . '/../../storage/uploads/posts/videos/' . $userId . '/';
+                    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+                    $vext = pathinfo($name, PATHINFO_EXTENSION);
+                    $vnew = uniqid('post_vid_') . '_' . time() . '.' . $vext;
+                    if (move_uploaded_file($tmp, $uploadDir . $vnew)) {
+                        if ($uploadedVideo) { $errors[] = "Only one video allowed"; continue; }
+                        $uploadedVideo = 'storage/uploads/posts/videos/' . $userId . '/' . $vnew;
+                    } else {
+                        $errors[] = "Failed to upload video $name";
+                    }
                 } else {
-                    $errors[] = "Failed to upload $name";
+                    $errors[] = "$name unsupported file type";
                 }
             }
         }
-        // Video upload for update (single)
-        if (!empty($_FILES['video']) && !empty($_FILES['video']['tmp_name'])) {
-            $uploadDir = __DIR__ . '/../../storage/uploads/posts/videos/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-            $allowedVideoTypes = ['video/mp4','video/webm','video/ogg','video/quicktime'];
-            $maxVideoSize = 50 * 1024 * 1024; // 50MB
-            $vtmp = $_FILES['video']['tmp_name'];
-            $vname = $_FILES['video']['name'];
-            $vsize = $_FILES['video']['size'];
-            $vtype = $_FILES['video']['type'];
-            $verr  = $_FILES['video']['error'];
-            if ($verr !== UPLOAD_ERR_OK) { $errors[] = "Error uploading video $vname"; }
-            elseif (!in_array($vtype, $allowedVideoTypes, true)) { $errors[] = "$vname invalid video type"; }
-            elseif ($vsize > $maxVideoSize) { $errors[] = "$vname too large (max 50MB)"; }
-            else {
-                $vext = pathinfo($vname, PATHINFO_EXTENSION);
-                $vnew = uniqid('post_vid_') . '_' . time() . '.' . $vext;
-                if (move_uploaded_file($vtmp, $uploadDir . $vnew)) {
-                    $uploadedVideo = 'storage/uploads/posts/videos/' . $vnew;
-                } else {
-                    $errors[] = "Failed to upload video $vname";
-                }
+
+        // Handle media deletion
+        $mediaToDelete = explode(',', $_POST['media_to_delete'] ?? '');
+        foreach ($mediaToDelete as $item) {
+            if (empty($item)) continue;
+            list($type, $id) = explode('_', $item);
+            if ($type === 'photo') {
+                // Delete photo by id
+                $mysqli->query("DELETE FROM post_photos WHERE id = " . (int)$id);
+            } elseif ($type === 'video') {
+                // Delete video by id
+                $mysqli->query("DELETE FROM post_videos WHERE id = " . (int)$id);
             }
         }
 
@@ -358,61 +369,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $errors = [];
 
-    // Allow empty content if user uploads photos or video
-    $hasPhotosInRequest = !empty($_FILES['photos']['name'][0]);
-    $hasVideoInRequest = (!empty($_FILES['video']) && !empty($_FILES['video']['tmp_name']));
-    if ($content === '' && !$hasPhotosInRequest && !$hasVideoInRequest) {
-        $errors[] = 'Please add text or attach images/videos.';
-    }
+    // Allow empty content always (user can post without caption)
+    // Removed validation requiring text or media
 
     // Photo uploads
     $uploadedPhotos = [];
     $uploadedVideo = null;
-    if (!empty($_FILES['photos']['name'][0])) {
-        $uploadDir = __DIR__ . '/../../storage/uploads/posts/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-        $allowedTypes = ['image/jpeg','image/png','image/gif','image/webp'];
-        $maxFileSize = 5 * 1024 * 1024;
-        foreach ($_FILES['photos']['tmp_name'] as $i => $tmp) {
+    if (!empty($_FILES['media']['name'][0])) {
+        foreach ($_FILES['media']['tmp_name'] as $i => $tmp) {
             if (!$tmp) continue;
-            $name = $_FILES['photos']['name'][$i];
-            $size = $_FILES['photos']['size'][$i];
-            $type = $_FILES['photos']['type'][$i];
-            $err  = $_FILES['photos']['error'][$i];
+            $name = $_FILES['media']['name'][$i];
+            $size = $_FILES['media']['size'][$i];
+            $type = $_FILES['media']['type'][$i];
+            $err = $_FILES['media']['error'][$i];
             if ($err !== UPLOAD_ERR_OK) { $errors[] = "Error uploading $name"; continue; }
-            if (!in_array($type, $allowedTypes, true)) { $errors[] = "$name invalid file type"; continue; }
-            if ($size > $maxFileSize) { $errors[] = "$name too large (max 5MB)"; continue; }
-            $ext = pathinfo($name, PATHINFO_EXTENSION);
-            $new = uniqid('post_') . '_' . time() . '.' . $ext;
-            if (move_uploaded_file($tmp, $uploadDir . $new)) {
-                // Store relative path (no leading slash). View will prepend APP_BASE_PATH.
-                $uploadedPhotos[] = 'storage/uploads/posts/' . $new;
+            if (strpos($type, 'image/') === 0) {
+                // Handle image
+                $allowedTypes = ['image/jpeg','image/png','image/gif','image/webp'];
+                $maxFileSize = 5 * 1024 * 1024;
+                if (!in_array($type, $allowedTypes, true)) { $errors[] = "$name invalid file type"; continue; }
+                if ($size > $maxFileSize) { $errors[] = "$name too large (max 5MB)"; continue; }
+                $uploadDir = __DIR__ . '/../../storage/uploads/posts/photos/' . $userId . '/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+                $ext = pathinfo($name, PATHINFO_EXTENSION);
+                $new = uniqid('post_') . '_' . time() . '.' . $ext;
+                if (move_uploaded_file($tmp, $uploadDir . $new)) {
+                    $uploadedPhotos[] = 'storage/uploads/posts/photos/' . $userId . '/' . $new;
+                } else {
+                    $errors[] = "Failed to upload $name";
+                }
+            } elseif (strpos($type, 'video/') === 0) {
+                // Handle video
+                $allowedVideoTypes = ['video/mp4','video/webm','video/ogg','video/quicktime'];
+                $maxVideoSize = 50 * 1024 * 1024;
+                if (!in_array($type, $allowedVideoTypes, true)) { $errors[] = "$name invalid video type"; continue; }
+                if ($size > $maxVideoSize) { $errors[] = "$name too large (max 50MB)"; continue; }
+                $uploadDir = __DIR__ . '/../../storage/uploads/posts/videos/' . $userId . '/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+                $vext = pathinfo($name, PATHINFO_EXTENSION);
+                $vnew = uniqid('post_vid_') . '_' . time() . '.' . $vext;
+                if (move_uploaded_file($tmp, $uploadDir . $vnew)) {
+                    if ($uploadedVideo) { $errors[] = "Only one video allowed"; continue; }
+                    $uploadedVideo = 'storage/uploads/posts/videos/' . $userId . '/' . $vnew;
+                } else {
+                    $errors[] = "Failed to upload video $name";
+                }
             } else {
-                $errors[] = "Failed to upload $name";
-            }
-        }
-    }
-    // Video upload for create (single)
-    if (!empty($_FILES['video']) && !empty($_FILES['video']['tmp_name'])) {
-        $uploadDir = __DIR__ . '/../../storage/uploads/posts/videos/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-        $allowedVideoTypes = ['video/mp4','video/webm','video/ogg','video/quicktime'];
-        $maxVideoSize = 50 * 1024 * 1024; // 50MB
-        $vtmp = $_FILES['video']['tmp_name'];
-        $vname = $_FILES['video']['name'];
-        $vsize = $_FILES['video']['size'];
-        $vtype = $_FILES['video']['type'];
-        $verr  = $_FILES['video']['error'];
-        if ($verr !== UPLOAD_ERR_OK) { $errors[] = "Error uploading video $vname"; }
-        elseif (!in_array($vtype, $allowedVideoTypes, true)) { $errors[] = "$vname invalid video type"; }
-        elseif ($vsize > $maxVideoSize) { $errors[] = "$vname too large (max 50MB)"; }
-        else {
-            $vext = pathinfo($vname, PATHINFO_EXTENSION);
-            $vnew = uniqid('post_vid_') . '_' . time() . '.' . $vext;
-            if (move_uploaded_file($vtmp, $uploadDir . $vnew)) {
-                $uploadedVideo = 'storage/uploads/posts/videos/' . $vnew;
-            } else {
-                $errors[] = "Failed to upload video $vname";
+                $errors[] = "$name unsupported file type";
             }
         }
     }
@@ -430,11 +433,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         SessionManager::setFlash('error', $result['message'] ?? 'Failed to create post.');
-        header('Location: ../views/PostManagement.php');
+        header('Location: ../views/index.php');
         exit;
     }
     SessionManager::setFlash('error', implode('<br>', $errors));
-    header('Location: ../views/PostManagement.php');
+    header('Location: ../views/index.php');
     exit;
 }
-?>
