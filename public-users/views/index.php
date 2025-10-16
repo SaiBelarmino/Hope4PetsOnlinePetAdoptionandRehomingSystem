@@ -156,14 +156,15 @@ if ($flash && is_array($flash)) {
                     <?php if (!empty($photos)): ?>
                     <?php if (count($photos) == 1): ?>
                     <div class="post-media-single mb-3">
-                        <img src="<?php echo htmlspecialchars(resolve_media_path($photos[0]['photo_path']), ENT_QUOTES, 'UTF-8'); ?>"
-                            alt="Post photo" onerror="this.style.display='none'"
-                            onclick="window.open('<?php echo htmlspecialchars(resolve_media_path($photos[0]['photo_path']), ENT_QUOTES, 'UTF-8'); ?>','_blank')"
-                            style="cursor:pointer;" />
+                        <a href="./PostView.php?id=<?php echo urlencode($post['id']); ?>">
+                            <img src="<?php echo htmlspecialchars(resolve_media_path($photos[0]['photo_path']), ENT_QUOTES, 'UTF-8'); ?>"
+                                alt="Post photo" onerror="this.style.display='none'"
+                                style="cursor:pointer; max-width:100%; height:auto; object-fit:contain;" />
+                        </a>
                     </div>
                     <?php else: ?>
                     <div class="row row-cols-2 row-cols-md-2 g-2 mb-3"
-                        onclick="window.open('<?php echo htmlspecialchars(resolve_media_path($photos[0]['photo_path']), ENT_QUOTES, 'UTF-8'); ?>','_blank')"
+                        onclick="window.location.href='./PostView.php?id=<?php echo urlencode($post['id']); ?>'"
                         style="cursor:pointer;">
                         <?php foreach (array_slice($photos, 0, 4) as $index => $photo): ?>
                         <div class="col">
@@ -187,7 +188,7 @@ if ($flash && is_array($flash)) {
                     <?php if (!empty($videos)): ?>
                     <?php foreach ($videos as $v): ?>
                     <div class="video-container position-relative mb-3"
-                        onclick="window.open('<?php echo htmlspecialchars(resolve_media_path($v['video_path']), ENT_QUOTES, 'UTF-8'); ?>','_blank')">
+                        onclick="window.location.href='./PostView.php?id=<?php echo urlencode($post['id']); ?>'">
                         <video controls class="w-100" style="max-height:420px; aspect-ratio: 1; object-fit: cover;"
                             controlslist="nodownload">
                             <source
@@ -200,17 +201,17 @@ if ($flash && is_array($flash)) {
 
                     <div class="d-flex justify-content-between post-actions-sm mt-2">
                         <div class="action-group d-flex flex-wrap">
-                            <a href="./post_view.php?id=<?php echo $post['id']; ?>"
+                            <a href="./PostView.php?id=<?php echo $post['id']; ?>"
                                 class="btn btn-light border me-1 mb-1"><i class="ti ti-thumb-up"></i> <span
                                     class="d-none d-sm-inline">Like</span>
                                 <?php if ($post['reaction_count'] > 0): ?><span
                                     class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span><?php endif; ?></a>
-                            <a href="./post_view.php?id=<?php echo $post['id']; ?>"
+                            <a href="./PostView.php?id=<?php echo $post['id']; ?>"
                                 class="btn btn-light border me-1 mb-1"><i class="ti ti-message-circle"></i> <span
                                     class="d-none d-sm-inline">Comment</span>
                                 <?php if ($post['comment_count'] > 0): ?><span
                                     class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?></a>
-                            <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border mb-1"><i
+                            <a href="./PostView.php?id=<?php echo $post['id']; ?>" class="btn btn-light border mb-1"><i
                                     class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></a>
                         </div>
                     </div>
