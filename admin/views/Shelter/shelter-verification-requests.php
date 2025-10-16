@@ -36,7 +36,7 @@ $docs = ShelterVerificationRequestsController::fetchDocuments(null, 200);
                             <td><?= htmlspecialchars($doc['doc_type'] ?? '') ?></td>
                             <td><?= htmlspecialchars($doc['uploaded_at'] ?? '') ?></td>
                             <td>
-                                <a class="btn btn-primary btn-sm"
+                                <a class="btn btn-light btn-sm"
                                     href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/controllers/serve-shelter-document.php?id=<?= $doc['id'] ?>"
                                     target="_blank">
                                     Open Document
