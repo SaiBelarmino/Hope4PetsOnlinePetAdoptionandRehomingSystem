@@ -51,13 +51,11 @@ if ($flash && is_array($flash)) {
 ?>
 
 <div class="container-fluid">
-    <div class="row g-3 py-3">
+    <div class="row g-3 py-4">
         <!-- Left sidebar: shortcuts -->
-        <div class="col-12 col-lg-3">
-            <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
-        </div>
-        <!-- Center: composer and feed -->
-        <div class="col-12 col-lg-6"
+        <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
+
+        <div class="col-12 col-lg-4"
             style="max-height:862px; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; -ms-overflow-style:none;">
             <?php if ($flashSuccess): ?>
             <div class="alert alert-success"><?php echo htmlspecialchars((string)$flashSuccess, ENT_QUOTES, 'UTF-8'); ?>
@@ -98,9 +96,8 @@ if ($flash && is_array($flash)) {
                 <div class="card-body text-center py-5">
                     <i class="ti ti-mood-empty" style="font-size: 48px; color: #ccc;"></i>
                     <p class="text-muted mt-3">No posts yet. Be the first to share something!</p>
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#createPostModal" class="btn btn-primary mt-2">
-                        <i class="ti ti-plus me-1"></i> Create Post
-                    </a>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#createPostModal" class="btn btn-primary mt-2"><i
+                            class="ti ti-plus me-1"></i> Create Post</a>
                 </div>
             </div>
             <?php else: ?>
@@ -133,7 +130,6 @@ if ($flash && is_array($flash)) {
 
             <!-- Single post card -->
             <div class="card mb-3">
-                <!-- Make only this card body scrollable -->
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
                         <a href="./UserProfile.php?user_id=<?php echo urlencode($post['user_id']); ?>">
@@ -144,9 +140,7 @@ if ($flash && is_array($flash)) {
                         </a>
                         <div>
                             <a href="./UserProfile.php?user_id=<?php echo urlencode($post['user_id']); ?>"
-                                class="fw-bold text-decoration-none text-dark">
-                                <?php echo htmlspecialchars($post['full_name']); ?>
-                            </a>
+                                class="fw-bold text-decoration-none text-dark"><?php echo htmlspecialchars($post['full_name']); ?></a>
                             <div class="text-muted small"><?php echo $timeAgo; ?></div>
                         </div>
                     </div>
@@ -164,23 +158,26 @@ if ($flash && is_array($flash)) {
                     <div class="post-media-single mb-3">
                         <img src="<?php echo htmlspecialchars(resolve_media_path($photos[0]['photo_path']), ENT_QUOTES, 'UTF-8'); ?>"
                             alt="Post photo" onerror="this.style.display='none'"
-                            onclick="openImageModal([<?php echo htmlspecialchars(json_encode(resolve_media_path($photos[0]['photo_path'])), ENT_QUOTES, 'UTF-8'); ?>])"
+                            onclick="window.open('<?php echo htmlspecialchars(resolve_media_path($photos[0]['photo_path']), ENT_QUOTES, 'UTF-8'); ?>','_blank')"
                             style="cursor:pointer;" />
                     </div>
                     <?php else: ?>
-                    <div class="post-media-grid mb-3"
-                        onclick="openImageModal(<?php echo htmlspecialchars(json_encode(array_map(function($p){return resolve_media_path($p['photo_path']);}, $photos)), ENT_QUOTES, 'UTF-8'); ?>)"
+                    <div class="row row-cols-2 row-cols-md-2 g-2 mb-3"
+                        onclick="window.open('<?php echo htmlspecialchars(resolve_media_path($photos[0]['photo_path']), ENT_QUOTES, 'UTF-8'); ?>','_blank')"
                         style="cursor:pointer;">
                         <?php foreach (array_slice($photos, 0, 4) as $index => $photo): ?>
-                        <div style="position:relative;">
-                            <img src="<?php echo htmlspecialchars(resolve_media_path($photo['photo_path']), ENT_QUOTES, 'UTF-8'); ?>"
-                                alt="Post photo" onerror="this.style.display='none'" />
-                            <?php if ($index == 3 && count($photos) > 4): ?>
-                            <div
-                                class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 rounded">
-                                <span class="text-white fs-4">+<?php echo count($photos) - 4; ?></span>
+                        <div class="col">
+                            <div style="position:relative; padding-top: 100%; overflow:hidden;">
+                                <img src="<?php echo htmlspecialchars(resolve_media_path($photo['photo_path']), ENT_QUOTES, 'UTF-8'); ?>"
+                                    alt="Post photo" onerror="this.style.display='none'"
+                                    class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover rounded" />
+                                <?php if ($index == 3 && count($photos) > 4): ?>
+                                <div
+                                    class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 rounded">
+                                    <span class="text-white fs-4">+<?php echo count($photos) - 4; ?></span>
+                                </div>
+                                <?php endif; ?>
                             </div>
-                            <?php endif; ?>
                         </div>
                         <?php endforeach; ?>
                     </div>
@@ -190,7 +187,7 @@ if ($flash && is_array($flash)) {
                     <?php if (!empty($videos)): ?>
                     <?php foreach ($videos as $v): ?>
                     <div class="video-container position-relative mb-3"
-                        onclick="openVideoModalWithPause('<?php echo htmlspecialchars(resolve_media_path($v['video_path']), ENT_QUOTES, 'UTF-8'); ?>', this)">
+                        onclick="window.open('<?php echo htmlspecialchars(resolve_media_path($v['video_path']), ENT_QUOTES, 'UTF-8'); ?>','_blank')">
                         <video controls class="w-100" style="max-height:420px; aspect-ratio: 1; object-fit: cover;"
                             controlslist="nodownload">
                             <source
@@ -204,27 +201,17 @@ if ($flash && is_array($flash)) {
                     <div class="d-flex justify-content-between post-actions-sm mt-2">
                         <div class="action-group d-flex flex-wrap">
                             <a href="./post_view.php?id=<?php echo $post['id']; ?>"
-                                class="btn btn-light border me-1 mb-1">
-                                <i class="ti ti-thumb-up"></i>
-                                <span class="d-none d-sm-inline">Like</span>
-                                <?php if ($post['reaction_count'] > 0): ?>
-                                <span
-                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span>
-                                <?php endif; ?>
-                            </a>
+                                class="btn btn-light border me-1 mb-1"><i class="ti ti-thumb-up"></i> <span
+                                    class="d-none d-sm-inline">Like</span>
+                                <?php if ($post['reaction_count'] > 0): ?><span
+                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span><?php endif; ?></a>
                             <a href="./post_view.php?id=<?php echo $post['id']; ?>"
-                                class="btn btn-light border me-1 mb-1">
-                                <i class="ti ti-message-circle"></i>
-                                <span class="d-none d-sm-inline">Comment</span>
-                                <?php if ($post['comment_count'] > 0): ?>
-                                <span
-                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span>
-                                <?php endif; ?>
-                            </a>
-                            <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border mb-1">
-                                <i class="ti ti-share"></i>
-                                <span class="d-none d-sm-inline">Share</span>
-                            </a>
+                                class="btn btn-light border me-1 mb-1"><i class="ti ti-message-circle"></i> <span
+                                    class="d-none d-sm-inline">Comment</span>
+                                <?php if ($post['comment_count'] > 0): ?><span
+                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?></a>
+                            <a href="./post_view.php?id=<?php echo $post['id']; ?>" class="btn btn-light border mb-1"><i
+                                    class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></a>
                         </div>
                     </div>
                 </div>
@@ -264,7 +251,8 @@ if ($flash && is_array($flash)) {
                                     <div class="d-flex gap-2 mb-2">
                                         <small id="media-count" class="text-muted">0 selected</small>
                                     </div>
-                                    <div id="media-preview" class="d-flex flex-wrap gap-2 mt-2"></div>
+                                    <div id="media-preview" class="row g-2 mt-2"></div>
+                                    <!-- Improved to responsive grid -->
                                 </div>
                                 <small class="text-muted">You can add multiple images. Max recommended: 8 images. One
                                     video per post.</small>
@@ -274,47 +262,6 @@ if ($flash && is_array($flash)) {
                                     <button type="submit" class="btn btn-primary">Post</button>
                                 </div>
                             </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Image Modal -->
-            <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content bg-transparent border-0">
-                        <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                        <div class="modal-body p-0">
-                            <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel">
-                                <div class="carousel-inner" id="carousel-inner"></div>
-                                <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel"
-                                    data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
-                                </button>
-                                <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel"
-                                    data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video Modal -->
-            <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content bg-transparent border-0">
-                        <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                        <div class="modal-body p-0 text-center">
-                            <video id="modalVideo" controls class="w-100" style="max-height: 70vh;">
-                                <source id="modalVideoSource" src="" />
-                                Your browser does not support the video tag.
-                            </video>
                         </div>
                     </div>
                 </div>
