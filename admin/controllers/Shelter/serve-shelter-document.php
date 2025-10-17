@@ -14,7 +14,7 @@ if ($id <= 0) {
     exit;
 }
 
-require_once __DIR__ . '/../controllers/shelter-verification-requests-controller.php';
+require_once __DIR__ . '/shelter-verification-requests-controller.php';
 // Fetch document metadata
 $row = ShelterVerificationRequestsController::getDocumentById($id);
 if (!$row) {

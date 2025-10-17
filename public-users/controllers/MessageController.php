@@ -115,11 +115,11 @@ class PublicMessagesController extends BaseController {
     }
 }
 
-// Ensure SessionManager is loaded if available and start session properly
+// Ensure SessionManager is loaded if available and initialize session properly
 if (file_exists(__DIR__ . '/../../config/SessionManager.php')) {
     require_once __DIR__ . '/../../config/SessionManager.php';
-    if (class_exists('SessionManager') && method_exists('SessionManager', 'start')) {
-        SessionManager::start();
+    if (class_exists('SessionManager') && method_exists('SessionManager', 'init')) {
+        SessionManager::init();
     }
 }
 

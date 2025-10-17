@@ -4,11 +4,24 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/../controllers/MessageController.php';
 
-// Current user
-$currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+// Current user: support both session shapes used around the app.
+// Preferred: $_SESSION['user']['id'] (an array with user details)
+// Legacy / other controllers may use $_SESSION['user_id'] (scalar)
+$currentUserId = (int)($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
 
-// Recipient
-$recipientId = (int)($_GET['recipient_id'] ?? $_GET['user'] ?? $_GET['user_id'] ?? $_GET['u'] ?? $_POST['recipient_id'] ?? 0);
+// Ensure compatibility for other controllers that check different session keys
+if ($currentUserId > 0) {
+    if (empty($_SESSION['user_id'])) {
+        $_SESSION['user_id'] = $currentUserId;
+    }
+    if (empty($_SESSION['user']) || !isset($_SESSION['user']['id'])) {
+        // Only populate minimal user structure if missing to avoid overwriting
+        $_SESSION['user'] = array_replace($_SESSION['user'] ?? [], ['id' => $currentUserId]);
+    }
+}
+
+// Recipient: accept many parameter names for backward compatibility
+$recipientId = (int)($_GET['recipient_id'] ?? $_GET['user'] ?? $_GET['user_id'] ?? $_GET['u'] ?? $_POST['recipient_id'] ?? $_GET['user_id'] ?? 0);
 
 $messages = [];
 $conversationWith = '';
@@ -21,6 +34,13 @@ if ($recipientId > 0) {
 
 if ($currentUserId > 0 && $recipientId > 0) {
     $raw = PublicMessagesController::conversation($currentUserId, $recipientId, 1000);
+    // mark messages from recipient to current user as read
+    try {
+        PublicMessagesController::markAsRead($currentUserId, $recipientId);
+    } catch (Throwable $e) {
+        // non-fatal
+        error_log('Failed to mark messages read: ' . $e->getMessage());
+    }
     $lastMessageId = 0; // Initialize last message ID
     if (!empty($raw) && is_array($raw)) {
         foreach ($raw as $r) {
@@ -118,11 +138,9 @@ if ($currentUserId > 0 && $recipientId > 0) {
             <?php
             $recentConvos = [];
             if ($currentUserId > 0) {
-                if (method_exists('PublicMessagesController', 'recentConversations')) {
-                    $recentConvos = PublicMessagesController::recentConversations($currentUserId, 20);
-                } elseif (method_exists('PublicMessagesController', 'inbox')) {
-                    $recentConvos = PublicMessagesController::inbox($currentUserId, 20);
-                } elseif (method_exists('PublicMessagesController', 'getRecentContacts')) {
+                // Prefer inbox (present in PublicMessagesController). Fallback to getRecentContacts.
+                $recentConvos = PublicMessagesController::inbox($currentUserId, 20);
+                if (empty($recentConvos)) {
                     $recentConvos = PublicMessagesController::getRecentContacts($currentUserId, 20);
                 }
             }
@@ -197,8 +215,23 @@ if ($currentUserId > 0 && $recipientId > 0) {
 <script>
 window.CURRENT_USER_ID = <?php echo (int)$currentUserId; ?>;
 window.RECIPIENT_ID = <?php echo (int)$recipientId; ?>;
-window.CURRENT_USER_AVATAR =
-    '<?php echo htmlspecialchars($other['profile_photo'] ?? '/assets/img/default-avatar.png'); ?>'; // Assuming current user's avatar is known or can be passed
+// Determine current user avatar (try session user then default)
+<?php
+    // session user photo (if available) - prefer full URL if stored
+    $currentAvatar = '/assets/img/default-avatar.png';
+    if (!empty($_SESSION['user']['profile_photo'])) {
+        $cp = $_SESSION['user']['profile_photo'];
+        $currentAvatar = (strpos($cp, 'http') === 0) ? $cp : ('/Hope4PetsOnlinePetAdoptionandRehomingSystem/' . ltrim($cp, '/'));
+    }
+    // recipient avatar (other)
+    $recipientAvatar = '/assets/img/default-avatar.png';
+    if (!empty($other['profile_photo'])) {
+        $rp = $other['profile_photo'];
+        $recipientAvatar = (strpos($rp, 'http') === 0) ? $rp : ('/Hope4PetsOnlinePetAdoptionandRehomingSystem/' . ltrim($rp, '/'));
+    }
+?>
+window.CURRENT_USER_AVATAR = '<?php echo addslashes($currentAvatar); ?>';
+window.RECIPIENT_AVATAR = '<?php echo addslashes($recipientAvatar); ?>';
 window.INITIAL_LAST_MESSAGE_ID = <?php echo $lastMessageId ?? 0; ?>;
 
 // --- Dito mo idadagdag ang scroll script ---

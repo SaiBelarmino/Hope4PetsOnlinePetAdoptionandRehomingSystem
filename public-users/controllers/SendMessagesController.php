@@ -210,11 +210,11 @@ class MessagesController extends BaseController {
     }
 }
 
-// Ensure SessionManager if available
+// Ensure SessionManager if available and initialize session
 if (file_exists(__DIR__ . '/../../config/SessionManager.php')) {
     require_once __DIR__ . '/../../config/SessionManager.php';
-    if (class_exists('SessionManager') && method_exists('SessionManager', 'start')) {
-        SessionManager::start();
+    if (class_exists('SessionManager') && method_exists('SessionManager', 'init')) {
+        SessionManager::init();
     }
 }
 
@@ -257,7 +257,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Rate limiting: prevent rapid duplicate sends
     try {
-        $mysqli = MessagesController::db();
+    // Use the global DB connection
+    require_once __DIR__ . '/../../config/db-connection/db_connection.php';
+    global $conn;
+    $mysqli = $conn;
         // last message to same recipient
         $stmt = $mysqli->prepare('SELECT id, body, UNIX_TIMESTAMP(created_at) AS ts FROM messages WHERE sender_id=? AND recipient_id=? ORDER BY id DESC LIMIT 1');
         if ($stmt) {
@@ -312,14 +315,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = ['success' => false, 'message' => 'Server error: ' . $e->getMessage()];
     }
 
-    // Ensure $result includes id and created_at
-    if ($result && !empty($result['id'])) {
-        $out = ['success' => true, 'message' => 'Message sent', 'message_id' => (int)$result['id'], 'created_at' => $result['created_at'] ?? null];
-    } else {
-        // try to get last inserted id by matching recent row
+    // Ensure $result includes id and created_at for AJAX consumers
+    $out = null;
+    if (!empty($result['message_id'])) {
+        $out = ['success' => true, 'message' => 'Message sent', 'message_id' => (int)$result['message_id']];
+        // try to fetch created_at and confirm
         try {
-            $mysqli = MessagesController::db();
-            $stmt = $mysqli->prepare('SELECT id, created_at FROM messages WHERE sender_id=? AND recipient_id=? AND body=? ORDER BY id DESC LIMIT 1');
+            require_once __DIR__ . '/../../config/db-connection/db_connection.php';
+            global $conn;
+            $mysqli = $conn;
+            $stmt = $mysqli->prepare('SELECT id, body, created_at FROM messages WHERE id = ? LIMIT 1');
+            if ($stmt) {
+                $stmt->bind_param('i', $out['message_id']);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                $row = $res ? $res->fetch_assoc() : null;
+                $stmt->close();
+                if ($row) {
+                    $out['created_at'] = $row['created_at'] ?? null;
+                    $out['message'] = $row['body'] ?? $messageBody;
+                }
+            }
+        } catch (Throwable $e) {
+            // ignore
+        }
+    }
+
+    // if still no out and result indicates success, try to locate the message by matching recent row
+    if (empty($out) && !empty($result) && !empty($result['success'])) {
+        try {
+            require_once __DIR__ . '/../../config/db-connection/db_connection.php';
+            global $conn;
+            $mysqli = $conn;
+            $stmt = $mysqli->prepare('SELECT id, body, created_at FROM messages WHERE sender_id=? AND recipient_id=? AND body=? ORDER BY id DESC LIMIT 1');
             if ($stmt) {
                 $stmt->bind_param('iis', $currentUserId, $recipientId, $messageBody);
                 $stmt->execute();
@@ -338,7 +366,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($out)) {
         // Attempt to capture DB error information for debugging
         try {
-            $mysqli = MessagesController::db();
+            require_once __DIR__ . '/../../config/db-connection/db_connection.php';
+            global $conn;
+            $mysqli = $conn;
             $dberr = '';
             if ($mysqli && is_object($mysqli) && property_exists($mysqli, 'error')) {
                 $dberr = $mysqli->error;

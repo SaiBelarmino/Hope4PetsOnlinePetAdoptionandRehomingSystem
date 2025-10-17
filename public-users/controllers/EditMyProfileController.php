@@ -26,6 +26,71 @@ class EditMyProfileController extends BaseController {
 
         // Process POST only
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Handle ID verification uploads sent as base64 (from camera capture)
+            if (isset($_POST['action']) && $_POST['action'] === 'verify_id') {
+                // Accept either base64 inputs (id_photo, id_photo_back) or normal file uploads
+                $savedFiles = [];
+                $uploadsDir = __DIR__ . '/../../storage/uploads/id_documents/' . $userId;
+                if (!is_dir($uploadsDir)) mkdir($uploadsDir, 0755, true);
+
+                // helper to save base64 image string
+                $saveBase64 = function($dataUri, $filename) use ($uploadsDir) {
+                    if (!$dataUri) return false;
+                    // data:[<mediatype>][;base64],<data>
+                    if (preg_match('/^data:(image\/[-+\w.]+);base64,(.*)$/', $dataUri, $m)) {
+                        $mime = $m[1];
+                        $b64 = $m[2];
+                        $ext = 'png';
+                        if ($mime === 'image/jpeg' || $mime === 'image/jpg') $ext = 'jpg';
+                        elseif ($mime === 'image/webp') $ext = 'webp';
+                        $data = base64_decode($b64);
+                    } else {
+                        // assume plain base64
+                        $data = base64_decode($dataUri);
+                        $ext = 'png';
+                    }
+                    if ($data === false) return false;
+                    $path = $uploadsDir . '/' . $filename . '.' . $ext;
+                    if (file_put_contents($path, $data) === false) return false;
+                    // return relative path used in DB
+                    return 'storage/uploads/id_documents/' . basename($uploadsDir) . '/' . $filename . '.' . $ext;
+                };
+
+                // front
+                $docTypeVal = trim($_POST['doc_type'] ?? 'ID');
+                if (!empty($_POST['id_photo'])) {
+                    $fname = 'id_front_' . time() . '_' . bin2hex(random_bytes(4));
+                    $rel = $saveBase64($_POST['id_photo'], $fname);
+                    if ($rel) $savedFiles[] = ['name' => $fname, 'path' => $rel, 'doc_type' => $docTypeVal];
+                }
+                // back
+                if (!empty($_POST['id_photo_back'])) {
+                    $fname = 'id_back_' . time() . '_' . bin2hex(random_bytes(4));
+                    $rel = $saveBase64($_POST['id_photo_back'], $fname);
+                    if ($rel) $savedFiles[] = ['name' => $fname, 'path' => $rel, 'doc_type' => $docTypeVal];
+                }
+
+                // Also handle file inputs (if any)
+                if (!empty($_FILES['id_file']) && $_FILES['id_file']['error'] === UPLOAD_ERR_OK) {
+                    $f = $_FILES['id_file'];
+                    $ext = pathinfo($f['name'], PATHINFO_EXTENSION) ?: 'png';
+                    $fname = 'id_upload_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $dest = $uploadsDir . '/' . $fname;
+                    if (move_uploaded_file($f['tmp_name'], $dest)) {
+                        $savedFiles[] = ['name' => $f['name'], 'path' => 'storage/uploads/id_documents/' . $userId . '/' . $fname, 'doc_type' => $docTypeVal];
+                    }
+                }
+
+                if (!empty($savedFiles)) {
+                    // use UploadIdController to persist records
+                    require_once __DIR__ . '/UploaIDController.php';
+                    // UploadIdController::save expects filesMeta with keys 'name' and 'path'
+                    UploadIdController::save($userId, $savedFiles);
+                    redirect_with_flash('Verification documents uploaded. Your account will be reviewed by admin.', 'success');
+                } else {
+                    redirect_with_flash('No ID images provided. Please capture or upload your ID.', 'danger');
+                }
+            }
             if (isset($_POST['full_name'])) {
                 // Collect fields (basic sanitization)
                 $full_name = trim($_POST['full_name'] ?? '');

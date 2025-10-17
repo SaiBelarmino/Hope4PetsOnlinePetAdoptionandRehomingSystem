@@ -11,6 +11,12 @@ $action = $_POST['action'] ?? '';
 $status = ($action === 'approve') ? 'approved' : (($action === 'reject') ? 'rejected' : '');
 
 if ($id <= 0 || !$status) {
+    // support AJAX: return json when requested
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false) {
+        header('Content-Type: application/json');
+        echo json_encode(['ok'=>false,'error'=>'invalid_request']);
+        exit;
+    }
     header('Location: ../views/shelter-verification-requests.php');
     exit;
 }
@@ -94,6 +100,13 @@ if ($shelterId) {
     }
 }
 
-// redirect back
+// respond appropriately for AJAX requests
+if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false) {
+    header('Content-Type: application/json');
+    echo json_encode(['ok'=>true,'id'=>$id,'action'=>$action]);
+    exit;
+}
+
+// redirect back for non-AJAX
 header('Location: ../views/shelter-verification-requests.php');
 exit;

@@ -36,20 +36,27 @@ $docs = ShelterVerificationRequestsController::fetchDocuments(null, 200);
                             <td><?= htmlspecialchars($doc['doc_type'] ?? '') ?></td>
                             <td><?= htmlspecialchars($doc['uploaded_at'] ?? '') ?></td>
                             <td>
-                                <a class="btn btn-light btn-sm"
-                                    href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/controllers/serve-shelter-document.php?id=<?= $doc['id'] ?>"
+                                <!-- Open in modal (class/data-file used by JS). Keep href for accessibility/fallback. -->
+                                <a class="btn btn-light btn-sm js-view-doc"
+                                    href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/controllers/Shelter/serve-shelter-document.php?id=<?= $doc['id'] ?>"
+                                    data-file="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/controllers/Shelter/serve-shelter-document.php?id=<?= $doc['id'] ?>"
+                                    data-id="<?= $doc['id'] ?>"
                                     target="_blank">
                                     Open Document
                                 </a>
-                                <form method="post" action="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/controllers/review-shelter-document-action.php" style="display:inline;">
+
+                                <!-- Approve form (progressive enhancement: AJAX will intercept) -->
+                                <form method="post" action="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/controllers/Shelter/review-shelter-document-action.php" class="js-review-form" style="display:inline;">
                                     <input type="hidden" name="id" value="<?= $doc['id'] ?>">
                                     <input type="hidden" name="action" value="approve">
-                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Approve this document?');">Approve</button>
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
                                 </form>
-                                <form method="post" action="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/controllers/review-shelter-document-action.php" style="display:inline;">
+
+                                <!-- Reject form (progressive enhancement: AJAX will intercept) -->
+                                <form method="post" action="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/controllers/Shelter/review-shelter-document-action.php" class="js-review-form" style="display:inline;">
                                     <input type="hidden" name="id" value="<?= $doc['id'] ?>">
                                     <input type="hidden" name="action" value="reject">
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this document?');">Reject</button>
+                                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
                                 </form>
                             </td>
                         </tr>
@@ -126,3 +133,95 @@ document.addEventListener('DOMContentLoaded', function(){
     modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
 });
 </script>
+
+    <script>
+    // AJAX review handler: intercept forms with class js-review-form
+    document.addEventListener('DOMContentLoaded', function(){
+        document.querySelectorAll('.js-review-form').forEach(function(form){
+            form.addEventListener('submit', function(e){
+                e.preventDefault();
+                const id = form.querySelector('input[name="id"]').value;
+                const action = form.querySelector('input[name="action"]').value;
+                const confirmed = confirm((action === 'approve') ? 'Approve this document?' : 'Reject this document?');
+                if (!confirmed) return;
+
+                const formData = new FormData();
+                formData.append('id', id);
+                formData.append('action', action);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                }).then(resp => {
+                    // If server redirects back to HTML, we may get 200 with HTML body.
+                    if (!resp.ok) throw new Error('Server error: ' + resp.status);
+                    return resp.text();
+                }).then(text => {
+                    // On success, remove the row or mark status
+                    const btn = form.querySelector('button');
+                    const row = form.closest('tr');
+                    if (action === 'approve') {
+                        // visually indicate approved
+                        row.style.opacity = '0.6';
+                        btn.textContent = 'Approved';
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-secondary');
+                        // remove other buttons in row
+                        row.querySelectorAll('form.js-review-form, .js-view-doc').forEach(el=>{
+                            if (el !== form && el.tagName !== 'FORM') el.remove();
+                        });
+                        // optionally remove entire row
+                        row.parentNode.removeChild(row);
+                    } else {
+                        // rejected
+                        row.style.opacity = '0.6';
+                        btn.textContent = 'Rejected';
+                        btn.classList.remove('btn-danger');
+                        btn.classList.add('btn-secondary');
+                        row.parentNode.removeChild(row);
+                    }
+                }).catch(err => {
+                    alert('Failed to submit: ' + err.message);
+                });
+            });
+        });
+
+        // If user clicks the anchor (Open Document) we still want modal behavior
+        document.querySelectorAll('.js-view-doc').forEach(function(a){
+            a.addEventListener('click', function(e){
+                // if user used ctrl/cmd or middle click, allow default (open new tab)
+                if (e.metaKey || e.ctrlKey || e.button === 1) return;
+                e.preventDefault();
+                // trigger the same viewer logic: find data-file and reuse existing modal code
+                const url = a.getAttribute('data-file');
+                const modal = document.getElementById('docViewerModal');
+                const content = document.getElementById('docViewerContent');
+                const ext = (url.split('.').pop() || '').toLowerCase();
+                modal.style.display = 'flex';
+                content.innerHTML = '<div style="color:#888;">Loading...</div>';
+                fetch(url, { credentials: 'same-origin', cache: 'no-store' })
+                    .then(resp => { if (!resp.ok) throw new Error('Failed to load document'); return resp.blob(); })
+                    .then(blob => {
+                        let el;
+                        if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+                            el = document.createElement('img');
+                            el.src = URL.createObjectURL(blob);
+                            el.style.maxWidth = '100%';
+                            el.style.maxHeight = '100%';
+                            el.style.objectFit = 'contain';
+                        } else if (ext === 'pdf') {
+                            el = document.createElement('iframe');
+                            el.src = URL.createObjectURL(blob);
+                            el.style.width = '100%';
+                            el.style.height = '100%';
+                        } else {
+                            el = document.createElement('a'); el.href = url; el.textContent = 'Open document'; el.target = '_blank';
+                        }
+                        content.innerHTML = '';
+                        content.appendChild(el);
+                    }).catch(err => { content.innerHTML = '<div style="color:red;">Error loading document: ' + err.message + '</div>'; });
+            });
+        });
+    });
+    </script>

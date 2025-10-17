@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const recipientId = window.RECIPIENT_ID;
     let lastMessageId = window.INITIAL_LAST_MESSAGE_ID || 0; 
     
-    const CURRENT_USER_AVATAR = window.CURRENT_USER_AVATAR; 
-    // Kuha ang avatar ng ka-chat mula sa header (o default)
-    const RECIPIENT_AVATAR = document.querySelector('.card-header img.rounded-circle.me-1')?.src || '/assets/img/default-avatar.png';
+    const CURRENT_USER_AVATAR = window.CURRENT_USER_AVATAR;
+    // Use server-provided recipient avatar when available, otherwise fallback to DOM or default
+    const RECIPIENT_AVATAR = (typeof window.RECIPIENT_AVATAR !== 'undefined' && window.RECIPIENT_AVATAR) ? window.RECIPIENT_AVATAR : (document.querySelector('.card-header img.rounded-circle.me-1')?.src || '/assets/img/default-avatar.png');
 
 
     // --- Helper Function: Forced Scroll ---
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sendBtn.disabled = true;
         const formData = new FormData(form);
 
-        fetch(form.action, { method: 'POST', body: formData })
+    fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: formData })
             .then(res => res.json())
             .then(data => {
                 sendBtn.disabled = false;
@@ -164,6 +164,15 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         sendMessage();
     });
+
+    // Click handler for the Send button (the button is type="button" in the markup)
+    // Ensure clicking the visible button triggers the same send flow as pressing Enter
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            sendMessage();
+        });
+    }
 
     // Character count 
     if (charCount) {

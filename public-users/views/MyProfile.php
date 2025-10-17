@@ -76,12 +76,14 @@ if ($userId) {
                             <?php echo htmlspecialchars(ucfirst($user['gender'])); ?></p>
                         <p class="mb-0 small"><?php echo htmlspecialchars($user['location'] ?? 'N/A'); ?></p>
                     </div>
-                    <div class="d-flex flex-row gap-2">
-                        <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal"><i
-                                class="ti ti-id"></i> Verify ID</button>
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"><i
-                                class="ti ti-edit"></i> Edit Profile</button>
-                    </div>
+            <div class="d-flex flex-row gap-2">
+            <?php if (empty($user['is_verified'])): ?>
+            <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal"><i
+                class="ti ti-id"></i> Verify ID</button>
+            <?php endif; ?>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"><i
+                class="ti ti-edit"></i> Edit Profile</button>
+            </div>
                 </div>
             </div>
             <!-- Tabs -->

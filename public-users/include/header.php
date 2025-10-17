@@ -54,3 +54,55 @@ body {
   padding-right: 0 !important;
 }
 </style>
+<script>
+// Keep window.currentUser in sync with server verification status.
+window.refreshVerification = (function(){
+  let polling = false;
+  async function updateOnce(){
+    if (!window.currentUser || !window.currentUser.id) return;
+    try {
+      const res = await fetch('/Hope4PetsOnlinePetAdoptionandRehomingSystem/public-users/controllers/check_verification.php', {cache: 'no-store'});
+      const d = await res.json();
+      if (d && d.ok) {
+        const isVerified = !!d.is_verified;
+        // update global JS object
+        window.currentUser.is_verified = isVerified ? 1 : 0;
+        // update any verified badge images rendered with the known src path
+        document.querySelectorAll('img[src$="assets/images/svg-verified/verified.svg"]').forEach(img => {
+          img.style.display = isVerified ? '' : 'none';
+        });
+        // update inline badge that may be a separate element data-verified
+        document.querySelectorAll('[data-verified-badge]').forEach(el => {
+          el.style.display = isVerified ? '' : 'none';
+        });
+        // hide any 'Verify ID' buttons (those that open the verify modal) when verified
+        // buttons that open the modal typically have data-bs-target="#verifyIdModal" or a custom attr data-verify-id-button
+        document.querySelectorAll('[data-bs-target="#verifyIdModal"], [data-verify-id-button]').forEach(btn => {
+          btn.style.display = isVerified ? 'none' : '';
+        });
+      }
+    } catch (e) {
+      console.error('verification refresh failed', e);
+    }
+  }
+  return {
+    start: function(intervalMs=15000){
+      if (polling) return;
+      polling = true;
+      updateOnce();
+      window._verifyInterval = setInterval(updateOnce, intervalMs);
+    },
+    stop: function(){
+      polling = false;
+      if (window._verifyInterval) clearInterval(window._verifyInterval);
+    },
+    once: updateOnce
+  };
+})();
+
+// Start polling on pages where there's a logged in user
+if (window.currentUser && window.currentUser.id) {
+  // Run immediately and then every 15s
+  window.refreshVerification.start(15000);
+}
+</script>

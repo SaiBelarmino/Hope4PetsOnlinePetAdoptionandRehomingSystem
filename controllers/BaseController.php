@@ -56,4 +56,29 @@ abstract class BaseController {
         }
         return $default;
     }
+
+    /**
+     * Execute a write query (INSERT/UPDATE/DELETE) with optional prepared params.
+     * If $returnAffected is true return affected_rows (int), otherwise return bool success.
+     */
+    protected static function execute(string $sql, string $types = '', array $params = [], bool $returnAffected = false) {
+        $mysqli = self::db();
+        try {
+            if ($types !== '' && !empty($params)) {
+                $stmt = $mysqli->prepare($sql);
+                if (!$stmt) return $returnAffected ? 0 : false;
+                $stmt->bind_param($types, ...$params);
+                $ok = $stmt->execute();
+                $affected = $stmt->affected_rows;
+                $stmt->close();
+                return $returnAffected ? $affected : ($ok === true || $affected >= 0);
+            }
+            $res = $mysqli->query($sql);
+            if ($returnAffected) return $mysqli->affected_rows;
+            return $res !== false;
+        } catch (mysqli_sql_exception $e) {
+            error_log('DB error in execute: ' . $e->getMessage() . ' -- SQL: ' . $sql);
+            return $returnAffected ? 0 : false;
+        }
+    }
 }

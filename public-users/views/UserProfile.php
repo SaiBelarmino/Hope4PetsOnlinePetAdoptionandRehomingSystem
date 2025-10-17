@@ -84,13 +84,15 @@ if ($userId) {
                     <div class="d-flex flex-row gap-2">
                         <a href="ChatMessages.php?user_id=<?php echo urlencode($userId); ?>" class="btn btn-primary btn-sm"><i class="ti ti-message"></i> Message</a>
                     </div>
-                    <?php else: ?>
-                    <div class="d-flex flex-row gap-2">
-                        <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal"><i
-                                class="ti ti-id"></i> Verify ID</button>
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"><i
-                                class="ti ti-edit"></i> Edit Profile</button>
-                    </div>
+            <?php else: ?>
+            <div class="d-flex flex-row gap-2">
+            <?php if (empty($user['is_verified'])): ?>
+            <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal"><i
+                class="ti ti-id"></i> Verify ID</button>
+            <?php endif; ?>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"><i
+                class="ti ti-edit"></i> Edit Profile</button>
+            </div>
                     <?php endif; ?>
                 </div>
             </div>
