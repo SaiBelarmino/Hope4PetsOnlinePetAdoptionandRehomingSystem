@@ -10,7 +10,7 @@ $pets = PetController::fetchAvailablePets(36, 0);
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
 
-<div class="container-fluid py-4">
+<div class="container-fluid">
 	<?php
 	// show flash if any
 	if (session_status() === PHP_SESSION_NONE) { session_start(); }
@@ -21,7 +21,7 @@ $pets = PetController::fetchAvailablePets(36, 0);
 			unset($_SESSION['flash']);
 	}
 	?>
-	<div class="row">
+	<div class="row g-3 py-3">
 		<div class="col-12 col-lg-3">
 			<?php include __DIR__ . '/../include/shortcut-button.php'; ?>
 		</div>
