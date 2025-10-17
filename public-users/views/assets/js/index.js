@@ -1,238 +1,198 @@
-const MAX_MEDIA = 9; // 8 images + 1 video
-const preview = document.getElementById('media-preview');
-const mediaCountLabel = document.getElementById('media-count');
-const dropZone = document.getElementById('drop-zone');
-const fileInput = document.getElementById('media');
+document.addEventListener('DOMContentLoaded', function () {
+	'use strict';
 
-// Track seen previews to avoid duplicates
-const previewKeys = new Set();
+	const dropZone = document.getElementById('drop-zone');
+	const input = document.getElementById('media');
+	const selectBtn = document.getElementById('select-media-btn');
+	if (!dropZone || !input) return;
 
-let dragCounter = 0;
-let selectedFiles = [];
-let fileMap = new Map();
+	// Find persistent preview container if present, otherwise create one
+	let previewContainer = document.getElementById('media-previews') || dropZone.querySelector('.media-previews');
+	if (!previewContainer) {
+		previewContainer = document.createElement('div');
+		previewContainer.className = 'media-previews mt-3 d-flex flex-wrap gap-2';
+		dropZone.appendChild(previewContainer);
+	}
 
-function updateFileInput() {
-    const dt = new DataTransfer();
-    selectedFiles.forEach(f => dt.items.add(f));
-    fileInput.files = dt.files;
-}
+	// Ensure initial placeholder
+	if (previewContainer && previewContainer.children.length === 0) {
+		previewContainer.innerHTML = '<div class="text-muted small">No files selected</div>';
+	}
 
-function addImageElement(src, key, file = null) {
-    if (preview.querySelectorAll('.media-container').length >= MAX_MEDIA) return false;
-    if (key && previewKeys.has(key)) return false;
-    const container = document.createElement('div');
-    container.className = 'media-container position-relative';
-    const img = document.createElement('img');
-    img.src = src;
-    img.style.width = '120px';
-    img.style.height = '120px';
-    img.style.objectFit = 'cover';
-    img.className = 'rounded';
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
-    removeBtn.textContent = '×';
-    removeBtn.onclick = function() {
-        removeMedia(this);
-    };
-    container.appendChild(img);
-    container.appendChild(removeBtn);
-    preview.appendChild(container);
-    if (key) previewKeys.add(key);
-    updateMediaCount();
-    return true;
-}
+	// currentFiles stores objects: { key: string, file: File }
+	let currentFiles = [];
+	const objectURLs = new Map(); // key -> objectURL
 
-function addVideoElement(src, key, file = null) {
-    if (preview.querySelectorAll('.media-container').length >= MAX_MEDIA) return false;
-    if (key && previewKeys.has(key)) return false;
-    const container = document.createElement('div');
-    container.className = 'media-container position-relative';
-    const video = document.createElement('video');
-    video.src = src;
-    video.style.width = '120px';
-    video.style.height = '120px';
-    video.style.objectFit = 'cover';
-    video.className = 'rounded';
-    video.muted = true;
-    video.loop = true;
-    video.preload = 'metadata';
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
-    removeBtn.textContent = '×';
-    removeBtn.onclick = function() {
-        removeMedia(this);
-    };
-    container.appendChild(video);
-    container.appendChild(removeBtn);
-    preview.appendChild(container);
-    if (key) previewKeys.add(key);
-    updateMediaCount();
-    return true;
-}
+	function makeKey(file) {
+		return (file.name || '') + '|' + (file.size || 0) + '|' + (file.type || '');
+	}
 
-function removeMedia(btn) {
-    const container = btn.parentElement;
-    const media = container.querySelector('img, video');
-    const src = media.src;
-    if (src.startsWith('blob:')) {
-        for (let [file, index] of fileMap) {
-            if (URL.createObjectURL(file) === src) {
-                selectedFiles.splice(index, 1);
-                fileMap.delete(file);
-                // Update indices
-                fileMap.clear();
-                selectedFiles.forEach((f, i) => fileMap.set(f, i));
-                break;
-            }
-        }
-    }
-    container.remove();
-    updateFileInput();
-    updateMediaCount();
-}
+	function countKinds(entries) {
+		let images = 0, videos = 0;
+		for (const e of entries) {
+			const f = e.file;
+			if (!f || !f.type) continue;
+			if (f.type.startsWith('image/')) images++;
+			if (f.type.startsWith('video/')) videos++;
+		}
+		return { images, videos };
+	}
 
-function updateMediaCount() {
-    const count = preview.querySelectorAll('.media-container').length;
-    mediaCountLabel.textContent = count + (count === 1 ? ' selected' : ' selected');
-}
+	function updateInputFiles() {
+		const dt = new DataTransfer();
+		for (const e of currentFiles) dt.items.add(e.file);
+		input.files = dt.files;
+	}
 
-dropZone.addEventListener('click', () => {
-    fileInput.click();
-});
+	function renderPreviews() {
+		if (!previewContainer) return;
+		previewContainer.innerHTML = '';
+		if (currentFiles.length === 0) {
+			previewContainer.innerHTML = '<div class="text-muted small">No files selected</div>';
+			return;
+		}
 
-dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-});
+		currentFiles.forEach((entry, idx) => {
+			const file = entry.file;
+			const key = entry.key;
+			const wrapper = document.createElement('div');
+			wrapper.className = 'position-relative border rounded overflow-hidden';
+			wrapper.style.width = '110px';
+			wrapper.style.height = '110px';
+			wrapper.style.display = 'inline-block';
+			wrapper.style.background = '#f8f9fa';
 
-dropZone.addEventListener('dragenter', (e) => {
-    e.preventDefault();
-    dragCounter++;
-    dropZone.classList.add('border-primary');
-});
+			let url = objectURLs.get(key);
+			if (!url) {
+				url = URL.createObjectURL(file);
+				objectURLs.set(key, url);
+			}
 
-dropZone.addEventListener('dragleave', (e) => {
-    e.preventDefault();
-    dragCounter--;
-    if (dragCounter === 0) {
-        dropZone.classList.remove('border-primary');
-    }
-});
+			if (file.type && file.type.startsWith('image/')) {
+				const img = document.createElement('img');
+				img.src = url;
+				img.style.width = '100%';
+				img.style.height = '100%';
+				img.style.objectFit = 'cover';
+				wrapper.appendChild(img);
+			} else if (file.type && file.type.startsWith('video/')) {
+				const vid = document.createElement('video');
+				vid.src = url;
+				vid.muted = true;
+				vid.playsInline = true;
+				vid.style.width = '100%';
+				vid.style.height = '100%';
+				vid.style.objectFit = 'cover';
+				vid.controls = false;
+				wrapper.appendChild(vid);
+				const play = document.createElement('div');
+				play.innerHTML = '\u25BA';
+				play.style.position = 'absolute';
+				play.style.left = '50%';
+				play.style.top = '50%';
+				play.style.transform = 'translate(-50%,-50%)';
+				play.style.color = 'rgba(255,255,255,0.9)';
+				play.style.fontSize = '24px';
+				wrapper.appendChild(play);
+			}
 
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dragCounter = 0;
-    dropZone.classList.remove('border-primary');
-    const files = Array.from(e.dataTransfer.files);
-    files.forEach((file) => {
-        selectedFiles.push(file);
-        fileMap.set(file, selectedFiles.length - 1);
-        const url = URL.createObjectURL(file);
-        if (file.type.startsWith('image/')) {
-            addImageElement(url, file.name, file);
-        } else if (file.type.startsWith('video/')) {
-            addVideoElement(url, file.name, file);
-        }
-    });
-    updateFileInput();
-});
+			const removeBtn = document.createElement('button');
+			removeBtn.type = 'button';
+			removeBtn.className = 'btn btn-sm btn-danger';
+			removeBtn.style.position = 'absolute';
+			removeBtn.style.top = '4px';
+			removeBtn.style.right = '4px';
+			removeBtn.style.zIndex = '5';
+			removeBtn.innerHTML = '×';
+			removeBtn.onclick = function (e) {
+				e.stopPropagation();
+				// revoke and cleanup
+				if (objectURLs.has(key)) {
+					URL.revokeObjectURL(objectURLs.get(key));
+					objectURLs.delete(key);
+				}
+				currentFiles.splice(idx, 1);
+				renderPreviews();
+				updateInputFiles();
+			};
 
-fileInput.addEventListener('change', (event) => {
-    const files = Array.from(event.target.files);
-    files.forEach((file) => {
-        selectedFiles.push(file);
-        fileMap.set(file, selectedFiles.length - 1);
-        const url = URL.createObjectURL(file);
-        if (file.type.startsWith('image/')) {
-            addImageElement(url, file.name, file);
-        } else if (file.type.startsWith('video/')) {
-            addVideoElement(url, file.name, file);
-        }
-    });
-    updateFileInput();
-    updateMediaCount();
-    fileInput.value = '';
-});
+			wrapper.appendChild(removeBtn);
+			previewContainer.appendChild(wrapper);
+		});
+	}
 
-// Image modal script
-function openImageModal(images) {
-    const carouselInner = document.getElementById('carousel-inner');
-    carouselInner.innerHTML = '';
-    images.forEach((src, index) => {
-        const item = document.createElement('div');
-        item.className = 'carousel-item' + (index === 0 ? ' active' : '');
-        item.innerHTML = `<img src="${src}" class="d-block" style="max-width: 100%; max-height: 70vh; object-fit: contain; margin: 0 auto;" alt="Image">`;
-        carouselInner.appendChild(item);
-    });
-    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
-    modal.show();
-}
+	function addFiles(filesList) {
+		const incoming = Array.from(filesList || []);
+		if (incoming.length === 0) return;
+		console.log('[composer] addFiles incoming:', incoming.length);
 
-// Video modal script
-function openVideoModal(src) {
-    // Pause all videos to prevent double play
-    document.querySelectorAll('video').forEach(v => v.pause());
-    const modalVideoSource = document.getElementById('modalVideoSource');
-    modalVideoSource.src = src;
-    const modalVideo = document.getElementById('modalVideo');
-    modalVideo.load(); // Reload the video
-    const modal = new bootstrap.Modal(document.getElementById('videoModal'));
-    modal.show();
-}
+		// compute existing counts
+		const existing = countKinds(currentFiles);
+		let toAdd = [];
 
-function openVideoModalWithPause(src, container) {
-    const video = container.querySelector('video');
-    video.pause();
-    openVideoModal(src);
-}
+		for (const f of incoming) {
+			const key = makeKey(f);
+			if (currentFiles.some(e => e.key === key)) continue; // skip dup
+			// check limits
+			const isImage = f.type && f.type.startsWith('image/');
+			const isVideo = f.type && f.type.startsWith('video/');
+			if (isVideo && existing.videos + toAdd.filter(t => t.file.type.startsWith('video/')).length >= 1) {
+				// skip extra videos
+				console.warn('[composer] skipping extra video:', f.name);
+				continue;
+			}
+			if (isImage && existing.images + toAdd.filter(t => t.file.type.startsWith('image/')).length >= 8) {
+				console.warn('[composer] skipping extra image:', f.name);
+				continue;
+			}
+			toAdd.push({ key: key, file: f });
+		}
 
-// Video overlay script
-document.querySelectorAll('.video-container').forEach(container => {
-    const video = container.querySelector('video');
-    const overlay = container.querySelector('.play-overlay');
-    const icon = overlay.querySelector('i');
-    let isHovering = false;
+		if (toAdd.length > 0) {
+			currentFiles = currentFiles.concat(toAdd);
+			renderPreviews();
+			updateInputFiles();
+		}
+	}
 
-    container.addEventListener('mouseenter', () => {
-        isHovering = true;
-        if (video.paused || video.ended) {
-            overlay.style.display = 'flex';
-        }
-    });
-    container.addEventListener('mouseleave', () => {
-        isHovering = false;
-        overlay.style.display = 'none';
-    });
+	// Click on drop zone opens file picker (but avoid when clicking inner buttons)
+	dropZone.addEventListener('click', function (e) {
+		if (e.target && (e.target.tagName.toLowerCase() === 'button' || e.target.closest('button'))) return; // let buttons inside work
+		input.click();
+	});
 
-    video.addEventListener('playing', () => {
-        overlay.style.display = 'none';
-    });
-    video.addEventListener('pause', () => {
-        if (isHovering) {
-            overlay.style.display = 'flex';
-        }
-        icon.className = 'ti ti-player-play text-white';
-    });
-    video.addEventListener('ended', () => {
-        if (isHovering) {
-            overlay.style.display = 'flex';
-        }
-        icon.className = 'ti ti-player-play text-white';
-    });
-    overlay.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (video.paused) {
-            video.play();
-        } else {
-            video.pause();
-        }
-    });
-    video.addEventListener('click', () => {
-        if (video.paused) {
-            video.play();
-        } else {
-            video.pause();
-        }
-    });
+	// Also bind visible Select button (input overlay already handles clicks)
+	if (selectBtn) {
+		selectBtn.addEventListener('click', function (e) {
+			e.stopPropagation();
+			// do not call input.click() because the input sits over the button and will receive the click
+		});
+	}
+
+	input.addEventListener('change', function () {
+		if (!input.files || input.files.length === 0) return;
+		console.log('[composer] input.change - files selected:', input.files.length);
+		addFiles(input.files);
+		// do not clear input.value here
+	});
+
+	// drag & drop
+	dropZone.addEventListener('dragover', function (e) {
+		e.preventDefault();
+		dropZone.classList.add('drag-over');
+	});
+	dropZone.addEventListener('dragleave', function (e) {
+		e.preventDefault();
+		dropZone.classList.remove('drag-over');
+	});
+	dropZone.addEventListener('drop', function (e) {
+		e.preventDefault();
+		dropZone.classList.remove('drag-over');
+		if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+			addFiles(e.dataTransfer.files);
+		}
+	});
+
+	// expose for debugging (optional)
+	window._postComposerFiles = currentFiles;
 });

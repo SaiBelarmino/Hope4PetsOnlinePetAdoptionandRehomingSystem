@@ -78,7 +78,7 @@ function resolve_media_path(?string $path): string {
                     <?php endif; ?>
                 </div>
             <?php else: ?>
-                <div id="postMediaCarousel" class="carousel slide carousel-fade w-100 h-100" data-bs-ride="carousel" data-bs-interval="5000">
+                <div id="postMediaCarousel" class="carousel slide carousel-fade w-100 h-100">
                     <div class="carousel-inner h-100">
                         <?php foreach ($items as $idx => $it): ?>
                             <div class="carousel-item <?php echo ($idx === 0) ? 'active' : ''; ?> h-100 d-flex align-items-center justify-content-center">
@@ -198,4 +198,5 @@ function resolve_media_path(?string $path): string {
 
 <?php include __DIR__ . '/../include/footer.php'; ?>
 
+<script>var postId = <?php echo json_encode($postId); ?>;</script>
 <script src="./assets/js/postview.js"></script>

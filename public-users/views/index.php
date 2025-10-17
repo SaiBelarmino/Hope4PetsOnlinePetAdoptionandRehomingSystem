@@ -231,7 +231,7 @@ if ($flash && is_array($flash)) {
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="post" action="../controllers/CreatePostController.php"
+                            <form id="createPostForm" method="post" action="../controllers/CreatePostController.php"
                                 enctype="multipart/form-data">
                                 <input type="hidden" name="action" value="create" />
                                 <div class="mb-3">
@@ -240,20 +240,25 @@ if ($flash && is_array($flash)) {
                                         placeholder="Put something here, or leave empty and attach images/videos."></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Media (drag and drop images or videos, max 8 images, 1
-                                        video)</label>
                                     <div id="drop-zone"
                                         class="border border-dashed border-secondary rounded p-4 text-center"
-                                        style="min-height: 200px;">
+                                        style="min-height: 200px; cursor: pointer; position:relative;">
                                         <p>Drag and drop images or videos here or click to select</p>
-                                        <input type="file" id="media" name="media[]" accept="image/*,video/*" multiple
-                                            style="display: none;" />
+
+                                        <div style="display:inline-block; position:relative;">
+                                            <button type="button" id="select-media-btn" class="btn btn-light border mt-2" style="position:relative; overflow:hidden;">
+                                                Choose files
+                                                <input type="file" id="media" name="media[]" accept="image/*,video/*" multiple
+                                                    style="position:absolute; left:0; top:0; width:100%; height:100%; opacity:0; cursor:pointer;" />
+                                            </button>
+                                        </div>
+
+                                        <!-- Persistent preview area -->
+                                        <div id="media-previews" class="media-previews mt-3 d-flex flex-wrap gap-2" aria-live="polite">
+                                            <div class="text-muted small">No files selected</div>
+                                        </div>
+
                                     </div>
-                                    <div class="d-flex gap-2 mb-2">
-                                        <small id="media-count" class="text-muted">0 selected</small>
-                                    </div>
-                                    <div id="media-preview" class="row g-2 mt-2"></div>
-                                    <!-- Improved to responsive grid -->
                                 </div>
                                 <small class="text-muted">You can add multiple images. Max recommended: 8 images. One
                                     video per post.</small>
@@ -269,4 +274,4 @@ if ($flash && is_array($flash)) {
             </div>
 
             <?php include __DIR__ . '/../include/footer.php'; ?>
-            <script src="assets/js/index.js"></script>
+            <script src="assets/js/index.js?v=2"></script>

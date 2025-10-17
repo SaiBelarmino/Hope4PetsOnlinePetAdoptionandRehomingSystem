@@ -22,7 +22,7 @@ if ($userId) {
         onchange="document.getElementById('photoForm').submit();">
 </form>
 <div class="container-fluid">
-    <div class="row g-3 py-3">
+    <div class="row g-3 py-4">
         <!-- Left Sidebar -->
         <div class="col-12 col-lg-3">
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>

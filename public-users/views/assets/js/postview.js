@@ -69,6 +69,17 @@ document.addEventListener('DOMContentLoaded', function () {
     carouselEl.addEventListener('slide.bs.carousel', function () { pauseAllVideos(); });
     carouselEl.addEventListener('slid.bs.carousel', function () { pauseAllVideos(); });
 
+    // Carousel persistence
+    var key = 'carousel_index_' + postId;
+    var storedIndex = localStorage.getItem(key);
+    if (storedIndex !== null) {
+      carousel.to(parseInt(storedIndex));
+    }
+    carouselEl.addEventListener('slid.bs.carousel', function (e) {
+      var activeIndex = Array.from(carouselEl.querySelectorAll('.carousel-item')).indexOf(e.relatedTarget);
+      localStorage.setItem(key, activeIndex);
+    });
+
     // IMPORTANT: do NOT preventDefault on the control buttons; let Bootstrap handle the click
     // But ensure controls exist and are not overwritten by other handlers
     // (No extra click handlers here)
