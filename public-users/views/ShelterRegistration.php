@@ -41,7 +41,6 @@ if ($userId && class_exists('ShelterManagementController') && method_exists('She
 <div class="pu-scroll-wrapper"><div class="container-fluid py-3">
   <div class="row g-3">
     <!-- Left Sidebar -->
-    <div class="col-12 col-lg-3">
       <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
       <div class="card mt-3 d-none d-lg-block">
         <div class="card-body">

@@ -24,9 +24,7 @@ if ($userId) {
 <div class="container-fluid">
     <div class="row g-3 py-4">
         <!-- Left Sidebar -->
-        <div class="col-12 col-lg-3">
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
-        </div>
         <!-- Center Content -->
         <div class="col-12 col-lg-6"
             style="max-height:862px; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width: none; -ms-overflow-style: none;"
@@ -366,7 +364,7 @@ if ($userId) {
             <?php endif; ?>
         </div>
         <!-- Right Sidebar -->
-        <div class="col-12 col-lg-3">
+        <div class="col-12 col-lg-2">
             <div class="card">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">Tips</h6>

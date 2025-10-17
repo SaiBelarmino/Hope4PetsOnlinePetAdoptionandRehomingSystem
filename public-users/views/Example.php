@@ -3,9 +3,7 @@
 <div class="container-fluid">
     <div class="row g-3 py-3">
         <!-- Left Sidebar -->
-        <div class="col-12 col-lg-3">
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
-        </div>
         <!-- Center Content -->
         <div class="col-12 col-lg-6">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">

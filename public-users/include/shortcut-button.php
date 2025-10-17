@@ -9,7 +9,7 @@ if (!isset($hasShelter)) { $hasShelter = !empty($_SESSION['shelter_id']); }
 $pendingDocsCount = isset($pendingDocsCount)? (int)$pendingDocsCount : 0;
 $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 0;
 ?>
-<div class="col-10 col-lg-4 shortcut-list">
+<div class="col-12 col-lg-4 shortcut-list">
     <div class="card mb-3 bg-transparent shadow-none">
         <div class="card-body py-2" style="font-size:0.95rem;">
             <div class="list-group list-group-flush">
@@ -18,7 +18,7 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
                     <span><i class="ti ti-user me-2 text-secondary" style="font-size:1.15rem;"></i>My Profile</span>
                 </a>
                 <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
-                    href="./pets.php">
+                    href="./BrowsePet.php">
                     <span><i class="ti ti-paw me-2 text-success" style="font-size:1.15rem;"></i>Browse Pets</span>
                 </a>
                 <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"

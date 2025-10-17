@@ -67,10 +67,10 @@ if ($currentUserId > 0 && $recipientId > 0) {
 <?php include __DIR__ . '/../include/topbar.php'; ?>
 <link rel="stylesheet" href="../assets/css/chatmessages.css">
 <div class="container-fluid">
-    <div class="row g-3 py-3">
-        <div class="col-12 col-lg-3">
+    <div class="row g-3 py-4">
+        <!-- Left Sidebar -->
+        
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
-        </div>
         <div class="col-12 col-lg-6">
             <div class="card mb-3">
                 <?php if ($recipientId > 0): ?>
@@ -134,7 +134,7 @@ if ($currentUserId > 0 && $recipientId > 0) {
             </form>
         </div>
 
-        <div class="col-12 col-lg-3">
+        <div class="col-12 col-lg-2">
             <?php
             $recentConvos = [];
             if ($currentUserId > 0) {

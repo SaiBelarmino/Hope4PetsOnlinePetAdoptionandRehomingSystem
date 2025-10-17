@@ -53,9 +53,7 @@ if ($flash && is_array($flash)) {
 <div class="container-fluid">
     <div class="row g-3 py-4">
         <!-- Left sidebar: shortcuts -->
-        
         <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
-
         <div class="col-12 col-lg-4"
             style="max-height:862px; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; -ms-overflow-style:none;">
             <?php if ($flashSuccess): ?>

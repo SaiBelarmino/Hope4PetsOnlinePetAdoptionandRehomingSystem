@@ -7,18 +7,8 @@ $pageTitle = 'Donate';
 ?>
 
 <div class="container-fluid">
-    <div class="row g-3 py-3">
-        <div class="col-12 col-lg-3">
+    <div class="row g-3 py-4">
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
-            <div class="card mt-3">
-                <div class="card-body">
-                    <h6 class="text-muted mb-2">Support the cause</h6>
-                    <p class="small text-muted">Your donations help provide food, medical care, and shelter for
-                        animals in need. Choose a method below or contact us for other options.</p>
-                </div>
-            </div>
-        </div>
-
         <div class="col-12 col-lg-6">
             <div class="card mb-3">
                 <div class="card-body">
@@ -76,7 +66,7 @@ $pageTitle = 'Donate';
             </div>
         </div>
 
-        <div class="col-12 col-lg-3">
+        <div class="col-12 col-lg-2">
             <div class="card mb-3">
                 <div class="card-body">
                     <h6 class="mb-2">Payment Methods</h6>
