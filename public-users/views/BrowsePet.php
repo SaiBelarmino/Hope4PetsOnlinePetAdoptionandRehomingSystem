@@ -202,7 +202,7 @@ $pets = PetController::fetchAvailablePets(36, 0);
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="Close"></button>
                                             </div>
-                                            <form method="post" action="../controllers/AdoptManagementController.php">
+                                            <form method="post" action="../controllers/AdoptPetProcess.php">
                                                 <input type="hidden" name="action" value="request">
                                                 <input type="hidden" name="pet_id" value="<?php echo (int)$p['id']; ?>">
                                                 <div class="modal-body">
