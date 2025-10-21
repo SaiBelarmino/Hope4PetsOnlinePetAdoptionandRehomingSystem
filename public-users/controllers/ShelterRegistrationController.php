@@ -2,8 +2,8 @@
 require_once __DIR__ . '/../../controllers/BaseController.php';
 require_once __DIR__ . '/../../config/SessionManager.php';
 
-if (class_exists('SessionManager') && method_exists('SessionManager','start')) {
-    try { SessionManager::start(); } catch (Exception $e) { if (session_status() === PHP_SESSION_NONE) { session_start(); } }
+if (class_exists('SessionManager') && method_exists('SessionManager','init')) {
+    try { SessionManager::init(); } catch (Exception $e) { if (session_status() === PHP_SESSION_NONE) { session_start(); } }
 } else {
     if (session_status() === PHP_SESSION_NONE) { session_start(); }
 }
