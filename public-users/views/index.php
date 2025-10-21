@@ -57,12 +57,26 @@ if ($flash && is_array($flash)) {
         <div class="col-12 col-lg-4"
             style="max-height:862px; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; -ms-overflow-style:none;">
             <?php if ($flashSuccess): ?>
-            <div class="alert alert-success"><?php echo htmlspecialchars((string)$flashSuccess, ENT_QUOTES, 'UTF-8'); ?>
-            </div>
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof $ !== 'undefined' && typeof $.notify === 'function') {
+                    $.notify(<?php echo json_encode((string)$flashSuccess, JSON_UNESCAPED_UNICODE); ?>, "success");
+                } else if (typeof alert === 'function') {
+                    alert(<?php echo json_encode((string)$flashSuccess, JSON_UNESCAPED_UNICODE); ?>);
+                }
+            });
+            </script>
             <?php endif; ?>
             <?php if ($flashError): ?>
-            <div class="alert alert-danger"><?php echo htmlspecialchars((string)$flashError, ENT_QUOTES, 'UTF-8'); ?>
-            </div>
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof $ !== 'undefined' && typeof $.notify === 'function') {
+                    $.notify(<?php echo json_encode((string)$flashError, JSON_UNESCAPED_UNICODE); ?>, "error");
+                } else if (typeof alert === 'function') {
+                    alert(<?php echo json_encode((string)$flashError, JSON_UNESCAPED_UNICODE); ?>);
+                }
+            });
+            </script>
             <?php endif; ?>
 
             <!-- Composer -->
@@ -145,7 +159,22 @@ if ($flash && is_array($flash)) {
                     </div>
 
                     <?php if (!empty($post['content'])): ?>
-                    <p class="mb-2"><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
+                    <?php
+                        $fullContent = strip_tags($post['content']);
+                        $maxLength = 100;
+                        $shortText = strlen($fullContent) > $maxLength ? substr($fullContent, 0, $maxLength) . '...' : $fullContent;
+                        $fullHtml = nl2br(htmlspecialchars($post['content'], ENT_QUOTES, 'UTF-8'));
+                    ?>
+                    <div class="mb-2">
+                        <div id="caption-<?php echo $post['id']; ?>"
+                             class="post-caption-short"
+                             data-short="<?php echo htmlspecialchars($shortText, ENT_QUOTES, 'UTF-8'); ?>"
+                             data-full="<?php echo $fullHtml; ?>"
+                             data-truncated="<?php echo strlen($fullContent) > $maxLength ? '1' : '0'; ?>">
+                            <?php echo htmlspecialchars($shortText, ENT_QUOTES, 'UTF-8'); ?>
+                        </div>
+                        <span class="small expand-caption" data-post="<?php echo $post['id']; ?>" tabindex="0" role="button" style="cursor:pointer;">See more</span>
+                    </div>
                     <?php endif; ?>
 
                     <?php

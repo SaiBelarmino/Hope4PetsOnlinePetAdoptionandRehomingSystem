@@ -193,6 +193,65 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	});
 
+	// ensure caption toggles are only shown when text is actually truncated
+	function updateCaptionToggles() {
+		document.querySelectorAll('.post-caption-short').forEach(function (el) {
+			var id = (el.id || '').replace('caption-', '');
+			var toggle = document.querySelector('.expand-caption[data-post="' + id + '"]');
+			if (toggle) {
+				var isTruncated = el.getAttribute('data-truncated') === '1';
+				toggle.style.display = isTruncated ? '' : 'none';
+			}
+		});
+	}
+
+	// initial bind and toggle evaluation
+	updateCaptionToggles();
+
+	// delegated handler for expanding/collapsing post captions
+	document.addEventListener('click', function (e) {
+		var toggle = e.target.closest('.expand-caption');
+		if (!toggle) return;
+		var id = toggle.dataset.post;
+		var el = document.getElementById('caption-' + id);
+		if (!el) return;
+		var isExpanded = el.classList.contains('expanded');
+		if (isExpanded) {
+			el.classList.remove('expanded');
+			el.textContent = el.getAttribute('data-short');
+			toggle.textContent = 'See more';
+		} else {
+			el.classList.add('expanded');
+			el.innerHTML = el.getAttribute('data-full');
+			toggle.textContent = 'See less';
+		}
+		updateCaptionToggles();
+	});
+
+	// keyboard accessibility
+	document.addEventListener('keydown', function (e) {
+		if (e.key !== 'Enter' && e.key !== ' ') return;
+		var active = document.activeElement;
+		if (!active) return;
+		var toggle = active.closest('.expand-caption');
+		if (!toggle) return;
+		e.preventDefault();
+		var id = toggle.dataset.post;
+		var el = document.getElementById('caption-' + id);
+		if (!el) return;
+		var isExpanded = el.classList.contains('expanded');
+		if (isExpanded) {
+			el.classList.remove('expanded');
+			el.textContent = el.getAttribute('data-short');
+			toggle.textContent = 'See more';
+		} else {
+			el.classList.add('expanded');
+			el.innerHTML = el.getAttribute('data-full');
+			toggle.textContent = 'See less';
+		}
+		updateCaptionToggles();
+	});
+
 	// expose for debugging (optional)
 	window._postComposerFiles = currentFiles;
 });

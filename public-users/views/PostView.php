@@ -123,13 +123,13 @@ function resolve_media_path(?string $path): string {
 
         <!-- Caption -->
         <div class="p-3 border-bottom" id="captionContainer">
-            <div id="captionText" class="small position-relative" style="max-height: 120px; overflow: hidden;">
+            <div id="captionText" class="small position-relative" style="max-height:120px; overflow:auto; -webkit-overflow-scrolling:touch; padding-right:8px;">
                 <?php if (!empty($post['content'])): ?>
                     <p><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
                 <?php endif; ?>
-                <!-- Fade overlay -->
+                <!-- Fade overlay (pointer-events:none so it doesn't block scrolling) -->
                 <div id="fadeOverlay"
-                    style="position:absolute; bottom:0; left:0; right:0; height:40px; background: linear-gradient(transparent, white); display:block; pointer-events: none; z-index:2;">
+                    style="position:absolute; bottom:0; left:0; right:0; height:40px; background: linear-gradient(transparent, white); pointer-events: none; z-index:2;">
                 </div>
             </div>
             <!-- See more / See less button placed outside the collapsed area so it's always visible -->

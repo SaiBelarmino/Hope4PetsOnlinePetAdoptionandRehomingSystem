@@ -42,3 +42,6 @@
 #imageModal .modal-backdrop, #videoModal .modal-backdrop {
     background-color: rgba(0, 0, 0, 0.8);
 }
+
+/* Caption truncation handled by PHP text truncation */
+

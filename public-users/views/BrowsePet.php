@@ -12,15 +12,26 @@ $pets = PetController::fetchAvailablePets(36, 0);
 
 <div class="container-fluid">
     <?php
-	// show flash if any
-	if (session_status() === PHP_SESSION_NONE) { session_start(); }
-	$flash = $_SESSION['flash'] ?? null;
-	if ($flash) {
-			$type = ($flash['type'] ?? 'success') === 'success' ? 'success' : 'danger';
-			echo '<div class="container mt-3"><div class="alert alert-' . $type . '">' . htmlspecialchars($flash['message'] ?? '') . '</div></div>';
-			unset($_SESSION['flash']);
-	}
-	?>
+    // show flash via $.notify if any
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+    $flash = $_SESSION['flash'] ?? null;
+    if ($flash) {
+        $msg = $flash['message'] ?? '';
+        // map bootstrap 'danger' to notify-friendly 'error'
+        $type = (($flash['type'] ?? 'success') === 'success') ? 'success' : 'error';
+        // use json_encode to safely embed the message and type into JS
+        echo '<script>
+        document.addEventListener("DOMContentLoaded", function(){ 
+            if (typeof $ !== "undefined" && typeof $.notify === "function") {
+                $.notify(' . json_encode($msg) . ', ' . json_encode($type) . ');
+            } else {
+                console.warn("$.notify is not available.");
+            }
+        });
+        </script>';
+        unset($_SESSION['flash']);
+    }
+    ?>
     <div class="row g-3 py-4">
         <!-- Shortcut Buttons -->
         <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
@@ -202,7 +213,7 @@ $pets = PetController::fetchAvailablePets(36, 0);
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="Close"></button>
                                             </div>
-                                            <form method="post" action="../controllers/AdoptPetProcess.php">
+                                            <form method="post" action="../controllers/AdoptPetProcessController.php">
                                                 <input type="hidden" name="action" value="request">
                                                 <input type="hidden" name="pet_id" value="<?php echo (int)$p['id']; ?>">
                                                 <div class="modal-body">

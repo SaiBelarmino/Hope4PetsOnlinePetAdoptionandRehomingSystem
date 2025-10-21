@@ -5,7 +5,7 @@
         <!-- Left Sidebar -->
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
         <!-- Center Content -->
-        <div class="col-12 col-lg-6">
+        <div class="col-12 col-lg-4">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h3 class="mb-0"><?php echo htmlspecialchars($pageTitle); ?></h3>
                 <a href="./pet_view.php?id=<?php echo (int)($pet['id'] ?? 0); ?>" class="btn btn-outline-secondary"><i

@@ -10,5 +10,6 @@
 <script src="../../assets/js/app.min.js"></script>
 <script src="../../assets/js/dashboard.js"></script>
 <script src="../../assets/js/sweetalert2@11.js"></script>
+<script src="../../assets/js/notify.min.js"></script>
 </body>
 </html>

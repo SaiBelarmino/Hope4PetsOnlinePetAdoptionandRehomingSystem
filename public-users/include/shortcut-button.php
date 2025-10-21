@@ -32,20 +32,22 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
                         Adoptions</span>
                 </a>
                 <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
-                    href="./my_donations.php">
+                    href="./Donate.php">
                     <span><i class="ti ti-currency-dollar me-2 text-success" style="font-size:1.15rem;"></i>My
                         Donations</span>
-                </a>
-                <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
-                    href="./my_posts.php">
-                    <span><i class="ti ti-news me-2 text-secondary" style="font-size:1.15rem;"></i>My Posts</span>
                 </a>
                 <?php if(!$hasShelter): ?>
                 <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
                     href="./ShelterRegistration.php">
-                    <span><i class="ti ti-building-arch me-2 text-info" style="font-size:1.15rem;"></i>Register Shelter</span>
+                    <span><i class="ti ti-building-arch me-2 text-info" style="font-size:1.15rem;"></i>Register
+                        Shelter</span>
                 </a>
                 <?php else: ?>
+                <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
+                    href="./AdoptionRequestManagement.php">
+                    <span><i class="ti ti-clipboard-list me-2 text-info" style="font-size:1.15rem;"></i>
+                        Adoption Requests</span>
+                </a>
                 <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
                     href="./ShelterManagement.php">
                     <span><i class="ti ti-home-heart me-2 text-info" style="font-size:1.15rem;"></i>My Shelter</span>
