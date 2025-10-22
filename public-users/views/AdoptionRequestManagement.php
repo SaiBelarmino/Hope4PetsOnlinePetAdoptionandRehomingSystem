@@ -11,7 +11,7 @@ $requests = AdoptController::getRequests($shelterId);
 $pageTitle = $pageTitle ?? 'Adoption Requests';
 ?>
 <div class="container-fluid">
-    <div class="row g-3 py-3">
+    <div class="row g-3 py-4">
         <!-- Left Sidebar -->
         <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
         <!-- Center Content -->
@@ -172,36 +172,13 @@ $pageTitle = $pageTitle ?? 'Adoption Requests';
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <a href="href=" ./ChatMessages.php?user_id=<?php echo (int)($r['applicant_id'] ?? 0); ?>"
-                    id="app-message-link" class="btn btn-primary">Message Applicant</a>
+                <a href="#" id="app-message-link" class="btn btn-primary">Message Applicant</a>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var applicantModal = document.getElementById('applicantModal');
-    applicantModal.addEventListener('show.bs.modal', function(event) {
-        var button = event.relatedTarget; // Button that triggered the modal
-        var name = button.getAttribute('data-name') || '';
-        var phone = button.getAttribute('data-phone') || '';
-        var address = button.getAttribute('data-address') || '';
-        var message = button.getAttribute('data-message') || '';
-        var created = button.getAttribute('data-created') || '';
-        document.getElementById('app-name').textContent = name;
-        document.getElementById('app-phone').textContent = phone;
-        document.getElementById('app-address').textContent = address;
-        document.getElementById('app-message').textContent = message;
-        document.getElementById('app-created').textContent = created ? new Date(created)
-            .toLocaleString() : '';
-        // set message link to open chat with applicant id if available
-        var applicantId = button.closest('.card').querySelector('a[href^="./ChatMessages.php"]')
-            .getAttribute('href');
-        var link = document.getElementById('app-message-link');
-        link.setAttribute('href', applicantId || '#');
-    });
-});
-</script>
+<!-- include external JS for adopter modal -->
+<script src="./assets/js/adoptionrequest.js"></script>
 
 <?php include __DIR__ . '/../include/footer.php'; ?>

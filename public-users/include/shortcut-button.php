@@ -22,7 +22,7 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
                     <span><i class="ti ti-paw me-2 text-success" style="font-size:1.15rem;"></i>Browse Pets</span>
                 </a>
                 <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
-                    href="./shelters.php">
+                    href="./FindShelters.php">
                     <span><i class="ti ti-building-community me-2 text-info" style="font-size:1.15rem;"></i>Find
                         Shelters</span>
                 </a>

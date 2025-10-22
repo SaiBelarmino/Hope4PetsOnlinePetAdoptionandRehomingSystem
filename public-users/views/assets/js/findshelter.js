@@ -1,46 +1,3 @@
-<?php 
-// Set page title for header include
-$pageTitle = 'Find Shelters';
-include __DIR__ . '/../include/header.php';
-include __DIR__ . '/../include/topbar.php';
-?>
-<div class="container-fluid py-4">
-  <div class="row g-3">
-	<?php include __DIR__ . '/../include/shortcut-button.php'; ?>
-	<div class="col-12 col-lg-8">
-	  <div class="card mb-3">
-		<div class="card-body">
-		  <h2 class="h4 mb-3"><i class="ti ti-building-community text-info me-2"></i>Find Animal Shelters</h2>
-		  <div class="row mb-3">
-			<div class="col-md-8">
-			  <input type="text" id="shelterSearch" class="form-control" placeholder="Search shelters by name or city...">
-			</div>
-		  </div>
-		  <div id="shelterList" class="row g-3"></div>
-		  <div id="noResults" class="alert alert-info d-none">No shelters found.</div>
-		</div>
-	  </div>
-	</div>
-  </div>
-</div>
-
-<!-- Shelter Details Modal -->
-<div class="modal fade" id="shelterModal" tabindex="-1" aria-labelledby="shelterModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-	<div class="modal-content">
-	  <div class="modal-header">
-		<h5 class="modal-title" id="shelterModalLabel">Shelter Details</h5>
-		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-	  </div>
-	  <div class="modal-body" id="shelterModalBody">
-		<div class="text-center">Loading...</div>
-	  </div>
-	</div>
-  </div>
-</div>
-
-<?php include __DIR__ . '/../include/footer.php'; ?>
-<script>
 let shelters = [];
 let filteredShelters = [];
 function renderShelters(list) {
@@ -113,7 +70,7 @@ function viewShelter(id) {
 	`;
 	modal.show();
 	// Fetch pets for this shelter (use relative path and include credentials so cookies/session are sent)
-	fetch('../controllers/ShelterController.php?pets=1&shelter_id=' + encodeURIComponent(id), { credentials: 'same-origin' })
+	fetch('../controllers/FindShelterController.php?pets=1&shelter_id=' + encodeURIComponent(id), { credentials: 'same-origin' })
 		.then(r => r.json())
 		.then(pets => {
 			const petsDiv = document.getElementById('shelterPets');
@@ -163,16 +120,28 @@ function filterShelters() {
 	}
 	renderShelters(filteredShelters);
 }
-document.getElementById('shelterSearch').addEventListener('input', filterShelters);
-// Load shelters (use relative path and include credentials so server can recognize current user)
-fetch('../controllers/ShelterController.php', { credentials: 'same-origin' })
-	.then(r => r.json())
-	.then(data => {
-		shelters = data;
-		filteredShelters = data;
-		renderShelters(data);
-	})
-	.catch(() => {
-		document.getElementById('shelterList').innerHTML = '<div class="alert alert-danger">Failed to load shelters.</div>';
-	});
-</script>
+// Attach event after DOM is ready
+(function() {
+	function init() {
+		const searchInput = document.getElementById('shelterSearch');
+		if (searchInput) searchInput.addEventListener('input', filterShelters);
+
+		// Load shelters (use relative path and include credentials so server can recognize current user)
+		fetch('../controllers/FindShelterController.php', { credentials: 'same-origin' })
+			.then(r => r.json())
+			.then(data => {
+				shelters = data;
+				filteredShelters = data;
+				renderShelters(data);
+			})
+			.catch(() => {
+				document.getElementById('shelterList').innerHTML = '<div class="alert alert-danger">Failed to load shelters.</div>';
+			});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', init);
+	} else {
+		init();
+	}
+})();
