@@ -13,6 +13,10 @@ class ProfileController extends BaseController {
         $user = self::fetchOne($sql, 'i', [$userId]);
         if ($user) {
             $user['age'] = self::calculateAge($user['birthday']);
+            // Ensure we only treat a user as verified when admin actually approved uploaded ID documents.
+            // Relying on the user_documents table's approved status is the source of truth.
+            $approvedCount = (int) self::fetchValue("SELECT COUNT(*) FROM user_documents WHERE user_id = ? AND status = 'approved'", 'i', [$userId]) ?? 0;
+            $user['is_verified'] = $approvedCount > 0 ? 1 : 0;
         }
         return $user;
     }

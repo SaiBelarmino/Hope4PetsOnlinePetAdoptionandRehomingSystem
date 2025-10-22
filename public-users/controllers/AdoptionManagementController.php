@@ -28,5 +28,19 @@ class AdoptController extends BaseController {
                   ORDER BY a.created_at DESC";
         return self::fetchAll($query, 'i', [$shelterId]);
     }
+
+    /**
+     * Fetch adoptions for a given applicant (public user).
+     * Returns array of adoptions joined with pet basic info.
+     */
+    public static function getMyAdoptions(int $applicantId): array {
+        $query = "SELECT a.id, a.pet_id, a.applicant_id, a.status, a.created_at,
+                         p.name AS pet_name, p.pet_photos AS pet_photo, p.owner_id
+                  FROM adoptions a
+                  JOIN pets p ON a.pet_id = p.id
+                  WHERE a.applicant_id = ? AND a.status IN ('approved','completed')
+                  ORDER BY a.created_at DESC";
+        return self::fetchAll($query, 'i', [$applicantId]);
+    }
 }
 ?>

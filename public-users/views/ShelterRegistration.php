@@ -33,8 +33,30 @@ if (empty($flash) && !empty($_SESSION['flash'])) {
 $userId = $_SESSION['user']['id'] ?? null;
 $shelter = null;
 $authHasShelter = false;
-if ($userId && class_exists('ShelterManagementController') && method_exists('ShelterManagementController','getShelterByUser')) {
-    $shelter = ShelterManagementController::getShelterByUser($userId);
+
+if ($userId) {
+    // Prefer the explicit controller method if available
+    if (class_exists('ShelterManagementController') && method_exists('ShelterManagementController', 'getShelterByUser')) {
+        try {
+            $shelter = call_user_func(['ShelterManagementController', 'getShelterByUser'], $userId);
+        } catch (Throwable $e) {
+            // If the method exists but throws, fall back to null
+            $shelter = null;
+        }
+    } else {
+        // Attempt a graceful fallback if the controller exposes a differently named method
+        if (class_exists('ShelterManagementController') && method_exists('ShelterManagementController', 'getByUserId')) {
+            try {
+                $shelter = call_user_func(['ShelterManagementController', 'getByUserId'], $userId);
+            } catch (Throwable $e) {
+                $shelter = null;
+            }
+        } else {
+            // No suitable controller method available; leave $shelter as null
+            $shelter = null;
+        }
+    }
+
     $authHasShelter = !empty($shelter);
 }
 ?>

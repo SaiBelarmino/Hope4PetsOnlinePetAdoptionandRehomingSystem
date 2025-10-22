@@ -73,7 +73,7 @@ if ($userId) {
                         <h4 class="mb-1 h5 h4-md"><?php echo htmlspecialchars($user['full_name']); ?>
                             <?php if ($user['is_verified']): ?><img
                                 src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/svg-verified/verified.svg"
-                                width="16" height="16" alt="Verified" class="ms-0"><?php endif; ?></h4>
+                                width="16" height="16" alt="Verified" class="ms-0" data-verified-badge><?php endif; ?></h4>
                         <p class="mb-1 small"><?php echo htmlspecialchars($user['age'] ?? 'N/A'); ?> years old •
                             <?php echo htmlspecialchars(ucfirst($user['gender'])); ?></p>
                         <p class="mb-0 small"><?php echo htmlspecialchars($user['location'] ?? 'N/A'); ?></p>
@@ -85,7 +85,7 @@ if ($userId) {
             <?php else: ?>
             <div class="d-flex flex-row gap-2">
             <?php if (empty($user['is_verified'])): ?>
-            <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal"><i
+            <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal" data-verify-id-button><i
                 class="ti ti-id"></i> Verify ID</button>
             <?php endif; ?>
             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"><i
