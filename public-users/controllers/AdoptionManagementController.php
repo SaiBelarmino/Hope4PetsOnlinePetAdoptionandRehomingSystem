@@ -42,5 +42,21 @@ class AdoptController extends BaseController {
                   ORDER BY a.created_at DESC";
         return self::fetchAll($query, 'i', [$applicantId]);
     }
+
+    // Return all adoptions for the applicant (include pending, rejected, cancelled, etc.)
+    public static function getMyAdoptionsAll(int $applicantId): array {
+        $query = "SELECT a.id, a.pet_id, a.applicant_id, a.status, a.created_at,
+                         p.name AS pet_name, p.pet_photos AS pet_photo, p.owner_id
+                  FROM adoptions a
+                  JOIN pets p ON a.pet_id = p.id
+                  WHERE a.applicant_id = ?
+                  ORDER BY a.created_at DESC";
+        return self::fetchAll($query, 'i', [$applicantId]);
+    }
+
+    // Backward-compatible alias used by some views
+    public static function getAllUserAdoptions(int $applicantId): array {
+        return self::getMyAdoptionsAll($applicantId);
+    }
 }
 ?>

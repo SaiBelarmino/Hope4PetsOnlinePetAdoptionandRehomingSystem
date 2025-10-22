@@ -3,17 +3,64 @@ $pageTitle = 'My Adoptions';
 include __DIR__ . '/../include/header.php';
 include __DIR__ . '/../include/topbar.php';
 
-require_once __DIR__ . '/../../controllers/BaseController.php';
 require_once __DIR__ . '/../controllers/AdoptionManagementController.php';
 require_once __DIR__ . '/../../config/SessionManager.php';
 
 $session = new SessionManager();
 $userId = $session->get('user_id');
 
-// Default: show only 'approved' and 'completed' adoptions as "successful".
+// Attempt to fetch all adoptions for the user. Try multiple controller method names if available.
 $adoptions = [];
 if ($userId) {
-	$adoptions = AdoptController::getMyAdoptions($userId);
+    if (class_exists('AdoptController')) {
+        if (method_exists('AdoptController', 'getMyAdoptionsAll')) {
+            $adoptions = AdoptController::getMyAdoptionsAll($userId);
+        } elseif (method_exists('AdoptController', 'getAllUserAdoptions')) {
+            $adoptions = AdoptController::getAllUserAdoptions($userId);
+        } elseif (method_exists('AdoptController', 'getMyAdoptions')) {
+            $adoptions = AdoptController::getMyAdoptions($userId);
+        }
+    } else {
+        // Fallback: try calling the common method but guard with function_exists/class check above.
+        if (function_exists('AdoptController')) {
+            $adoptions = AdoptController::getMyAdoptions($userId);
+        }
+    }
+}
+
+// Optional server-side filtering by status (via ?filter_status=pending|approved|rejected|cancelled|all)
+$filterStatus = isset($_GET['filter_status']) ? strtolower(trim($_GET['filter_status'])) : 'all';
+if ($filterStatus !== 'all' && is_array($adoptions)) {
+    $adoptions = array_values(array_filter($adoptions, function ($a) use ($filterStatus) {
+        $s = strtolower($a['status'] ?? '');
+        if ($filterStatus === 'cancelled' || $filterStatus === 'cancel') {
+            return in_array($s, ['cancel', 'cancelled', 'canceled'], true);
+        }
+        if ($filterStatus === 'rejected' || $filterStatus === 'reject') {
+            return in_array($s, ['rejected', 'reject'], true);
+        }
+        return $s === $filterStatus;
+    }));
+}
+
+// Compute summary counts
+$counts = ['total' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0, 'cancelled' => 0, 'other' => 0];
+if (is_array($adoptions)) {
+    foreach ($adoptions as $a) {
+        $s = strtolower($a['status'] ?? '');
+        if ($s === 'approved') {
+            $counts['approved']++;
+        } elseif (in_array($s, ['rejected', 'reject'], true)) {
+            $counts['rejected']++;
+        } elseif (in_array($s, ['cancel', 'cancelled', 'canceled'], true)) {
+            $counts['cancelled']++;
+        } elseif ($s === 'pending') {
+            $counts['pending']++;
+        } else {
+            $counts['other']++;
+        }
+        $counts['total']++;
+    }
 }
 ?>
 
@@ -78,7 +125,20 @@ if ($userId) {
 										<div class="small text-muted">Adopted on <?php echo htmlspecialchars(date('M d, Y', strtotime($a['created_at'] ?? ''))); ?></div>
 									</div>
 									<div class="text-end">
-										<span class="badge bg-<?php echo ($a['status']==='approved')? 'warning' : 'success'; ?>"><?php echo htmlspecialchars(ucfirst($a['status'] ?? '')); ?></span>
+										<?php
+                                            $statusRaw = $a['status'] ?? '';
+                                            $status = strtolower($statusRaw);
+                                            if ($status === 'approved') {
+                                                $badgeClass = 'success';
+                                            } elseif ($status === 'rejected' || $status === 'reject') {
+                                                $badgeClass = 'danger';
+                                            } elseif (in_array($status, ['cancel', 'cancelled', 'canceled'], true)) {
+                                                $badgeClass = 'warning';
+                                            } else {
+                                                $badgeClass = 'secondary';
+                                            }
+                                        ?>
+                                        <span class="badge bg-<?php echo $badgeClass; ?>"><?php echo htmlspecialchars(ucfirst($statusRaw)); ?></span>
 									</div>
 								</div>
 

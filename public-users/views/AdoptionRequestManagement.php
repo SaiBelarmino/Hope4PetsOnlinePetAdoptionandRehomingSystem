@@ -84,19 +84,31 @@ $pageTitle = $pageTitle ?? 'Adoption Requests';
                             <hr class="my-2">
 
                             <div class="mt-3 d-flex gap-2">
-                                <?php if (($r['status'] ?? '') === 'applied'): ?>
-                                <form method="post" action="../controllers/AdoptionActionController.php"
-                                    class="d-inline">
+                                <?php $status = $r['status'] ?? ''; ?>
+                                <?php if ($status === 'applied'): ?>
+                                <form method="post" action="../controllers/AdoptionActionControllers.php" class="d-inline">
                                     <input type="hidden" name="action" value="approve">
                                     <input type="hidden" name="adoption_id" value="<?php echo (int)$r['id']; ?>">
                                     <button type="submit" class="btn btn-sm btn-success">Approve</button>
                                 </form>
-                                <form method="post" action="../controllers/AdoptionActionController.php"
-                                    class="d-inline">
+                                <form method="post" action="../controllers/AdoptionActionControllers.php" class="d-inline">
                                     <input type="hidden" name="action" value="deny">
                                     <input type="hidden" name="adoption_id" value="<?php echo (int)$r['id']; ?>">
                                     <button type="submit" class="btn btn-sm btn-danger">Deny</button>
                                 </form>
+                                <?php elseif ($status === 'approved' || $status === 'denied' || $status === 'cancelled'): ?>
+                                <form method="post" action="../controllers/AdoptionActionControllers.php" class="d-inline">
+                                    <input type="hidden" name="action" value="cancel">
+                                    <input type="hidden" name="adoption_id" value="<?php echo (int)$r['id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-warning">Cancel</button>
+                                </form>
+                                <?php if ($status === 'cancelled'): ?>
+                                <form method="post" action="../controllers/AdoptionActionControllers.php" class="d-inline">
+                                    <input type="hidden" name="action" value="reopen">
+                                    <input type="hidden" name="adoption_id" value="<?php echo (int)$r['id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-secondary">Reopen</button>
+                                </form>
+                                <?php endif; ?>
                                 <?php else: ?>
                                 <button class="btn btn-sm btn-outline-secondary" disabled>Manage</button>
                                 <?php endif; ?>
