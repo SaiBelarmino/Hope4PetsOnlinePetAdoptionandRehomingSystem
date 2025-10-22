@@ -69,7 +69,6 @@ if ($currentUserId > 0 && $recipientId > 0) {
 <div class="container-fluid">
     <div class="row g-3 py-4">
         <!-- Left Sidebar -->
-        
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
         <div class="col-12 col-lg-6">
             <div class="card mb-3">

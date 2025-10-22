@@ -38,8 +38,6 @@ $pets = PetController::fetchAvailablePets(36, 0);
 
         <div class="col-12 col-lg-6"
             style="max-height:862px; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; -ms-overflow-style:none;">
-            <h3 class="mb-3">Browse Pets</h3>
-
             <div class="row g-3">
                 <?php if (empty($pets)): ?>
                 <div class="col-12">

@@ -2,7 +2,6 @@
 <?php include __DIR__ . '/../include/topbar.php'; ?>
 
 <?php
-require_once __DIR__ . '/../../controllers/BaseController.php';
 require_once __DIR__ . '/../controllers/AdoptionManagementController.php';
 
 // ensure variables are defined to avoid warnings when view is accessed directly
@@ -16,9 +15,6 @@ $pageTitle = $pageTitle ?? 'Adoption Requests';
         <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
         <!-- Center Content -->
         <div class="col-12 col-lg-6">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h3 class="mb-0"><?php echo htmlspecialchars($pageTitle); ?></h3>
-            </div>
 
             <?php if (empty($requests)): ?>
             <div class="card">

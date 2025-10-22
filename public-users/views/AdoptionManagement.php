@@ -24,10 +24,6 @@ if ($userId) {
 
 		<!-- Center Content -->
 		<div class="col-12 col-lg-6" style="max-height:862px; overflow:auto; -webkit-overflow-scrolling:touch;">
-			<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-				<h3 class="mb-0"><?php echo htmlspecialchars($pageTitle); ?></h3>
-			</div>
-
 			<?php if (!$userId): ?>
 			<div class="card">
 				<div class="card-body text-center text-muted py-5">You must be logged in to view your adoptions.</div>

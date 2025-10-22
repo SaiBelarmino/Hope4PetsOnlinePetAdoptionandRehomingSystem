@@ -1,7 +1,7 @@
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
 <div class="container-fluid">
-    <div class="row g-3 py-3">
+    <div class="row g-3 py-4">
         <!-- Left Sidebar -->
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
         <!-- Center Content -->
