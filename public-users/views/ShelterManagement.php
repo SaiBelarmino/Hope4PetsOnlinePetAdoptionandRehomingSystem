@@ -52,8 +52,13 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                         <?php endif; ?>
                     </h3>
                     <div class="d-flex gap-1 align-items-center">
+                        <?php if (!empty($shelter['is_verified'])): ?>
                         <a href="PetManagement.php" class="btn btn-sm btn-primary"><i class="ti ti-paw"></i> Manage
                             Pets</a>
+                        <?php else: ?>
+                        <button id="managePetsBtn" type="button" class="btn btn-sm btn-primary"
+                            onclick="handleManagePetsClick(event, 0)"><i class="ti ti-paw"></i> Manage Pets</button>
+                        <?php endif; ?>
                         <button id="editShelterBtn" type="button" class="btn btn-sm btn-outline-secondary"><i
                                 class="ti ti-edit"></i> Edit</button>
                     </div>
@@ -434,6 +439,62 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
 
     <script>
     var APP_BASE = '<?php echo addslashes($appBase); ?>';
+    </script>
+
+    <!-- Verification required modal -->
+    <div class="modal fade" id="verifyRequiredModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Verification Required</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Your shelter must be verified before you can manage pets. Please upload the required documents for verification. Once approved, you'll be able to manage your pets.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="openDocumentsSection()">Upload Documents</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function handleManagePetsClick(e, isVerified) {
+        if (!isVerified) {
+            e.preventDefault();
+            // Try to use Bootstrap modal, fall back to alert
+            var modalEl = document.getElementById('verifyRequiredModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                var m = new bootstrap.Modal(modalEl);
+                m.show();
+                return;
+            }
+            alert('Your shelter must be verified before you can manage pets. Please upload the required documents.');
+        } else {
+            // proceed to pet management
+            window.location.href = 'PetManagement.php';
+        }
+    }
+
+    function openDocumentsSection() {
+        // close modal if bootstrap available
+        var modalEl = document.getElementById('verifyRequiredModal');
+        if (modalEl && typeof bootstrap !== 'undefined') {
+            var m = bootstrap.Modal.getInstance(modalEl);
+            if (m) m.hide();
+        }
+        // scroll to documents upload area
+        var el = document.getElementById('uploadDocumentsFormInline');
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            var firstInput = el.querySelector('input[type="file"], select, textarea, input[type="text"], button');
+            if (firstInput) firstInput.focus();
+        } else {
+            window.location.hash = '#'; // fallback
+        }
+    }
     </script>
 
     <script src="assets/js/leaflet.js"></script>
