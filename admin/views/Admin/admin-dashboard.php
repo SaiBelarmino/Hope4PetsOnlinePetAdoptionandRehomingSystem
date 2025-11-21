@@ -10,7 +10,78 @@ include dirname(__DIR__, 2) . '/sidebar.php';
 <!--  Main wrapper -->
 <div class="body-wrapper">
     <?php include dirname(__DIR__, 2) . '/header.php'; ?>
+
+    <?php
+    // server-side initial stats for first render
+    require_once dirname(__DIR__, 2) . '/controllers/Admin/admin-dashboard-controllers.php';
+    $stats = AdminDashboardController::stats();
+    ?>
+
     <div class="container-fluid">
+        <!-- Top Summary Cards (Important Metrics) -->
+        <div class="row mb-4">
+            <div class="col-md-2 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Pets Listed</h6>
+                        <h3 id="totalPets" class="fw-bold"><?php echo (int)($stats['total_pets'] ?? 0); ?></h3>
+                        <small class="text-muted">All adoptable pets</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="card-title">Adoption Requests</h6>
+                        <h3 id="adoptionTotal" class="fw-bold"><?php echo (int)($stats['adoption_requests_total'] ?? 0); ?></h3>
+                        <small class="text-muted">Pending: <span id="adoptionPending"><?php echo (int)($stats['adoption_requests_pending'] ?? 0); ?></span></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="card-title">Rehoming Requests</h6>
+                        <h3 id="rehomingRequests" class="fw-bold"><?php echo (int)($stats['rehoming_requests_total'] ?? 0); ?></h3>
+                        <small class="text-muted">Users surrendering pets</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="card-title">Approved Adoptions</h6>
+                        <h3 id="approvedAdoptions" class="fw-bold"><?php echo (int)($stats['approved_adoptions'] ?? 0); ?></h3>
+                        <small class="text-muted">Successful placements</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="card-title">Registered Users</h6>
+                        <h3 id="registeredUsers" class="fw-bold"><?php echo (int)($stats['registered_users'] ?? 0); ?></h3>
+                        <small class="text-muted">Owners + adopters</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Shelters</h6>
+                        <h3 id="totalShelters" class="fw-bold"><?php echo (int)($stats['total_shelters'] ?? 0); ?></h3>
+                        <small class="text-muted">Active shelters</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Top Summary Cards -->
+
         <div class="row">
             <div class="col-lg-8">
                 <div class="card">
@@ -249,3 +320,23 @@ include dirname(__DIR__, 2) . '/sidebar.php';
         <?php include dirname(__DIR__, 2) . '/footer.php';  ?>
     </div>
 </div>
+<script>
+(function pollStats(){
+  const url = '/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/api/admin-stats.php';
+  fetch(url, {cache: 'no-store'})
+    .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
+    .then(data => {
+      if (!data) return;
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val ?? 0; };
+      set('totalPets', data.total_pets);
+      set('adoptionTotal', data.adoption_requests_total);
+      set('adoptionPending', data.adoption_requests_pending);
+      set('rehomingRequests', data.rehoming_requests_total);
+      set('approvedAdoptions', data.approved_adoptions);
+      set('registeredUsers', data.registered_users);
+      set('totalShelters', data.total_shelters);
+    })
+    .catch(()=>{/* silent */})
+    .finally(()=> setTimeout(pollStats, 10000)); // poll every 10s
+})();
+</script>
