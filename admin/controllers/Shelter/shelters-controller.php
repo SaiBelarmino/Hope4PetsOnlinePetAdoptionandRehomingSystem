@@ -33,32 +33,14 @@ class ShelterVerificationRequestsController {
                 GROUP BY s.id
                 ORDER BY s.created_at DESC";
 
-        // Primary: try BaseController helper if available
+        // Use BaseController helper to fetch data.
         try {
             if (class_exists('BaseController') && method_exists('BaseController', 'fetchAll')) {
-                $result = BaseController::fetchAll($sql);
-                if (is_array($result)) {
-                    return $result;
-                }
+                return BaseController::fetchAll($sql) ?? [];
             }
         } catch (Throwable $e) {
-            // ignore and try direct DB fallback
-        }
-
-        // Fallback: try project's Database class directly
-        $dbConfigPath = __DIR__ . '/../../../config/db-connection/db-connection.php';
-        if (file_exists($dbConfigPath)) {
-            try {
-                include_once $dbConfigPath;
-                if (class_exists('Database')) {
-                    $db = Database::getInstance()->getConnection();
-                    $stmt = $db->prepare($sql);
-                    $stmt->execute();
-                    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-                }
-            } catch (Throwable $e) {
-                // ignore and fall through to empty array
-            }
+            // In case of an error, log it and return an empty array.
+            // error_log($e->getMessage());
         }
 
         // Safe default: empty list

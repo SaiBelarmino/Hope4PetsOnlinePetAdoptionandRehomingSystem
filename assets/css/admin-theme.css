@@ -10,8 +10,8 @@ body.theme-light .app-header .navbar { background-color: #ffffff; }
 body.theme-light .dropdown-menu { background:#fff; }
 
 /* Dark Theme */
-body.theme-dark { background-color: #0f172a; color: #e2e8f0; }
-body.theme-dark .page-wrapper { background-color: #0f172a; }
+body.theme-dark { background-color: #0d1322; color: #e2e8f0; }
+body.theme-dark .page-wrapper { background-color: #0d1322; }
 body.theme-dark .card { background-color: #1e293b; border-color: #334155 !important; }
 body.theme-dark .card-header { background-color: #243249 !important; border-bottom-color: #334155 !important; color: #f1f5f9; }
 body.theme-dark .left-sidebar { background: #1e293b; border-right: 1px solid #243249; }
@@ -168,6 +168,38 @@ body.theme-dark .h4p-preloader-text { color:#94a3b8; }
 .h4p-preloader.hidden { opacity:0; visibility:hidden; }
 @keyframes h4p-spin { to { transform:rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .h4p-spinner, .h4p-spinner:after { animation:none; } }
+
+/* New Summary Card Styles */
+.summary-card {
+    background: #162036;
+    color: #fff;
+    border-radius: 15px;
+    padding: 20px 10px;
+    min-width: 220px;
+    /* Prevent text from shrinking */
+    white-space: nowrap;
+    /* Prevent text breaking */
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    transition: 0.2s ease-in-out;
+}
+
+.summary-card:hover {
+    transform: scale(1.03);
+}
+
+.summary-card h6 {
+    font-weight: 600;
+    font-size: 17px;
+    margin-bottom: 10px;
+    white-space: nowrap;
+}
+
+.summary-number {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
 /* Dashboard metric cards enlargement & icon cleanup */
 .metrics-row .card { min-height: 140px; }
 .metrics-row .card .card-body { padding: 1.25rem 1.35rem; }
