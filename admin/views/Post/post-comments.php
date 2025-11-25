@@ -12,5 +12,5 @@ include dirname(__DIR__, 2) . '/sidebar.php';
 <?php include dirname(__DIR__, 2) . '/footer.php'; ?>
 </div>
 <?php
-include '../controllers/Post/post-comments-controller.php';
+include dirname(__DIR__, 2) . '/controllers/Post/post-comments-controller.php';
 ?>
