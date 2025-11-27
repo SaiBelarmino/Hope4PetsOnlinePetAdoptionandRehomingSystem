@@ -114,5 +114,63 @@
             ";
             return self::fetchAll($query, 'i', [$limit]);
         }
+
+        /**
+         * Get daily new user registrations and new pets added for the last 7 days.
+         * Returns an array with 'labels', 'new_users', and 'new_pets'.
+         */
+        public static function getTrafficOverviewData(): array {
+            // 1. Generate all dates for the last 7 days
+            $dates = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = date('Y-m-d', strtotime("-$i days"));
+                $dates[$date] = [
+                    'day' => date('D', strtotime($date)), // Short day name e.g., 'Mon'
+                    'new_users' => 0,
+                    'new_pets' => 0,
+                ];
+            }
+
+            // 2. Get new user counts
+            $userQuery = "SELECT DATE(created_at) AS day, COUNT(*) AS count 
+                          FROM users 
+                          WHERE created_at >= CURDATE() - INTERVAL 6 DAY
+                          GROUP BY day";
+            $userResults = self::fetchAll($userQuery);
+            foreach ($userResults as $row) {
+                if (isset($dates[$row['day']])) {
+                    $dates[$row['day']]['new_users'] = (int)$row['count'];
+                }
+            }
+
+            // 3. Get new pet counts
+            $petQuery = "SELECT DATE(created_at) AS day, COUNT(*) AS count 
+                         FROM pets 
+                         WHERE created_at >= CURDATE() - INTERVAL 6 DAY
+                         GROUP BY day";
+            $petResults = self::fetchAll($petQuery);
+            foreach ($petResults as $row) {
+                if (isset($dates[$row['day']])) {
+                    $dates[$row['day']]['new_pets'] = (int)$row['count'];
+                }
+            }
+
+            // 4. Format for the chart
+            $chartData = [
+                'labels' => array_column(array_values($dates), 'day'),
+                'series' => [
+                    [
+                        'name' => 'New Users',
+                        'data' => array_column(array_values($dates), 'new_users')
+                    ],
+                    [
+                        'name' => 'Pets Added',
+                        'data' => array_column(array_values($dates), 'new_pets')
+                    ]
+                ]
+            ];
+
+            return $chartData;
+        }
     }
 ?>

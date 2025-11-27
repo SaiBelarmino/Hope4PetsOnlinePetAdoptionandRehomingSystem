@@ -38,6 +38,39 @@ class ShelterVerificationRequestsController extends BaseController {
         return self::execute($sql, 'sii', [$status, $adminId, $id]);
     }
 
+    /**
+     * Checks if a shelter has any pending or rejected documents.
+     * @param int $shelterId
+     * @return bool True if no pending/rejected documents exist, false otherwise.
+     */
+    public static function areAllDocumentsApproved(int $shelterId): bool {
+        $sql = "SELECT COUNT(*) FROM shelter_documents WHERE shelter_id = ? AND status IN ('pending', 'rejected')";
+        $count = self::fetchOne($sql, 'i', [$shelterId]);
+        return $count && $count['COUNT(*)'] === 0;
+    }
+
+    /**
+     * Verifies a shelter.
+     * @param int $shelterId
+     * @param int $adminId
+     * @return bool
+     */
+    public static function verifyShelter(int $shelterId, int $adminId): bool {
+        $sql = "UPDATE shelters SET is_verified = 1, verified_at = NOW(), verified_by = ? WHERE id = ?";
+        return self::execute($sql, 'ii', [$adminId, $shelterId]);
+    }
+
+    /**
+     * Rejects a shelter's verification.
+     * @param int $shelterId
+     * @param int $adminId
+     * @return bool
+     */
+    public static function rejectShelter(int $shelterId, int $adminId): bool {
+        $sql = "UPDATE shelters SET is_verified = 0, verified_at = NOW(), verified_by = ? WHERE id = ?";
+        return self::execute($sql, 'ii', [$adminId, $shelterId]);
+    }
+
     public static function listSheltersWithOwnerAndCount(): array {
         $sql = "SELECT s.id, s.shelter_name, s.is_verified, s.user_id,
                        u.full_name AS owner_name, u.email AS owner_email,

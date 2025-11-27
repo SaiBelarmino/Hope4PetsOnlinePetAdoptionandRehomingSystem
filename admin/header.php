@@ -1,3 +1,13 @@
+<!-- ============================================================== -->
+<!-- Preloader - style you can find in spinners.css -->
+<!-- ============================================================== -->
+<!--<div class="preloader">
+    <div class="lds-ripple">
+        <div class="lds-pos"></div>
+        <div class="lds-pos"></div>
+    </div>
+</div>-->
+
 <header class="app-header">
         <nav class="navbar navbar-expand-lg navbar-light d-flex align-items-center px-3 w-100" style="min-height:60px;">
             <ul class="navbar-nav flex-row align-items-center me-auto gap-2">

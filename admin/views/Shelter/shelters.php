@@ -1,17 +1,25 @@
 <?php
+// 1. SETUP & DATA FETCHING (HANDLER LOGIC)
+// ==================================================
 require_once __DIR__ . '/../../../config/SessionManager.php';
+require_once __DIR__ . '/../../controllers/Shelter/shelters-controller.php';
+
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 
-$controllerPath = dirname(__DIR__, 2) . '/controllers/Shelter/shelters-controller.php';
-if (file_exists($controllerPath)) {
-    include $controllerPath;
-} else {
-    throw new RuntimeException('Shelter controller not found: ' . $controllerPath);
-}
-$shelters = ShelterVerificationRequestsController::listSheltersWithOwnerAndCount();
+// Get filter parameters from URL
+$search = htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES);
+$status = htmlspecialchars($_GET['status'] ?? '', ENT_QUOTES);
+$registeredDate = htmlspecialchars($_GET['registered_date'] ?? '', ENT_QUOTES);
+
+// Fetch all shelter data using the controller method with filters
+$shelters = SheltersController::listAllSheltersWithDetails($search, $status, $registeredDate);
+$shelterStats = SheltersController::getShelterStats();
 ?>
+
 <?php
+// 2. HTML RENDERING (VIEW LOGIC)
+// ==================================================
 include dirname(__DIR__, 2) . '/sidebar.php';
 ?>
 
@@ -22,122 +30,141 @@ include dirname(__DIR__, 2) . '/sidebar.php';
             <h3 class="mb-0">Shelters</h3>
         </div>
 
-    <?php if (empty($shelters)): ?>
-        <div class="alert alert-info">No shelters found.</div>
-    <?php else: ?>
-        <div class="row g-3">
-            <?php foreach ($shelters as $s): ?>
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5 class="card-title mb-1"><?= htmlspecialchars($s['shelter_name'] ?? '–') ?></h5>
-                                    <?php if (!empty($s['is_verified'])): ?>
-                                        <span class="badge bg-success">Verified</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-secondary">Unverified</span>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="viewProfile(<?= intval($s['id']) ?>)">View Profile</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="viewPets(<?= intval($s['id']) ?>)">View Pets</button>
-                                </div>
+        <!-- Shelter Stats Cards -->
+        <div class="row">
+            <div class="col-sm-6 col-lg-4">
+                <div class="card card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <h6 class="mb-0">Total Shelters</h6>
+                            <span class="fs-4 fw-bold"><?= $shelterStats['total'] ?></span>
+                        </div>
+                        <div class="ms-auto">
+                            <div class="d-flex align-items-center justify-content-center w-35px h-35px rounded-circle bg-light-primary text-primary">
+                                <i class="ti ti-building-community fs-5"></i>
                             </div>
-                            <p class="mb-1 mt-2"><strong>Owner:</strong> <?= htmlspecialchars($s['owner_name'] ?? '-') ?></p>
-                            <p class="mb-0"><strong>Pets:</strong> <?= intval($s['pet_count'] ?? 0) ?></p>
                         </div>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-</div>
-
-<!-- Profile Modal -->
-<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="profileModalLabel">Shelter Profile</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="profileModalBody">
-                <div class="text-center">Loading...</div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <h6 class="mb-0">Verified</h6>
+                            <span class="fs-4 fw-bold text-success"><?= $shelterStats['verified'] ?></span>
+                        </div>
+                        <div class="ms-auto">
+                            <div class="d-flex align-items-center justify-content-center w-35px h-35px rounded-circle bg-light-success text-success">
+                                <i class="ti ti-circle-check fs-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <h6 class="mb-0">Unverified</h6>
+                            <span class="fs-4 fw-bold text-warning"><?= $shelterStats['unverified'] ?></span>
+                        </div>
+                        <div class="ms-auto">
+                            <div class="d-flex align-items-center justify-content-center w-35px h-35px rounded-circle bg-light-warning text-warning">
+                                <i class="ti ti-clock-hour-4 fs-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="shelters.php" method="GET" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="search" name="search" placeholder="Shelter Name" value="<?= $search ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select id="status" name="status" class="form-select">
+                            <option value="" <?= $status === '' ? 'selected' : '' ?>>All</option>
+                            <option value="verified" <?= $status === 'verified' ? 'selected' : '' ?>>Verified</option>
+                            <option value="unverified" <?= $status === 'unverified' ? 'selected' : '' ?>>Unverified</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="registered_date" class="form-label">Registered Date</label>
+                        <input type="date" class="form-control" id="registered_date" name="registered_date" value="<?= $registeredDate ?>">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="d-grid gap-2 d-md-flex">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                            <a href="shelters.php" class="btn btn-outline-secondary">Reset</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                    <table class="table table-sm table-striped table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>Shelter Name</th>
+                                <th>Address</th>
+                                <th>Contact Person</th>
+                                <th>Contact Number</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Date Registered</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($shelters)): ?>
+                                <tr>
+                                    <td colspan="8" class="text-center">No shelters found.</td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($shelters as $s): ?>
+                                    <tr>
+                                        <td style="min-width: 150px; white-space: normal;"><?= htmlspecialchars($s['shelter_name'] ?? '–') ?></td>
+                                        <td style="min-width: 100px; white-space: normal;"><?= htmlspecialchars($s['address'] ?? '–') ?></td>
+                                        <td style="min-width: 100px; white-space: normal;"><?= htmlspecialchars($s['owner_name'] ?? '–') ?></td>
+                                        <td style="min-width: 100px; white-space: normal;"><?= htmlspecialchars($s['contact_number'] ?? '–') ?></td>
+                                        <td style="min-width: 100px; white-space: normal;"><?= htmlspecialchars($s['owner_email'] ?? '–') ?></td>
+                                        <td>
+                                            <?php if (!empty($s['is_verified'])): ?>
+                                                <span class="badge bg-success">Verified</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-warning text-dark">Unverified</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?= htmlspecialchars((new DateTime($s['created_at']))->format('M d, Y') ?? '–') ?></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="Shelter Actions">
+                                                <a href="view-shelter.php?id=<?= $s['id'] ?>" class="btn btn-outline-primary" title="View Details">
+                                                    <i class="ti ti-eye"></i>
+                                                </a>
+                                                <a href="delete-shelter.php?id=<?= $s['id'] ?>" class="btn btn-outline-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this shelter?');">
+                                                    <i class="ti ti-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Pets Modal -->
-<div class="modal fade" id="petsModal" tabindex="-1" aria-labelledby="petsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="petsModalLabel">Shelter Pets</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="petsModalBody">
-                <div class="text-center">Loading...</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function viewProfile(shelterId) {
-    const modal = new bootstrap.Modal(document.getElementById('profileModal'));
-    const body = document.getElementById('profileModalBody');
-    body.innerHTML = '<div class="text-center">Loading...</div>';
-    modal.show();
-
-    fetch(`/admin/ajax/get-shelter-profile.php?id=${shelterId}`)  // Adjust URL to your AJAX endpoint
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            body.innerHTML = `
-                <p><strong>Name:</strong> ${data.name || 'N/A'}</p>
-                <p><strong>Owner:</strong> ${data.owner || 'N/A'}</p>
-                <p><strong>Verified:</strong> ${data.verified ? 'Yes' : 'No'}</p>
-                <!-- Add more fields as needed -->
-            `;
-        })
-        .catch(error => {
-            body.innerHTML = '<div class="alert alert-danger">Error loading profile. Please try again.</div>';
-            console.error('Error:', error);
-        });
-}
-
-function viewPets(shelterId) {
-    const modal = new bootstrap.Modal(document.getElementById('petsModal'));
-    const body = document.getElementById('petsModalBody');
-    body.innerHTML = '<div class="text-center">Loading...</div>';
-    modal.show();
-
-    fetch(`/admin/ajax/get-shelter-pets.php?id=${shelterId}`)  // Adjust URL to your AJAX endpoint
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            if (data.length === 0) {
-                body.innerHTML = '<p>No pets found.</p>';
-            } else {
-                let html = '<ul class="list-group">';
-                data.forEach(pet => {
-                    html += `<li class="list-group-item">${pet.name || 'Unnamed'} - ${pet.type || 'Unknown'}</li>`;
-                });
-                html += '</ul>';
-                body.innerHTML = html;
-            }
-        })
-        .catch(error => {
-            body.innerHTML = '<div class="alert alert-danger">Error loading pets. Please try again.</div>';
-            console.error('Error:', error);
-        });
-}
-</script>
 
 <?php include dirname(__DIR__, 2) . '/footer.php'; ?>
