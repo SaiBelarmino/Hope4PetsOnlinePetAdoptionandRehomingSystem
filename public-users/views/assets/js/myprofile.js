@@ -130,6 +130,9 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const idPhotoInput = document.getElementById('idPhotoInput');
 const idPhotoBackInput = document.getElementById('idPhotoBackInput');
+// Ensure these are defined for later usage where they are referenced
+var captureBtn = document.getElementById('captureBtn');
+var retakeBtn = document.getElementById('retakeBtn');
 let isFront = true;
 let retakeFront = false;
 
@@ -432,3 +435,91 @@ function openMediaModal(postId, index, type) {
     $('.modal-backdrop').css('background-color', 'rgba(0, 0, 0, 0.7)');
     $('#imageCarousel').carousel(index);
 }
+
+// Replace caption clamp init with robust version handling hidden tabs and measurement
+// Initialize See more / See less for post captions (3-line limit)
+(function(){
+  if (window.__DISABLE_POST_CAPTION_INIT) return;
+  function measureAndToggle(caption, toggle){
+    if (!caption) return;
+    // If caption is in a hidden tab/pane, postpone measurement
+    if (caption.offsetParent === null) {
+      if (toggle) toggle.style.display = 'none';
+      caption.dataset.needsMeasure = '1';
+      return;
+    }
+    // Ensure clamped to get clamped height
+    caption.classList.add('clamp-3');
+    caption.classList.remove('expanded');
+    var clampedHeight = caption.clientHeight;
+    // Temporarily un-clamp to measure full height
+    var prevClass = caption.className;
+    caption.classList.remove('clamp-3');
+    var fullHeight = caption.scrollHeight;
+    caption.className = prevClass; // restore
+    if (toggle) {
+      var needsToggle = fullHeight > clampedHeight + 1;
+      toggle.style.display = needsToggle ? 'inline' : 'none';
+      toggle.textContent = 'See more';
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  }
+  function bindCaption(caption){
+    if (!caption || caption.dataset.captionBound === '1') return;
+    var container = caption.parentElement;
+    var toggle = container ? container.querySelector('.post-caption-toggle') : null;
+    if (!toggle) {
+      toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'btn btn-link p-0 post-caption-toggle';
+      toggle.style.display = 'none';
+      toggle.textContent = 'See more';
+      toggle.setAttribute('aria-expanded','false');
+      if (container) container.appendChild(toggle);
+    }
+    measureAndToggle(caption, toggle);
+    toggle.addEventListener('click', function(){
+      var expanded = caption.classList.toggle('expanded');
+      if (expanded) {
+        caption.classList.remove('clamp-3');
+        toggle.textContent = 'See less';
+        toggle.setAttribute('aria-expanded','true');
+      } else {
+        caption.classList.add('clamp-3');
+        toggle.textContent = 'See more';
+        toggle.setAttribute('aria-expanded','false');
+      }
+    });
+    caption.dataset.captionBound = '1';
+  }
+  function initCaptions(scope){
+    var root = scope || document;
+    var captions = root.querySelectorAll('.post-caption');
+    captions.forEach(bindCaption);
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    initCaptions(document);
+  });
+  // Re-initialize when Posts tab becomes visible (Bootstrap event)
+  var postsTabBtn = document.getElementById('posts-tab');
+  if (postsTabBtn) {
+    postsTabBtn.addEventListener('shown.bs.tab', function(){
+      var pane = document.getElementById('posts');
+      initCaptions(pane || document);
+      // Re-measure captions that were pending due to being hidden
+      (pane || document).querySelectorAll('.post-caption[data-needs-measure="1"]').forEach(function(caption){
+        var toggle = caption.parentElement && caption.parentElement.querySelector('.post-caption-toggle');
+        measureAndToggle(caption, toggle);
+        try { delete caption.dataset.needsMeasure; } catch(e) { caption.removeAttribute('data-needs-measure'); }
+      });
+    });
+  }
+  // Recalculate on resize if not expanded
+  window.addEventListener('resize', function(){
+    document.querySelectorAll('.post-caption').forEach(function(caption){
+      if (caption.classList.contains('expanded')) return;
+      var toggle = caption.parentElement && caption.parentElement.querySelector('.post-caption-toggle');
+      measureAndToggle(caption, toggle);
+    });
+  });
+})();

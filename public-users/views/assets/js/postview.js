@@ -1,36 +1,95 @@
 // postview.js - clean carousel initialization and UI handlers
 document.addEventListener('DOMContentLoaded', function () {
   // ---- Caption See more / See less ----
+  // REWRITE: simpler half-panel expansion with scroll
   var captionText = document.getElementById('captionText');
   var seeMoreBtn = document.getElementById('seeMoreBtn');
   var fadeOverlay = document.getElementById('fadeOverlay');
-  var COLLAPSED_HEIGHT = 120;
-
+  var expanded = false;
   if (captionText) {
-    captionText.style.maxHeight = COLLAPSED_HEIGHT + 'px';
-    captionText.style.overflow = 'hidden';
-    if (captionText.scrollHeight <= COLLAPSED_HEIGHT + 2) {
+    var COLLAPSED = parseInt(captionText.getAttribute('data-collapsed-height') || '120', 10);
+    var EXPANDED_MAX_ATTR = parseInt(captionText.getAttribute('data-expanded-max') || '260', 10);
+    function expandedHeight(){
+      var side = document.querySelector('.post-side');
+      if(!side) return Math.min(EXPANDED_MAX_ATTR, captionText.scrollHeight);
+      var headerH = side.querySelector('.p-3.border-bottom')?.offsetHeight || 0;
+      var inputH = side.querySelector('.border-top.p-3')?.offsetHeight || 0;
+      var reserveComments = 180; // keep comments visible
+      var buffer = 32; // spacing
+      var usable = side.clientHeight - headerH - inputH - reserveComments - buffer;
+      if (usable < COLLAPSED + 40) usable = COLLAPSED + 40; // ensure there is scroll room
+      var target = Math.min(usable, EXPANDED_MAX_ATTR, captionText.scrollHeight);
+      return target;
+    }
+    function applyCollapsed(){
+      captionText.style.maxHeight = COLLAPSED + 'px';
+      captionText.style.overflowY = 'auto';
+      captionText.style.overflowX = 'hidden';
+      if (fadeOverlay) fadeOverlay.style.display = '';
+      if (seeMoreBtn) seeMoreBtn.textContent = 'See more';
+      expanded = false;
+    }
+    function applyExpanded(){
+      var h = expandedHeight();
+      captionText.style.maxHeight = h + 'px';
+      captionText.style.overflowY = 'auto';
+      captionText.style.overflowX = 'hidden';
+      if (fadeOverlay) fadeOverlay.style.display = 'none';
+      if (seeMoreBtn) seeMoreBtn.textContent = 'See less';
+      expanded = true;
+    }
+    // initial
+    applyCollapsed();
+    if (captionText.scrollHeight <= COLLAPSED + 2) {
       if (seeMoreBtn) seeMoreBtn.style.display = 'none';
       if (fadeOverlay) fadeOverlay.style.display = 'none';
     }
+    if (seeMoreBtn){
+      seeMoreBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        expanded ? applyCollapsed() : applyExpanded();
+      });
+    }
+    window.addEventListener('resize', function(){ if(expanded) applyExpanded(); });
+    // Prevent scroll chaining into comments when at bounds
+    captionText.addEventListener('wheel', function(e){
+      var atTop = captionText.scrollTop === 0;
+      var atBottom = captionText.scrollTop + captionText.clientHeight >= captionText.scrollHeight;
+      if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {
+        // stop propagation so parent doesn't steal scroll
+        e.stopPropagation();
+      }
+    }, { passive: true });
+    captionText.addEventListener('touchmove', function(e){ e.stopPropagation(); }, { passive: true });
   }
 
-  if (seeMoreBtn) {
-    seeMoreBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (!captionText) return;
-      var isCollapsed = captionText.style.maxHeight && captionText.style.maxHeight !== 'none';
-      if (isCollapsed) {
-        captionText.style.maxHeight = 'none';
-        if (fadeOverlay) fadeOverlay.style.display = 'none';
-        seeMoreBtn.textContent = 'See less';
-      } else {
-        captionText.style.maxHeight = COLLAPSED_HEIGHT + 'px';
-        if (fadeOverlay) fadeOverlay.style.display = 'block';
-        seeMoreBtn.textContent = 'See more';
+  // ---- Mobile header + caption reposition ----
+  (function(){
+    var root = document.querySelector('.post-root');
+    var header = document.getElementById('postHeader');
+    var caption = document.getElementById('captionContainer');
+    var media = document.querySelector('.post-media');
+    var side = document.querySelector('.post-side');
+    if(!root || !header || !caption || !media || !side) return;
+    var headerParent = side; // original
+    var captionParent = side;
+    function toMobile(){
+      // order: header, caption, media, side (comments/input still inside side)
+      if (header.parentElement !== root) root.insertBefore(header, root.firstChild);
+      if (caption.parentElement !== root) root.insertBefore(caption, media);
+    }
+    function toDesktop(){
+      // restore header & caption inside side
+      if (header.parentElement !== headerParent) headerParent.insertBefore(header, headerParent.firstChild);
+      if (caption.parentElement !== captionParent) {
+        var afterHeader = header.nextSibling;
+        if (afterHeader) headerParent.insertBefore(caption, afterHeader); else headerParent.appendChild(caption);
       }
-    });
-  }
+    }
+    function apply(){ window.innerWidth <= 576 ? toMobile() : toDesktop(); }
+    apply();
+    window.addEventListener('resize', apply);
+  })();
 
   // ---- Comment edit toggles ----
   document.addEventListener('click', function (e) {
@@ -103,3 +162,5 @@ document.addEventListener('DOMContentLoaded', function () {
     if (prevBtn) prevBtn.addEventListener('click', function (e) { e.preventDefault(); var cur = items.findIndex(it => it.classList.contains('active')); showIndex(cur - 1); });
   }
 });
+
+

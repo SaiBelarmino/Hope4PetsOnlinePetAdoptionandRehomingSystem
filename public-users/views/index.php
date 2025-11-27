@@ -173,7 +173,12 @@ if ($flash && is_array($flash)) {
                              data-truncated="<?php echo strlen($fullContent) > $maxLength ? '1' : '0'; ?>">
                             <?php echo htmlspecialchars($shortText, ENT_QUOTES, 'UTF-8'); ?>
                         </div>
-                        <span class="small expand-caption" data-post="<?php echo $post['id']; ?>" tabindex="0" role="button" style="cursor:pointer;">See more</span>
+                        <!-- Replaced span with an accessible toggle button -->
+                        <button type="button" class="btn btn-link p-0 mt-1 post-caption-toggle"
+                                data-post="<?php echo $post['id']; ?>"
+                                aria-controls="caption-<?php echo $post['id']; ?>"
+                                aria-expanded="false"
+                                aria-label="Toggle full caption">See more</button>
                     </div>
                     <?php endif; ?>
 
@@ -303,3 +308,29 @@ if ($flash && is_array($flash)) {
 
             <?php include __DIR__ . '/../include/footer.php'; ?>
             <script src="assets/js/index.js?v=2"></script>
+            <!-- Inline toggle logic for See more / See less button -->
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.post-caption-toggle').forEach(function (btn) {
+                    var postId = btn.getAttribute('data-post');
+                    var caption = document.getElementById('caption-' + postId);
+                    if (!caption || caption.getAttribute('data-truncated') !== '1') {
+                        // Hide toggle if there's nothing to expand
+                        btn.style.display = 'none';
+                        return;
+                    }
+                    btn.addEventListener('click', function () {
+                        var expanded = btn.getAttribute('aria-expanded') === 'true';
+                        if (expanded) {
+                            caption.textContent = caption.getAttribute('data-short');
+                            btn.setAttribute('aria-expanded', 'false');
+                            btn.textContent = 'See more';
+                        } else {
+                            caption.innerHTML = caption.getAttribute('data-full');
+                            btn.setAttribute('aria-expanded', 'true');
+                            btn.textContent = 'See less';
+                        }
+                    });
+                });
+            });
+            </script>

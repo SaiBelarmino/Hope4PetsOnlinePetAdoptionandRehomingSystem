@@ -23,3 +23,17 @@
   .post-side { height: calc(100vh - 70px); }
   .comments-scroll { overflow: auto; }
 }
+
+/* Responsive rearrange: mobile puts header + caption on top, media center, comments bottom */
+@media (max-width: 576px) {
+  .post-root { flex-direction: column; height:auto !important; }
+  #postHeader, #captionContainer { width:100%; }
+  #postHeader { border-bottom:1px solid #eee; }
+  /* Unified fixed media height to remove bottom gap */
+  .post-media { width:100% !important; height:60vh !important; padding:0 !important; flex:0 0 auto !important; display:block !important; background:#000; }
+  .post-media.flex-grow-1 { flex-grow:0 !important; }
+  #postMediaCarousel, #postMediaCarousel .carousel-inner, #postMediaCarousel .carousel-item { height:100% !important; }
+  #postMediaCarousel .carousel-item { display:flex !important; align-items:center; justify-content:center; }
+  .post-media img, .post-media video { width:100% !important; height:100% !important; object-fit:cover !important; margin:0; }
+  .post-side { width:100% !important; height:auto !important; }
+}

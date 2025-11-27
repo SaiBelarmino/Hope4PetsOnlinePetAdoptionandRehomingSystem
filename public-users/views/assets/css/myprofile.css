@@ -16,3 +16,30 @@
     display: none;
 }
 
+/* Ensure See more/See less button is visible */
+.post-caption-toggle {
+  display: inline !important;
+  color: #0d6efd;
+  text-decoration: none;
+  cursor: pointer;
+}
+.post-caption-toggle:hover { text-decoration: underline; }
+
+/* See more/less caption clamp */
+.post-caption { overflow: hidden; white-space: normal; word-wrap: break-word; overflow-wrap: anywhere; }
+.post-caption.clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  /* Standard property for linters/compat */
+  line-clamp: 3;
+}
+.post-caption.expanded {
+  display: block;
+  -webkit-line-clamp: initial;
+  overflow: visible;
+  /* Standard property for linters/compat */
+  line-clamp: unset;
+}
+.post-caption + .post-caption-toggle { font-size: 0.875rem; }
+

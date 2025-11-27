@@ -55,7 +55,7 @@ function resolve_media_path(?string $path): string {
 
 ?>
 
-<div class="d-flex post-root" style="height: calc(100vh - 70px); overflow: hidden;">
+<div class="d-flex post-root" style="height: calc(100vh - 70px);">
     <!-- LEFT SIDE: MEDIA -->
     <div class="flex-grow-1 d-flex align-items-center justify-content-center bg-black post-media">
         <?php if (!$post): ?>
@@ -111,7 +111,7 @@ function resolve_media_path(?string $path): string {
         style="width: 420px; max-width: 100%; height: calc(100vh - 70px);">
 
         <!-- Header -->
-        <div class="p-3 border-bottom d-flex align-items-center">
+        <div id="postHeader" class="p-3 border-bottom d-flex align-items-center">
             <img src="<?php echo htmlspecialchars($post['profile_photo'] ?? 'https://via.placeholder.com/40', ENT_QUOTES, 'UTF-8'); ?>" alt="Profile" class="rounded-circle me-2"
                 style="width: 40px; height: 40px; object-fit:cover;">
             <div>
@@ -122,23 +122,23 @@ function resolve_media_path(?string $path): string {
         </div>
 
         <!-- Caption -->
-        <div class="p-3 border-bottom" id="captionContainer">
-            <div id="captionText" class="small position-relative" style="max-height:120px; overflow:auto; -webkit-overflow-scrolling:touch; padding-right:8px;">
+        <div class="p-3 border-bottom" id="captionContainer" style="flex:0 0 auto;">
+            <div id="captionText" class="small position-relative caption-scroll" aria-label="Post caption" data-collapsed-height="120" data-expanded-max="260"
+                 style="max-height:120px; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding-right:8px;">
                 <?php if (!empty($post['content'])): ?>
-                    <p><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
+                    <p class="mb-0">&nbsp;<?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
+                <?php else: ?>
+                    <p class="text-muted mb-0">No caption.</p>
                 <?php endif; ?>
-                <!-- Fade overlay (pointer-events:none so it doesn't block scrolling) -->
-                <div id="fadeOverlay"
-                    style="position:absolute; bottom:0; left:0; right:0; height:40px; background: linear-gradient(transparent, white); pointer-events: none; z-index:2;">
-                </div>
+                <div id="fadeOverlay" class="caption-fade"
+                     style="position:absolute; bottom:0; left:0; right:0; height:40px; background:linear-gradient(transparent, white); pointer-events:none; z-index:2;"></div>
             </div>
-            <!-- See more / See less button placed outside the collapsed area so it's always visible -->
-            <a href="javascript:void(0)" id="seeMoreBtn" class="text-decoration-none small fw-bold d-block mt-2"
-                style="position:relative; z-index:3; color:#0d6efd;">See more</a>
+            <!-- Match provided button style and attributes, keep same id for JS -->
+            <button type="button" id="seeMoreBtn" class="btn btn-link p-0 mt-1 post-caption-toggle" aria-expanded="false" aria-label="Toggle full caption">See more</button>
         </div>
 
         <!-- Comments -->
-        <div class="px-3 py-2 flex-grow-1 overflow-auto comments-scroll">
+        <div class="px-3 py-2 flex-grow-1 overflow-auto comments-scroll" style="min-height:180px;">
             <?php
             if (empty($comments)) {
                 echo '<div class="text-muted small">No comments yet.</div>';
@@ -200,3 +200,35 @@ function resolve_media_path(?string $path): string {
 
 <script>var postId = <?php echo json_encode($postId); ?>;</script>
 <script src="./assets/js/postview.js"></script>
+<script>
+// Mobile: move header + caption above media
+(function(){
+  var root = document.querySelector('.post-root');
+  var header = document.getElementById('postHeader');
+  var caption = document.getElementById('captionContainer');
+  var media = document.querySelector('.post-media');
+  var side = document.querySelector('.post-side');
+  if(!root || !header || !caption || !media || !side) return;
+  var headerParent = side;
+  var captionParent = side;
+  function toMobile(){
+    // order: header, caption, media, side (comments/input)
+    if (header.parentElement !== root) root.insertBefore(header, root.firstChild);
+    if (caption.parentElement !== root) root.insertBefore(caption, media);
+  }
+  function toDesktop(){
+    // restore header at top of side, caption after header
+    if (header.parentElement !== headerParent) headerParent.insertBefore(header, headerParent.firstChild);
+    if (caption.parentElement !== captionParent) {
+      // insert caption right after header
+      if (header.nextSibling) headerParent.insertBefore(caption, header.nextSibling);
+      else headerParent.appendChild(caption);
+    }
+  }
+  function apply(){
+    if (window.innerWidth <= 576) toMobile(); else toDesktop();
+  }
+  apply();
+  window.addEventListener('resize', apply);
+})();
+</script>

@@ -14,7 +14,11 @@ if ($userId) {
 }
 ?>
 <link rel="stylesheet" href="assets/css/leaflet.css" />
-<link rel="stylesheet" href="assets/css/myprofile.css" />
+<?php
+$__cssFile = __DIR__ . '/assets/css/myprofile.css';
+$__cssVer = file_exists($__cssFile) ? filemtime($__cssFile) : time();
+?>
+<link rel="stylesheet" href="assets/css/myprofile.css?v=<?php echo $__cssVer; ?>" />
 <form id="photoForm" method="post" action="../controllers/EditMyProfileController.php" enctype="multipart/form-data"
     style="display: none;">
     <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
@@ -24,7 +28,7 @@ if ($userId) {
 <div class="container-fluid">
     <div class="row g-3 py-4">
         <!-- Left Sidebar -->
-            <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
+        <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
         <!-- Center Content -->
         <div class="col-12 col-lg-6"
             style="max-height:862px; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width: none; -ms-overflow-style: none;"
@@ -44,6 +48,25 @@ if ($userId) {
             $city = $location_parts[2] ?? '';
             $province = $location_parts[3] ?? '';
             $postal_code = $location_parts[4] ?? '';
+
+            if (!function_exists('resolve_media_path')) {
+                function resolve_media_path(?string $path): string {
+                    if (empty($path)) return '../../assets/images/placeholder.png';
+                    $p = trim($path);
+                    if (preg_match('#^https?://#i', $p)) return $p;
+                    $normalized = str_replace('\\', '/', $p);
+                    $pos = stripos($normalized, 'storage/');
+                    if ($pos !== false) {
+                        $sub = substr($normalized, $pos);
+                        return '../../' . ltrim($sub, '/');
+                    }
+                    $normalized = preg_replace('#^(\\.{1,2}/)+#', '', $normalized);
+                    $normalized = ltrim($normalized, '/');
+                    if (stripos($normalized, 'storage/') === 0) return '../../' . $normalized;
+                    if (stripos($normalized, 'uploads/') === 0) return '../../storage/' . ltrim($normalized, '/');
+                    return '../../' . $normalized;
+                }
+            }
             ?>
             <!-- Cover Photo -->
             <div class="card mb-3"
@@ -67,21 +90,22 @@ if ($userId) {
                     </div>
                     <div class="text-black text-center text-md-start flex-grow-1 mb-3 mb-md-0">
                         <h4 class="mb-1 h5 h4-md"><?php echo htmlspecialchars($user['full_name']); ?>
-                <?php if ($user['is_verified']): ?><img
-                    src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/svg-verified/verified.svg"
-                    width="16" height="16" alt="Verified" class="ms-0" data-verified-badge><?php endif; ?></h4>
+                            <?php if ($user['is_verified']): ?><img
+                                src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/assets/images/svg-verified/verified.svg"
+                                width="16" height="16" alt="Verified" class="ms-0" data-verified-badge><?php endif; ?>
+                        </h4>
                         <p class="mb-1 small"><?php echo htmlspecialchars($user['age'] ?? 'N/A'); ?> years old •
                             <?php echo htmlspecialchars(ucfirst($user['gender'])); ?></p>
                         <p class="mb-0 small"><?php echo htmlspecialchars($user['location'] ?? 'N/A'); ?></p>
                     </div>
-            <div class="d-flex flex-row gap-2">
-            <?php if (empty($user['is_verified'])): ?>
-            <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal" data-verify-id-button><i
-                class="ti ti-id"></i> Verify ID</button>
-            <?php endif; ?>
-            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"><i
-                class="ti ti-edit"></i> Edit Profile</button>
-            </div>
+                    <div class="d-flex flex-row gap-2">
+                        <?php if (empty($user['is_verified'])): ?>
+                        <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#verifyIdModal"
+                            data-verify-id-button><i class="ti ti-id"></i> Verify ID</button>
+                        <?php endif; ?>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"><i
+                                class="ti ti-edit"></i> Edit Profile</button>
+                    </div>
                 </div>
             </div>
             <!-- Tabs -->
@@ -142,188 +166,77 @@ if ($userId) {
                             <?php foreach ($posts as $post): ?>
                             <div class="card mb-4 shadow-sm border-0">
                                 <div class="card-body p-4">
-                                    <!-- Post Content -->
-                                    <div class="mb-3">
-                                        <p class="mb-3 fs-6 lh-base"><?php echo htmlspecialchars($post['content']); ?>
-                                        </p>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="/Hope4PetsOnlinePetAdoptionandRehomingSystem/<?php echo htmlspecialchars($user['profile_photo'] ?? 'default-avatar.png'); ?>"
+                                            alt="Profile" class="rounded-circle me-2"
+                                            style="width: 40px; height: 40px; object-fit: cover;">
+                                        <div>
+                                            <h6 class="mb-0 fw-bold"><?php echo htmlspecialchars($user['full_name']); ?>
+                                            </h6>
+                                            <small
+                                                class="text-muted"><?php echo date('M d, Y H:i', strtotime($post['created_at'])); ?></small>
+                                        </div>
                                     </div>
-
-                                    <!-- Media Section -->
-                                    <?php if (!empty($post['media'])): ?>
-                                    <?php $mediaCount = count($post['media']); ?>
+                                    <?php if (!empty($post['content'])): ?>
                                     <div class="mb-3">
-                                        <?php if ($mediaCount === 1): ?>
-                                        <div class="position-relative">
-                                            <?php $media = $post['media'][0]; ?>
-                                            <?php if ($media['type'] === 'image'): ?>
-                                            <img src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                class="img-fluid rounded" alt="Post media"
-                                                style="width: 100%; height: auto; max-height: 400px; object-fit: cover; cursor: pointer;"
-                                                onclick="openMediaModal(<?php echo $post['id']; ?>, 0, 'image')">
-                                            <?php elseif ($media['type'] === 'video'): ?>
-                                            <video class="w-100 rounded"
-                                                style="max-height: 400px; object-fit: cover; cursor: pointer;"
-                                                onclick="openMediaModal(<?php echo $post['id']; ?>, 0, 'video')"
-                                                controls>
-                                                <source src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                    type="video/mp4">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                            <?php endif; ?>
+                                        <div class="post-caption clamp-3" data-clamp-lines="3">
+                                            <?php echo nl2br(htmlspecialchars($post['content'])); ?>
                                         </div>
-                                        <?php elseif ($mediaCount === 2): ?>
-                                        <div class="row g-2">
-                                            <?php foreach ($post['media'] as $index => $media): ?>
-                                            <div class="col-6">
-                                                <?php if ($media['type'] === 'image'): ?>
-                                                <img src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                    class="img-fluid rounded" alt="Post media"
-                                                    style="width: 100%; height: 200px; object-fit: cover; cursor: pointer;"
-                                                    onclick="openMediaModal(<?php echo $post['id']; ?>, <?php echo $index; ?>, 'image')">
-                                                <?php elseif ($media['type'] === 'video'): ?>
-                                                <video class="w-100 rounded"
-                                                    style="height: 200px; object-fit: cover; cursor: pointer;"
-                                                    onclick="openMediaModal(<?php echo $post['id']; ?>, <?php echo $index; ?>, 'video')"
-                                                    controls>
-                                                    <source src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                        type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                                <?php endif; ?>
-                                            </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <?php elseif ($mediaCount === 3): ?>
-                                        <div class="row g-2">
-                                            <div class="col-8">
-                                                <?php $media = $post['media'][0]; ?>
-                                                <?php if ($media['type'] === 'image'): ?>
-                                                <img src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                    class="img-fluid rounded" alt="Post media"
-                                                    style="width: 100%; height: 300px; object-fit: cover; cursor: pointer;"
-                                                    onclick="openMediaModal(<?php echo $post['id']; ?>, 0, 'image')">
-                                                <?php elseif ($media['type'] === 'video'): ?>
-                                                <video class="w-100 rounded"
-                                                    style="height: 300px; object-fit: cover; cursor: pointer;"
-                                                    onclick="openMediaModal(<?php echo $post['id']; ?>, 0, 'video')"
-                                                    controls>
-                                                    <source src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                        type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="col-4 d-flex flex-column g-2">
-                                                <?php for ($i = 1; $i < 3; $i++): ?>
-                                                <div class="flex-fill">
-                                                    <?php $media = $post['media'][$i]; ?>
-                                                    <?php if ($media['type'] === 'image'): ?>
-                                                    <img src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                        class="img-fluid rounded mb-2" alt="Post media"
-                                                        style="width: 100%; height: 145px; object-fit: cover; cursor: pointer;"
-                                                        onclick="openMediaModal(<?php echo $post['id']; ?>, <?php echo $i; ?>, 'image')">
-                                                    <?php elseif ($media['type'] === 'video'): ?>
-                                                    <video class="w-100 rounded mb-2"
-                                                        style="height: 145px; object-fit: cover; cursor: pointer;"
-                                                        onclick="openMediaModal(<?php echo $post['id']; ?>, <?php echo $i; ?>, 'video')"
-                                                        controls>
-                                                        <source src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                            type="video/mp4">
-                                                        Your browser does not support the video tag.
-                                                    </video>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <?php endfor; ?>
-                                            </div>
-                                        </div>
-                                        <?php else: ?>
-                                        <div class="row g-2">
-                                            <?php $mediaIndex = 0; foreach ($post['media'] as $media): ?>
-                                            <div class="col-6 col-md-4">
-                                                <?php if ($media['type'] === 'image'): ?>
-                                                <img src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                    class="img-fluid rounded" alt="Post media"
-                                                    style="width: 100%; height: 150px; object-fit: cover; cursor: pointer;"
-                                                    onclick="openMediaModal(<?php echo $post['id']; ?>, <?php echo $mediaIndex; ?>, 'image')">
-                                                <?php elseif ($media['type'] === 'video'): ?>
-                                                <video class="w-100 rounded"
-                                                    style="height: 150px; object-fit: cover; cursor: pointer;"
-                                                    onclick="openMediaModal(<?php echo $post['id']; ?>, <?php echo $mediaIndex; ?>, 'video')"
-                                                    controls>
-                                                    <source src="<?php echo htmlspecialchars($media['url']); ?>"
-                                                        type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                                <?php endif; ?>
-                                            </div>
-                                            <?php $mediaIndex++; endforeach; ?>
-                                        </div>
-                                        <?php endif; ?>
+                                        <button type="button" class="btn btn-link p-0 mt-1 post-caption-toggle"
+                                            aria-expanded="false" aria-label="Toggle full caption">See more</button>
                                     </div>
                                     <?php endif; ?>
-
-                                    <!-- Post Footer -->
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i
-                                                class="ti ti-calendar me-1"></i><?php echo htmlspecialchars(date('M d, Y', strtotime($post['created_at']))); ?>
-                                            <i class="ti ti-heart me-1 ms-3"></i><?php echo $post['reaction_count']; ?>
-                                            reactions
-                                            <i class="ti ti-message me-1 ms-3"></i><?php echo $post['comment_count']; ?>
-                                            comments
-                                        </small>
-                                    </div>
-
-                                    <!-- Comments Section -->
-                                    <?php if ($post['comment_count'] > 0): ?>
-                                    <div class="mt-4">
-                                        <?php if (!empty($post['comments'])): ?>
-                                        <div class="d-flex mb-3">
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center"
-                                                    style="width: 32px; height: 32px;">
-                                                    <i class="ti ti-user text-muted" style="font-size: 16px;"></i>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <div class="bg-light rounded p-2">
-                                                    <strong><?php echo htmlspecialchars($post['comments'][0]['user_name']); ?>:</strong>
-                                                    <?php echo htmlspecialchars($post['comments'][0]['content']); ?>
-                                                </div>
-                                                <small
-                                                    class="text-muted ms-2"><?php echo htmlspecialchars(date('M d, Y', strtotime($post['comments'][0]['created_at']))); ?></small>
-                                            </div>
+                                    <?php 
+                                    // Improved media handling
+                                    $rawMedia = $post['media'] ?? [];
+                                    if (is_string($rawMedia)) {
+                                        $decoded = json_decode($rawMedia, true);
+                                        if (json_last_error() === JSON_ERROR_NONE) $rawMedia = $decoded; else $rawMedia = [$rawMedia];
+                                    }
+                                    $mediaItems = [];
+                                    foreach ((array)$rawMedia as $m) {
+                                        if (is_string($m)) {
+                                            $mediaItems[] = ['media_path' => $m];
+                                        } elseif (is_array($m)) {
+                                            // Accept various key names
+                                            $candidate = $m['media_path'] ?? $m['path'] ?? $m['file_path'] ?? $m['file'] ?? $m['url'] ?? '';
+                                            if ($candidate !== '') {
+                                                $m['__resolved'] = $candidate;
+                                                $mediaItems[] = $m;
+                                            }
+                                        }
+                                    }
+                                    if (!empty($mediaItems)): ?>
+                                    <div class="row g-2">
+                                        <?php 
+                                            $displayMedia = array_slice($mediaItems, 0, 4);
+                                            foreach ($displayMedia as $m):
+                                                $mPath = $m['__resolved'] ?? $m['media_path'] ?? $m['path'] ?? '';
+                                                $fullPath = resolve_media_path($mPath);
+                                                // Normalize to absolute web path
+                                                $webPath = $fullPath;
+                                                if (strpos($webPath, '../../') === 0) {
+                                                    $webPath = '/Hope4PetsOnlinePetAdoptionandRehomingSystem/' . ltrim(substr($webPath, 6), '/');
+                                                }
+                                                $ext = strtolower(pathinfo(parse_url($mPath, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+                                                $isPhoto = !in_array($ext, ['mp4','webm','ogg']);
+                                                if (isset($m['media_type']) && strpos($m['media_type'], 'video') !== false) $isPhoto = false;
+                                            ?>
+                                        <div class="col-6">
+                                            <a href="PostView.php?id=<?php echo $post['id']; ?>"
+                                                class="d-block ratio ratio-1x1">
+                                                <?php if ($isPhoto): ?>
+                                                <img src="<?php echo htmlspecialchars($webPath); ?>" loading="lazy"
+                                                    alt="Post Media" class="rounded w-100 h-100"
+                                                    style="object-fit:cover;">
+                                                <?php else: ?>
+                                                <video src="<?php echo htmlspecialchars($webPath); ?>"
+                                                    class="rounded w-100 h-100" style="object-fit:cover;" muted
+                                                    playsinline></video>
+                                                <?php endif; ?>
+                                            </a>
                                         </div>
-                                        <?php endif; ?>
-                                        <?php if ($post['comment_count'] > 1): ?>
-                                        <button class="btn btn-outline-primary btn-sm" type="button"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#comments-<?php echo $post['id']; ?>" aria-expanded="false"
-                                            aria-controls="comments-<?php echo $post['id']; ?>">
-                                            <i class="ti ti-chevron-down me-1"></i>View all comments
-                                            (<?php echo $post['comment_count']; ?>)
-                                        </button>
-                                        <div class="collapse mt-3" id="comments-<?php echo $post['id']; ?>">
-                                            <?php for ($i = 1; $i < count($post['comments']); $i++): ?>
-                                            <div class="d-flex mb-2">
-                                                <div class="flex-shrink-0 me-3">
-                                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center"
-                                                        style="width: 32px; height: 32px;">
-                                                        <i class="ti ti-user text-muted" style="font-size: 16px;"></i>
-                                                    </div>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <div class="bg-light rounded p-2">
-                                                        <strong><?php echo htmlspecialchars($post['comments'][$i]['user_name']); ?>:</strong>
-                                                        <?php echo htmlspecialchars($post['comments'][$i]['content']); ?>
-                                                    </div>
-                                                    <small
-                                                        class="text-muted ms-2"><?php echo htmlspecialchars(date('M d, Y', strtotime($post['comments'][$i]['created_at']))); ?></small>
-                                                </div>
-                                            </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <?php endif; ?>
+                                        <?php endforeach; ?>
                                     </div>
                                     <?php endif; ?>
                                 </div>
@@ -579,41 +492,114 @@ if ($userId) {
     </div>
 </div>
 
-<!-- Image Modal -->
-<div class="modal fade modal-fullscreen" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-transparent border-0">
-            <button class="btn-close position-absolute top-0 end-0 m-2 text-white" data-bs-dismiss="modal"
-                aria-label="Close"></button>
-            <div class="modal-body p-0">
-                <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner" id="carousel-inner"></div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel"
-                        data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel"
-                        data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <?php include __DIR__ . '/../include/footer.php'; ?>
 <script src="assets/js/leaflet.js"></script>
 <script>
 window.userId = <?php echo json_encode($user['id']); ?>;
 window.posts = <?php echo json_encode($posts); ?>;
 window.user = <?php echo json_encode($user); ?>;
-var postMedia = {};
-<?php foreach ($posts as $post): ?>
-postMedia[<?php echo $post['id']; ?>] = <?php echo json_encode($post['media']); ?>;
-<?php endforeach; ?>
+// Disable caption init in myprofile.js to avoid conflicts; we use the inline initializer below
+window.__DISABLE_POST_CAPTION_INIT = true;
 </script>
-<script src="assets/js/myprofile.js"></script>
+<?php
+$__jsFile = __DIR__ . '/assets/js/myprofile.js';
+$__jsVer = file_exists($__jsFile) ? filemtime($__jsFile) : time();
+?>
+<script src="assets/js/myprofile.js?v=<?php echo $__jsVer; ?>"></script>
+<script>
+(function() {
+    if (window.__CAPTION_INIT_SIMPLE_APPLIED) return; // guard
+    window.__CAPTION_INIT_SIMPLE_APPLIED = true;
+
+    function lineHeight(el) {
+        var cs = window.getComputedStyle(el);
+        var lh = parseFloat(cs.lineHeight);
+        if (isNaN(lh)) lh = (parseFloat(cs.fontSize) || 16) * 1.2;
+        return lh;
+    }
+
+    function clamp(caption) {
+        caption.classList.remove('clamp-3', 'expanded');
+        var lh = caption.dataset.lh ? parseFloat(caption.dataset.lh) : lineHeight(caption);
+        caption.dataset.lh = lh;
+        caption.style.maxHeight = (lh * 3) + 'px';
+        caption.style.overflow = 'hidden';
+    }
+
+    function expand(caption) {
+        caption.classList.remove('clamp-3');
+        caption.classList.add('expanded');
+        caption.style.maxHeight = 'none';
+        caption.style.overflow = 'visible';
+    }
+
+    function needsToggle(caption) {
+        // Temporarily remove maxHeight to measure full height accurately
+        var prev = caption.style.maxHeight;
+        caption.style.maxHeight = 'none';
+        var full = caption.scrollHeight;
+        var lh = caption.dataset.lh ? parseFloat(caption.dataset.lh) : lineHeight(caption);
+        var need = full > (lh * 3 + 2);
+        caption.style.maxHeight = prev;
+        return need;
+    }
+
+    function setupOne(caption) {
+        var toggle = caption.parentElement && caption.parentElement.querySelector('.post-caption-toggle');
+        if (!toggle) {
+            toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'btn btn-link p-0 mt-1 post-caption-toggle';
+            toggle.textContent = 'See more';
+            toggle.setAttribute('aria-expanded', 'false');
+            caption.parentElement && caption.parentElement.appendChild(toggle);
+        }
+        // Respect current state
+        var expanded = toggle.getAttribute('aria-expanded') === 'true';
+        if (expanded) expand(caption);
+        else clamp(caption);
+        // Show toggle only if needed
+        toggle.style.display = needsToggle(caption) ? 'inline' : 'none';
+        if (!toggle._boundSimple) {
+            toggle.addEventListener('click', function() {
+                var isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+                if (isExpanded) {
+                    clamp(caption);
+                    toggle.textContent = 'See more';
+                    toggle.setAttribute('aria-expanded', 'false');
+                } else {
+                    expand(caption);
+                    toggle.textContent = 'See less';
+                    toggle.setAttribute('aria-expanded', 'true');
+                }
+            });
+            toggle._boundSimple = true;
+        }
+    }
+
+    function init(scope) {
+        (scope || document).querySelectorAll('.post-caption').forEach(setupOne);
+    }
+
+    function run() {
+        init(document.getElementById('posts'));
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+    else run();
+    var postsTab = document.getElementById('posts-tab');
+    if (postsTab) postsTab.addEventListener('shown.bs.tab', run);
+    window.addEventListener('load', run);
+    window.addEventListener('resize', function() {
+        (document.getElementById('posts') || document).querySelectorAll('.post-caption').forEach(function(
+            caption) {
+            var toggle = caption.parentElement && caption.parentElement.querySelector(
+                '.post-caption-toggle');
+            if (!toggle) return;
+            var isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+            if (!isExpanded) clamp(caption); // recompute collapsed height
+            // Re-evaluate if toggle is needed on resize
+            toggle.style.display = needsToggle(caption) ? 'inline' : 'none';
+        });
+    });
+})();
+</script>
