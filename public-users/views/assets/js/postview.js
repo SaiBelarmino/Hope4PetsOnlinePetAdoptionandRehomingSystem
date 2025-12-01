@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     function applyCollapsed(){
       captionText.style.maxHeight = COLLAPSED + 'px';
-      captionText.style.overflowY = 'auto';
+      captionText.style.overflowY = 'hidden'; // disable scroll when collapsed
       captionText.style.overflowX = 'hidden';
       if (fadeOverlay) fadeOverlay.style.display = '';
       if (seeMoreBtn) seeMoreBtn.textContent = 'See more';
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function applyExpanded(){
       var h = expandedHeight();
       captionText.style.maxHeight = h + 'px';
-      captionText.style.overflowY = 'auto';
+      captionText.style.overflowY = 'auto'; // enable scroll when expanded
       captionText.style.overflowX = 'hidden';
       if (fadeOverlay) fadeOverlay.style.display = 'none';
       if (seeMoreBtn) seeMoreBtn.textContent = 'See less';

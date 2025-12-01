@@ -27,8 +27,9 @@ class AddCommentController extends BaseController {
     }
 
     public static function add(array $data) {
-        $postId = isset($data['post_id']) ? (int)$data['post_id'] : 0;
-        $text = trim($data['comment_text'] ?? '');
+        // Accept multiple possible field names for post id and content
+        $postId = (int)trim((string)($data['post_id'] ?? $data['postId'] ?? $data['id'] ?? 0));
+        $content = trim((string)($data['comment_text'] ?? $data['content'] ?? $data['comment'] ?? $data['message'] ?? $data['text'] ?? ''));
         $userId = $_SESSION['user']['id'] ?? null;
 
         if (!$userId) {
@@ -37,7 +38,7 @@ class AddCommentController extends BaseController {
             exit;
         }
 
-        if ($postId <= 0 || $text === '') {
+        if ($postId <= 0 || $content === '') {
             set_flash('error', 'Invalid comment data.');
             header('Location: ../views/PostView.php?id=' . urlencode($postId));
             exit;
@@ -62,12 +63,12 @@ class AddCommentController extends BaseController {
             $petId = (int)$post['pet_id'];
             $stmt = $db->prepare("INSERT INTO pet_comments (pet_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())");
             if (!$stmt) { set_flash('error', 'Failed to prepare statement.'); header('Location: ../views/PostView.php?id=' . urlencode($postId)); exit; }
-            $stmt->bind_param('iis', $petId, $userId, $text);
+            $stmt->bind_param('iis', $petId, $userId, $content);
             $ok = $stmt->execute();
         } else {
             $stmt = $db->prepare("INSERT INTO post_comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())");
             if (!$stmt) { set_flash('error', 'Failed to prepare statement.'); header('Location: ../views/PostView.php?id=' . urlencode($postId)); exit; }
-            $stmt->bind_param('iis', $postId, $userId, $text);
+            $stmt->bind_param('iis', $postId, $userId, $content);
             $ok = $stmt->execute();
         }
 

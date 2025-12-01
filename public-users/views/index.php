@@ -178,7 +178,8 @@ if ($flash && is_array($flash)) {
                                 data-post="<?php echo $post['id']; ?>"
                                 aria-controls="caption-<?php echo $post['id']; ?>"
                                 aria-expanded="false"
-                                aria-label="Toggle full caption">See more</button>
+                                aria-label="Toggle full caption"
+                                onclick="toggleCaption(this)">See more</button>
                     </div>
                     <?php endif; ?>
 
@@ -239,18 +240,51 @@ if ($flash && is_array($flash)) {
                                     class="d-none d-sm-inline">Like</span>
                                 <?php if ($post['reaction_count'] > 0): ?><span
                                     class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span><?php endif; ?></a>
-                            <a href="./PostView.php?id=<?php echo $post['id']; ?>"
-                                class="btn btn-light border me-1 mb-1"><i class="ti ti-message-circle"></i> <span
-                                    class="d-none d-sm-inline">Comment</span>
+                            <!-- Replace Comment link with a toggle button that expands a collapsible comment form -->
+                            <button type="button" class="btn btn-light border me-1 mb-1 comment-toggle"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#comment-box-<?php echo $post['id']; ?>"
+                                    aria-expanded="false"
+                                    aria-controls="comment-box-<?php echo $post['id']; ?>">
+                                <i class="ti ti-message-circle"></i> <span class="d-none d-sm-inline">Comment</span>
                                 <?php if ($post['comment_count'] > 0): ?><span
-                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?></a>
-                            <a href="./PostView.php?id=<?php echo $post['id']; ?>" class="btn btn-light border mb-1"><i
+                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?>
+                            </button>
+                            <a href="./PostView.php?id=<?php echo urlencode($post['id']); ?>" class="btn btn-light border mb-1"><i
                                     class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></a>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- End single post card -->
+
+            <!-- Collapsible inline comment box -->
+            <?php if ($userId): ?>
+            <div id="comment-box-<?php echo $post['id']; ?>" class="collapse comment-box mt-2">
+                 <form method="post" action="../controllers/AddCommentController.php" class="d-flex align-items-start gap-2">
+                    <img src="<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>"
+                         class="rounded-circle object-fit-cover" width="32" height="32" alt="Your avatar"
+                         style="object-fit:cover; aspect-ratio:1/1;">
+                    <div class="flex-grow-1">
+                        <input type="hidden" name="action" value="create">
+                        <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($post['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <div class="position-relative">
+                            <input type="text" name="content" class="form-control pe-5" placeholder="Write a comment..." required maxlength="1000">
+                            <button type="submit" class="btn btn-primary position-absolute top-50 end-0 translate-middle-y me-2 p-0 d-inline-flex align-items-center justify-content-center" style="width:32px; height:32px; border-radius:50%;" aria-label="Send comment">
+                                <i class="ti ti-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <br>
+            <?php else: ?>
+            <div id="comment-box-<?php echo $post['id']; ?>" class="collapse comment-box mt-2">
+                <div class="alert alert-info mb-0">
+                    Please <a href="../login.php" class="alert-link">log in</a> to comment.
+                </div>
+            </div>
+            <?php endif; ?>
 
             <?php endforeach; ?>
             <?php endif; ?>
@@ -307,30 +341,4 @@ if ($flash && is_array($flash)) {
             </div>
 
             <?php include __DIR__ . '/../include/footer.php'; ?>
-            <script src="assets/js/index.js?v=2"></script>
-            <!-- Inline toggle logic for See more / See less button -->
-            <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                document.querySelectorAll('.post-caption-toggle').forEach(function (btn) {
-                    var postId = btn.getAttribute('data-post');
-                    var caption = document.getElementById('caption-' + postId);
-                    if (!caption || caption.getAttribute('data-truncated') !== '1') {
-                        // Hide toggle if there's nothing to expand
-                        btn.style.display = 'none';
-                        return;
-                    }
-                    btn.addEventListener('click', function () {
-                        var expanded = btn.getAttribute('aria-expanded') === 'true';
-                        if (expanded) {
-                            caption.textContent = caption.getAttribute('data-short');
-                            btn.setAttribute('aria-expanded', 'false');
-                            btn.textContent = 'See more';
-                        } else {
-                            caption.innerHTML = caption.getAttribute('data-full');
-                            btn.setAttribute('aria-expanded', 'true');
-                            btn.textContent = 'See less';
-                        }
-                    });
-                });
-            });
-            </script>
+            <script src="assets/js/index.js?v=3"></script>
