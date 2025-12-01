@@ -38,11 +38,11 @@ $payment_methods = ['credit_card', 'paypal', 'gcash', 'paymaya', 'bank_transfer'
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title fw-semibold">Admin Portal > Donations Monitoring</h5>
+                    <h5 class="card-title fw-semibold">Donations Monitoring</h5>
                 </div>
 
                 <!-- Search and Filters -->
-                <form method="GET" action="">
+                <form method="GET" action=""> 
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">
                             <input type="text" class="form-control" name="search" placeholder="Search User, Shelter..." value="<?= htmlspecialchars($search) ?>">
@@ -151,26 +151,6 @@ $payment_methods = ['credit_card', 'paypal', 'gcash', 'paymaya', 'bank_transfer'
                     </div>
                 </div>
 
-                <!-- Donation Statistics Charts -->
-                <div class="row mt-5">
-                    <div class="col-lg-8">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title mb-4">Donations per Shelter</h5>
-                                <div id="donationByShelterChartContainer" style="position: relative; height:400px; width:100%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title mb-4">Donations by Payment Method</h5>
-                                <div id="donationByCategoryChartContainer" style="position: relative; height:400px; width:100%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
@@ -186,114 +166,5 @@ $payment_methods = ['credit_card', 'paypal', 'gcash', 'paymaya', 'bank_transfer'
 <!-- Babel for JSX Transformation -->
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<!-- Chart Components -->
-<script type="text/babel">
-  const { useState, useEffect } = React;
-  const { Pie, Bar } = window.ReactChartJs2;
 
-  // Register Chart.js components
-  Chart.register(Chart.ArcElement, Chart.CategoryScale, Chart.LinearScale, Chart.BarElement, Chart.Tooltip, Chart.Legend, Chart.Title);
-
-  // Generic Chart Component
-  const ChartComponent = ({ chartType, endpoint, title, labelField, dataField }) => {
-    const [chartData, setChartData] = useState(null); // Start with null
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-      let isMounted = true; // Flag to prevent state update on unmounted component
-      
-      const fetchData = async () => {
-        try {
-          const response = await fetch(endpoint);
-          if (!response.ok) {
-            throw new Error(`Network response was not ok (${response.status})`);
-          }
-          const apiResponse = await response.json();
-
-          if (isMounted) {
-            if (apiResponse.success && Array.isArray(apiResponse.data)) {
-              const labels = apiResponse.data.map(item => item[labelField] || 'Unnamed');
-              const data = apiResponse.data.map(item => item[dataField]);
-              
-              setChartData({
-                labels,
-                datasets: [{
-                  label: 'Total Donations (PHP)',
-                  data,
-                  backgroundColor: [
-                    'rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)'
-                  ],
-                  borderColor: '#fff',
-                  borderWidth: 1,
-                }],
-              });
-            } else {
-              throw new Error(apiResponse.message || 'Invalid data format from API');
-            }
-          }
-        } catch (err) {
-          if (isMounted) {
-            setError(err.message);
-          }
-        }
-      };
-
-      fetchData();
-
-      return () => {
-        isMounted = false; // Cleanup function to set flag on unmount
-      };
-    }, [endpoint, labelField, dataField]);
-
-    const options = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: chartType === 'Pie' ? 'right' : 'top' },
-        title: { display: false }, // Title is handled by card-title
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const label = context.label || '';
-              const value = chartType === 'Pie' ? context.parsed : context.parsed.y;
-              if (value === null || value === undefined) return label;
-              return `${label}: ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value)}`;
-            }
-          }
-        }
-      },
-      scales: chartType === 'Bar' ? { y: { beginAtZero: true } } : undefined,
-    };
-
-    if (error) return <div className="alert alert-danger p-2 m-2">Error: {error}</div>;
-    if (!chartData) return <div className="text-center p-5">Loading Chart...</div>;
-    
-    const ChartElement = chartType === 'Pie' ? Pie : Bar;
-    return <ChartElement data={chartData} options={options} />;
-  };
-
-  // Render Bar Chart (Donations by Shelter)
-  ReactDOM.render(
-    <ChartComponent 
-      chartType="Bar"
-      endpoint="/Hope4PetsOnlinePetAdoptionandRehomingSystem/api/donations/by-shelter.php"
-      title="Donations per Shelter"
-      labelField="shelter_name"
-      dataField="total_donations"
-    />,
-    document.getElementById('donationByShelterChartContainer')
-  );
-
-  // Render Pie Chart (Donations by Payment Method)
-  ReactDOM.render(
-    <ChartComponent 
-      chartType="Pie"
-      endpoint="/Hope4PetsOnlinePetAdoptionandRehomingSystem/api/donations/by-payment-method.php"
-      title="Donations by Payment Method"
-      labelField="payment_method"
-      dataField="total_donations"
-    />,
-    document.getElementById('donationByCategoryChartContainer')
-  );
 </script>

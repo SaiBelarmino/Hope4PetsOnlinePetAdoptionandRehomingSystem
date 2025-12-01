@@ -1,25 +1,24 @@
 <?php
-// 1. SETUP & DATA FETCHING (HANDLER LOGIC)
-// ==================================================
+
 require_once __DIR__ . '/../../../config/SessionManager.php';
 require_once __DIR__ . '/../../controllers/Shelter/shelters-controller.php';
 
 SessionManager::init();
 AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
 
-// Get filter parameters from URL
+
 $search = htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES);
 $status = htmlspecialchars($_GET['status'] ?? '', ENT_QUOTES);
 $registeredDate = htmlspecialchars($_GET['registered_date'] ?? '', ENT_QUOTES);
 
-// Fetch all shelter data using the controller method with filters
+
 $shelters = SheltersController::listAllSheltersWithDetails($search, $status, $registeredDate);
 $shelterStats = SheltersController::getShelterStats();
 ?>
 
 <?php
-// 2. HTML RENDERING (VIEW LOGIC)
-// ==================================================
+
+
 include dirname(__DIR__, 2) . '/sidebar.php';
 ?>
 
