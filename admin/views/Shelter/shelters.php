@@ -110,8 +110,19 @@ include dirname(__DIR__, 2) . '/sidebar.php';
 
         <div class="card">
             <div class="card-body">
-                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
-                    <table class="table table-sm table-striped table-hover text-nowrap">
+                <style>
+                    .table-responsive {
+                        overflow-x: unset !important;
+                        max-width: 100% !important;
+                    }
+                    .table {
+                        white-space: normal !important;
+                        width: 100% !important;
+                        table-layout: auto !important;
+                    }
+                </style>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped table-hover">
                         <thead>
                             <tr>
                                 <th>Shelter Name</th>
