@@ -419,6 +419,14 @@ CREATE TABLE `post_reports` (
   `handled_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `post_reports`
+--
+
+INSERT INTO `post_reports` (`id`, `reporter_id`, `post_id`, `reason`, `status`, `created_at`, `handled_by`, `handled_at`) VALUES
+(1, 11, 64, 'This is spam.', 'open', '2025-10-22 16:10:45', NULL, NULL),
+(2, 6, 67, 'Inappropriate content.', 'open', '2025-10-22 16:10:45', NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -668,7 +676,7 @@ ALTER TABLE `post_reactions`
 --
 ALTER TABLE `post_reports`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_postreports_reporter` (`reporter_id`),
+  ADD UNIQUE KEY `uq_reporter_post` (`reporter_id`,`post_id`),
   ADD KEY `fk_postreports_post` (`post_id`),
   ADD KEY `fk_postreports_admin` (`handled_by`);
 

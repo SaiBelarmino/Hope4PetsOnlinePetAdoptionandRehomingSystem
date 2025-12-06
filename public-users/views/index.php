@@ -1,3 +1,55 @@
+<?php include __DIR__ . '/../include/header.php'; ?>
+<?php include __DIR__ . '/../include/topbar.php'; ?>
+<link href="assets/css/index.css" rel="stylesheet">
+
+<?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/../controllers/index-controller.php';
+
+$pageTitle = 'Community Feed';
+// Composer display name (ensure we use the same session key used elsewhere)
+$displayName = !empty($_SESSION['user']['full_name']) ? $_SESSION['user']['full_name'] : 'Share something';
+$userId = $_SESSION['user']['id'] ?? null;
+// Composer avatar resolved from stored profile_photo
+if (!function_exists('resolve_profile_photo')) { include __DIR__ . '/../include/profile_helpers.php'; }
+$composerAvatar = resolve_profile_photo($_SESSION['user']['profile_photo'] ?? null);
+
+// Get recent posts from database
+$posts = IndexController::getRecentPosts(20);
+?>
+
+<?php
+// Helper to resolve media paths to URLs similar to resolve_profile_photo
+function resolve_media_path(?string $path): string {
+    if (empty($path)) return '../../assets/images/placeholder.png';
+    $p = trim($path);
+    if (preg_match('#^https?://#i', $p)) return $p;
+    $normalized = str_replace('\\', '/', $p);
+    $pos = stripos($normalized, 'storage/');
+    if ($pos !== false) {
+        $sub = substr($normalized, $pos);
+        return '../../' . ltrim($sub, '/');
+    }
+    $normalized = preg_replace('#^(\.{1,2}/)+#', '', $normalized);
+    $normalized = ltrim($normalized, '/');
+    if (stripos($normalized, 'storage/') === 0) return '../../' . $normalized;
+    if (stripos($normalized, 'uploads/') === 0) return '../../storage/' . ltrim($normalized, '/');
+    return '../../' . $normalized;
+}
+?>
+
+<?php
+$flash = \SessionManager::getFlash();
+$flashSuccess = null;
+$flashError = null;
+if ($flash && is_array($flash)) {
+    $t = $flash['type'] ?? null;
+    $m = $flash['message'] ?? null;
+    if ($t === 'success') { $flashSuccess = $m; }
+    else { $flashError = $m; }
+}
+?>
+
 <!-- Report Post Modal -->
 <div class="modal fade" id="reportPostModal" tabindex="-1" aria-labelledby="reportPostModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -56,57 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-<?php include __DIR__ . '/../include/header.php'; ?>
-<?php include __DIR__ . '/../include/topbar.php'; ?>
-<link href="assets/css/index.css" rel="stylesheet">
-
-<?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
-require_once __DIR__ . '/../controllers/index-controller.php';
-
-$pageTitle = 'Community Feed';
-// Composer display name (ensure we use the same session key used elsewhere)
-$displayName = !empty($_SESSION['user']['full_name']) ? $_SESSION['user']['full_name'] : 'Share something';
-$userId = $_SESSION['user']['id'] ?? null;
-// Composer avatar resolved from stored profile_photo
-if (!function_exists('resolve_profile_photo')) { include __DIR__ . '/../include/profile_helpers.php'; }
-$composerAvatar = resolve_profile_photo($_SESSION['user']['profile_photo'] ?? null);
-
-// Get recent posts from database
-$posts = IndexController::getRecentPosts(20);
-?>
-
-<?php
-// Helper to resolve media paths to URLs similar to resolve_profile_photo
-function resolve_media_path(?string $path): string {
-    if (empty($path)) return '../../assets/images/placeholder.png';
-    $p = trim($path);
-    if (preg_match('#^https?://#i', $p)) return $p;
-    $normalized = str_replace('\\', '/', $p);
-    $pos = stripos($normalized, 'storage/');
-    if ($pos !== false) {
-        $sub = substr($normalized, $pos);
-        return '../../' . ltrim($sub, '/');
-    }
-    $normalized = preg_replace('#^(\.{1,2}/)+#', '', $normalized);
-    $normalized = ltrim($normalized, '/');
-    if (stripos($normalized, 'storage/') === 0) return '../../' . $normalized;
-    if (stripos($normalized, 'uploads/') === 0) return '../../storage/' . ltrim($normalized, '/');
-    return '../../' . $normalized;
-}
-?>
-
-<?php
-$flash = \SessionManager::getFlash();
-$flashSuccess = null;
-$flashError = null;
-if ($flash && is_array($flash)) {
-    $t = $flash['type'] ?? null;
-    $m = $flash['message'] ?? null;
-    if ($t === 'success') { $flashSuccess = $m; }
-    else { $flashError = $m; }
-}
-?>
 
 <div class="container-fluid">
     <div class="row g-3 py-4">
