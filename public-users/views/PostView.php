@@ -57,7 +57,11 @@ function resolve_media_path(?string $path): string {
 
 <div class="d-flex post-root" style="height: calc(100vh - 70px);">
     <!-- LEFT SIDE: MEDIA -->
-    <div class="flex-grow-1 d-flex align-items-center justify-content-center bg-black post-media">
+    <div class="flex-grow-1 d-flex align-items-center justify-content-center bg-black post-media position-relative">
+        <!-- Close Button -->
+        <a href="./index.php" class="btn position-absolute" style="top:18px; left:18px; z-index:10; width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgba(255,255,255,0.98); border:2px solid #222; box-shadow:0 2px 8px rgba(0,0,0,0.18);" title="Close & return to feed">
+            <span aria-hidden="true" style="font-size:2rem; line-height:1; color:#222; font-weight:bold; text-shadow:0 1px 4px #fff, 0 0 2px #222;">&times;</span>
+        </a>
         <?php if (!$post): ?>
             <div class="text-white">Post not found.</div>
         <?php else: ?>
@@ -135,6 +139,15 @@ function resolve_media_path(?string $path): string {
             </div>
             <!-- Match provided button style and attributes, keep same id for JS -->
             <button type="button" id="seeMoreBtn" class="btn btn-link p-0 mt-1 post-caption-toggle" aria-expanded="false" aria-label="Toggle full caption">See more</button>
+
+            <!-- Like, Comment, Share actions -->
+            <div class="d-flex justify-content-between post-actions-sm mt-3">
+                <div class="action-group d-flex flex-wrap">
+                    <button type="button" class="btn btn-light border me-1 mb-1"><i class="ti ti-thumb-up"></i> <span class="d-none d-sm-inline">Like</span></button>
+                    <button type="button" class="btn btn-light border me-1 mb-1"><i class="ti ti-message-circle"></i> <span class="d-none d-sm-inline">Comment</span></button>
+                    <button type="button" class="btn btn-light border mb-1"><i class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></button>
+                </div>
+            </div>
         </div>
 
         <!-- Comments -->
