@@ -9,18 +9,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['rep
     $action = $_POST['action'];
     $reportId = (int)$_POST['report_id'];
     $postId = (int)$_POST['post_id'];
+    $reporterId = (int)($_POST['reporter_id'] ?? 0); // reporter_id is needed for warn/ban
 
     switch ($action) {
         case 'approve': // Approve content, close report
-        case 'reject':  // Reject report, close report
             PostReportsController::closeReport($reportId);
             break;
         case 'delete_post':
             PostReportsController::deletePost($postId);
             // Reports on this post will be closed/deleted via DB cascade
             break;
-        case 'hide_post':
-            PostReportsController::hidePost($postId);
+        case 'warn':
+            if ($reporterId > 0) {
+                PostReportsController::warnUser($reporterId);
+            }
+            PostReportsController::closeReport($reportId);
+            break;
+        case 'ban':
+            if ($reporterId > 0) {
+                PostReportsController::banUser($reporterId);
+            }
             PostReportsController::closeReport($reportId);
             break;
     }
@@ -65,18 +73,19 @@ include dirname(__DIR__, 2) . '/sidebar.php';
                                         <td><?php echo htmlspecialchars($report['reason']); ?></td>
                                         <td><?php echo date('F j, Y, g:i a', strtotime($report['created_at'])); ?></td>
                                         <td>
-                                            <form method="POST" action="" class="d-inline">
+                                            <form method="POST" action="" class="d-inline-flex gap-1">
                                                 <input type="hidden" name="report_id" value="<?php echo $report['id']; ?>">
                                                 <input type="hidden" name="post_id" value="<?php echo $report['post_id']; ?>">
+                                                <input type="hidden" name="reporter_id" value="<?php echo $report['reporter_id']; ?>">
                                                 
                                                 <a href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/public-users/views/PostView.php?id=<?php echo $report['post_id']; ?>" class="btn btn-sm btn-info" target="_blank" title="View Post">
-                                                    <i class="ti ti-eye"></i>
+                                                    👁️ View
                                                 </a>
 
-                                                <button type="submit" name="action" value="approve" class="btn btn-sm" title="Approve Content (Dismiss Report)">✅</button>
-                                                <button type="submit" name="action" value="reject" class="btn btn-sm" title="Dismiss Report">❌</button>
-                                                <button type="submit" name="action" value="delete_post" class="btn btn-sm" title="Delete Post" onclick="return confirm('Are you sure you want to permanently delete this post?');">🗑️</button>
-                                                <button type="submit" name="action" value="hide_post" class="btn btn-sm" title="Hide Post" onclick="return confirm('Are you sure you want to hide this post from public view?');">👁️</button>
+                                                <button type="submit" name="action" value="approve" class="btn btn-sm btn-success" title="Approve Content (Dismiss Report)">Approve</button>
+                                                <button type="submit" name="action" value="delete_post" class="btn btn-sm btn-danger" title="Delete Post" onclick="return confirm('Are you sure you want to permanently delete this post?');">Delete</button>
+                                                <button type="submit" name="action" value="warn" class="btn btn-sm btn-warning" title="Warn the user who created the post" onclick="return confirm('Are you sure you want to warn the user who created this post?');">Warn</button>
+                                                <button type="submit" name="action" value="ban" class="btn btn-sm btn-dark" title="Ban the user who created the post" onclick="return confirm('Are you sure you want to permanently ban the user who created this post?');">Ban</button>
                                             </form>
                                         </td>
                                     </tr>

@@ -26,5 +26,18 @@ class PostReportsController extends BaseController {
         $sql = "UPDATE posts SET status = 'hidden' WHERE id = ?";
         return self::execute($sql, 'i', [$postId]);
     }
+
+    public static function warnUser(int $userId): bool {
+        // This is a placeholder. Implement your warning logic, e.g., sending an email or a notification.
+        // For now, it just returns true.
+        error_log("Warning user with ID: " . $userId);
+        return true;
+    }
+
+    public static function banUser(int $userId): bool {
+        // This will set the user's status to 'banned'.
+        $sql = "UPDATE users SET status = 'banned' WHERE id = ?";
+        return self::execute($sql, 'i', [$userId]);
+    }
 }
 ?>
