@@ -51,11 +51,15 @@ $profilePicture = !empty($admin['profile_picture']) ? $basePath . $admin['profil
 <div class="body-wrapper">
     <?php include dirname(__DIR__, 2) . '/header.php'; ?>
     <div class="container-fluid">
+        <div class="mb-4">
+            <h3 class="fw-semibold">Admin Profile Settings</h3>
+            <p>Manage your account details and preferences</p>
+        </div>
         <!-- Profile Details Card -->
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title fw-semibold">Admin Profile</h5>
+                    <h5 class="card-title fw-semibold">Profile Details</h5>
                     <button id="edit-profile-btn" class="btn btn-primary">Edit Profile</button>
                 </div>
 
