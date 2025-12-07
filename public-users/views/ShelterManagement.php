@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="assets/css/leaflet.css" />
 
 <?php
+require_once __DIR__ . '/../controllers/PetManagementController.php';
 // compute application base path (strip off /public-users and deeper) so URLs like /storage/... map to project root
 $appBase = '';
 if (isset($_SERVER['SCRIPT_NAME'])) {
@@ -155,168 +156,90 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                         </div>
                     </div>
                 </div>
-                <!-- Documents Card with inline upload form -->
-                <div class="card">
-                    <div class="card-header bg-white border-0 pb-0">
-                        <h6 class="mb-0">Documents</h6>
+                <?php if (!empty($shelter['is_verified'])): ?>
+                    <!-- Notify user that shelter is approved -->
+                    <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                        <i class="ti ti-check-circle me-2"></i>
+                        <div>Your shelter has been <strong>approved</strong> by the admin. You can now manage and display your pets.</div>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-12 col-lg-6">
-                                <div class="card h-100">
-                                    <div class="card-header bg-white border-0 pb-0">
-                                        <h6 class="mb-0">Upload Document</h6>
+                    <!-- Show pets grid if shelter is verified -->
+                    <?php
+                    $shelterPets = [];
+                    if (!empty($shelter['id'])) {
+                        // Fetch pets for this shelter
+                        $shelterId = (int)$shelter['id'];
+                        $shelterPets = PetManagementController::getPetsByShelterId($shelterId);
+                        // Attach photo URLs
+                        foreach ($shelterPets as &$pet) {
+                            $photos = PetManagementController::getPetPhotos((int)$pet['id']);
+                            $pet['photos'] = $photos;
+                            $source = '';
+                            if (!empty($pet['primary_photo'])) $source = $pet['primary_photo'];
+                            elseif (!empty($photos[0]['photo_path'])) $source = $photos[0]['photo_path'];
+                            elseif (!empty($pet['pet_photos'])) $source = $pet['pet_photos'];
+                            $pet['photo'] = PetManagementController::getPhotoUrl((int)($pet['owner_id'] ?? 0), $source ?: '/storage/uploads/images/default.png');
+                            $pet['photo_raw'] = $source;
+                        }
+                        unset($pet);
+                    }
+                    ?>
+                    <div class="card mb-3">
+                        <div class="card-header bg-white border-0 pb-0">
+                            <h6 class="mb-0">Shelter Pets</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3" id="pet-grid">
+                                <?php if (empty($shelterPets)): ?>
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body text-center text-muted py-5">No pets found for this shelter.</div>
+                                        </div>
                                     </div>
-                                    <div class="card-body">
-                                        <form id="uploadDocumentsFormInline"
-                                            action="../controllers/UploadDocumentsController.php" method="post"
-                                            enctype="multipart/form-data">
-                                            <input type="hidden" name="shelter_id"
-                                                value="<?php echo htmlspecialchars($shelter['id'] ?? ''); ?>">
-                                            <div class="mb-3">
-                                                <label class="form-label">Required Documents</label>
-                                                <div class="mb-2">
-                                                    <label class="form-label small">Business Permit</label>
-                                                    <div class="input-group">
-                                                        <input type="file" name="required_docs[business_permit]"
-                                                            class="form-control" required
-                                                            accept="image/*,application/pdf">
-                                                        <button type="button" class="btn btn-outline-secondary"
-                                                            onclick="showCameraModal('business_permit')"><i
-                                                                class="ti ti-camera"></i> Take Photo</button>
+                                <?php else: foreach ($shelterPets as $p):
+                                    $status = $p['status'] ?? 'available';
+                                    $photoFullUrl = $p['photo'] ?? '/storage/uploads/images/default.png';
+                                ?>
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="card h-100 pet-card">
+                                        <div class="ratio ratio-4x3 overflow-hidden">
+                                            <img src="<?php echo htmlspecialchars($photoFullUrl); ?>"
+                                                alt="<?php echo htmlspecialchars($p['name'] ?? 'Pet'); ?>"
+                                                class="card-img-top object-fit-cover">
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h6 class="mb-0 fw-semibold">
+                                                        <?php echo htmlspecialchars($p['name'] ?? 'Unnamed'); ?>
+                                                    </h6>
+                                                    <div class="small text-muted">
+                                                        <?php echo htmlspecialchars($p['breed'] ?? 'Unknown'); ?> ·
+                                                        <?php echo htmlspecialchars($p['age'] ?? ''); ?>
                                                     </div>
                                                 </div>
-                                                <div class="mb-2">
-                                                    <label class="form-label small">Mayor's Permit</label>
-                                                    <div class="input-group">
-                                                        <input type="file" name="required_docs[mayors_permit]"
-                                                            class="form-control" required
-                                                            accept="image/*,application/pdf">
-                                                        <button type="button" class="btn btn-outline-secondary"
-                                                            onclick="showCameraModal('mayors_permit')"><i
-                                                                class="ti ti-camera"></i> Take Photo</button>
-                                                    </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-<?php echo ($status==='available')? 'success' : (($status==='adopted')? 'secondary' : 'warning'); ?>">
+                                                        <?php echo htmlspecialchars(ucfirst($status)); ?>
+                                                    </span>
                                                 </div>
-                                                <div class="mb-2">
-                                                    <label class="form-label small">BIR Registration</label>
-                                                    <div class="input-group">
-                                                        <input type="file" name="required_docs[bir_registration]"
-                                                            class="form-control" required
-                                                            accept="image/*,application/pdf">
-                                                        <button type="button" class="btn btn-outline-secondary"
-                                                            onclick="showCameraModal('bir_registration')"><i
-                                                                class="ti ti-camera"></i> Take Photo</button>
-                                                    </div>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <label class="form-label small">Barangay Clearance</label>
-                                                    <div class="input-group">
-                                                        <input type="file" name="required_docs[barangay_clearance]"
-                                                            class="form-control" required
-                                                            accept="image/*,application/pdf">
-                                                        <button type="button" class="btn btn-outline-secondary"
-                                                            onclick="showCameraModal('barangay_clearance')"><i
-                                                                class="ti ti-camera"></i> Take Photo</button>
-                                                    </div>
-                                                </div>
-                                                <small class="text-muted d-block mt-1">You can upload one file per
-                                                    required
-                                                    document. Max 5MB each. JPG, PNG, PDF.</small>
                                             </div>
-
-                                            <hr />
-
-                                            <div class="mb-3">
-                                                <label class="form-label">Optional Document</label>
-                                                <div class="row g-2">
-                                                    <div class="col-4">
-                                                        <select name="optional_doc_type" class="form-select">
-                                                            <option value="">Select (optional)</option>
-                                                            <?php
-                                                            $allDocs = ['dtiregistration','mayors_permit','bir_registration','business_permit','articles_of_incorporation','barangay_clearance','contract_of_lease','other_business_documents'];
-                                                            $requiredDocs = ['business_permit','mayors_permit','bir_registration','barangay_clearance'];
-                                                            $optional = array_values(array_filter($allDocs, function($v) use ($requiredDocs){ return !in_array($v, $requiredDocs); }));
-                                                            foreach($optional as $t): ?>
-                                                            <option value="<?php echo htmlspecialchars($t); ?>">
-                                                                <?php echo ucwords(str_replace('_',' ', $t)); ?>
-                                                            </option>
-                                                            <?php endforeach; ?>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-8">
-                                                        <div class="input-group">
-                                                            <input type="file" name="optional_document"
-                                                                class="form-control" accept="image/*,application/pdf">
-                                                            <button type="button" class="btn btn-outline-secondary"
-                                                                onclick="showCameraModal('optional_document')"><i
-                                                                    class="ti ti-camera"></i> Take Photo</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <small class="text-muted">Upload one optional document if
-                                                    needed.</small>
+                                            <div class="mb-2 small">
+                                                <span class="me-2"><strong>Species:</strong> <?php echo htmlspecialchars(ucfirst($p['species'] ?? 'Other')); ?></span>
+                                                <span class="me-2"><strong>Gender:</strong> <?php echo htmlspecialchars(ucfirst($p['gender'] ?? 'Unknown')); ?></span>
+                                                <span><strong>Size:</strong> <?php echo htmlspecialchars(ucfirst($p['size'] ?? 'Medium')); ?></span>
                                             </div>
-
-                                            <button id="inlineUploadBtn" class="btn btn-primary w-100" type="submit"><i
-                                                    class="ti ti-upload"></i> Upload</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-6">
-                                <div class="card h-100">
-                                    <div class="card-header bg-white border-0 pb-0">
-                                        <h6 class="mb-0">Submitted Documents</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-sm align-middle mb-0">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Type</th>
-                                                        <th>Status</th>
-                                                        <th>Uploaded</th>
-                                                        <th>Reviewed</th>
-                                                        <th></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="submittedDocumentsTbody">
-                                                    <?php if(empty($documents)): ?><tr>
-                                                        <td colspan="5" class="text-center text-muted py-4">No documents
-                                                            uploaded.</td>
-                                                    </tr><?php else: foreach($documents as $d): ?>
-                                                    <tr id="<?php echo htmlspecialchars($d['doc_type']); ?>">
-                                                        <td><?php echo strtoupper(str_replace('_',' ',htmlspecialchars($d['doc_type']))); ?>
-                                                        </td>
-                                                        <td><span
-                                                                class="badge bg-<?php echo ['pending'=>'warning','approved'=>'success','rejected'=>'danger'][$d['status']] ?? 'light'; ?>"><?php echo htmlspecialchars(ucfirst($d['status'])); ?></span>
-                                                        </td>
-                                                        <td><span
-                                                                class="small text-muted"><?php echo htmlspecialchars(date('M d', strtotime($d['uploaded_at']))); ?></span>
-                                                        </td>
-                                                        <td><span
-                                                                class="small text-muted"><?php echo $d['reviewed_at']? htmlspecialchars(date('M d', strtotime($d['reviewed_at']))):'—'; ?></span>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-outline-secondary"
-                                                                onclick="openDocumentModal('<?php echo addslashes($d['file_path']); ?>')">View</button>
-                                                            <?php if (isset($d['status']) && $d['status'] === 'rejected'): ?>
-                                                            <button type="button" class="btn btn-sm btn-danger ms-2"
-                                                                onclick="deleteDocument(<?php echo (int)$d['id']; ?>, this)">Remove</button>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                    </tr>
-                                                    <?php endforeach; endif; ?>
-                                                </tbody>
-                                            </table>
+                                            <div class="mb-2 small text-truncate"><strong>Vaccine:</strong> <?php echo htmlspecialchars($p['vaccine_status'] ?? 'N/A'); ?></div>
+                                            <div class="mb-2 small text-truncate"><strong>Health:</strong> <?php echo htmlspecialchars($p['health_status'] ?? 'N/A'); ?></div>
+                                            <div class="mb-2 small text-truncate text-muted"><i class="ti ti-map-pin"></i> <?php echo htmlspecialchars($p['location'] ?? 'Unknown'); ?></div>
+                                            <p class="small text-truncate mb-2"> <?php echo htmlspecialchars($p['description'] ?? 'No description'); ?></p>
                                         </div>
                                     </div>
                                 </div>
+                                <?php endforeach; endif; ?>
                             </div>
                         </div>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

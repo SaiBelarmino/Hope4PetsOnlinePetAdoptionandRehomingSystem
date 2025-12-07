@@ -1,15 +1,18 @@
 <?php
-/**
- * Pet Management Controller
- * 
- * Handles CRUD operations for pets.
- * Users can only manage their own pets.
- */
-
 require_once __DIR__ . '/../../controllers/BaseController.php';
 require_once __DIR__ . '/../../config/SessionManager.php';
 
 class PetManagementController extends BaseController {
+    /**
+     * Get pets by shelter ID
+     */
+    public static function getPetsByShelterId(int $shelterId): array {
+        return self::fetchAll(
+            "SELECT * FROM pets WHERE shelter_id = ? ORDER BY created_at DESC",
+            'i',
+            [$shelterId]
+        );
+    }
     /**
      * Build a storage-relative photo path for a given owner and stored value.
      * If $photo already looks like a URL or starts with '/' it is returned unchanged.
