@@ -122,8 +122,82 @@ function resolve_media_path(?string $path): string {
                 <h6 class="mb-0 fw-bold"><?php echo htmlspecialchars($post['full_name'] ?? 'Unknown'); ?></h6>
                 <small class="text-muted"><?php echo isset($post['created_at']) ? htmlspecialchars((new DateTime($post['created_at']))->format('M d, Y H:i')) : ''; ?> · <i class="ti ti-world"></i></small>
             </div>
-            <i class="ti ti-dots ms-auto"></i>
+            <!-- 3-dots dropdown menu -->
+            <div class="dropdown ms-auto">
+                <button class="btn btn-link p-0 text-muted" type="button" id="postMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size:1.5rem; text-decoration:none;">
+                    <i class="ti ti-dots"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="postMenuDropdown">
+                    <li><a class="dropdown-item report-post-link" href="#" data-post-id="<?php echo htmlspecialchars($postId); ?>">Report Post</a></li>
+                    <?php if (isset($_SESSION['user']['id']) && $post && $_SESSION['user']['id'] == $post['user_id']): ?>
+                    <li>
+                        <form method="post" action="../controllers/DeletePostController.php" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                            <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($postId, ENT_QUOTES, 'UTF-8'); ?>">
+                            <button type="submit" class="dropdown-item text-danger">Delete Post</button>
+                        </form>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
         </div>
+<!-- Report Post Modal (copied from index.php, only one instance on page) -->
+<div class="modal fade" id="reportPostModal" tabindex="-1" aria-labelledby="reportPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportPostModalLabel">Report Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reportPostForm" method="post" action="../controllers/ReportPostController.php">
+                <div class="modal-body">
+                    <input type="hidden" name="post_id" id="reportPostId" value="">
+                    <div class="mb-3">
+                        <label for="reportReason" class="form-label">Reason for reporting:</label>
+                        <select class="form-select" name="reason" id="reportReason" required>
+                            <option value="">Select a reason</option>
+                            <option value="spam">Spam or misleading</option>
+                            <option value="inappropriate">Inappropriate content</option>
+                            <option value="harassment">Harassment or bullying</option>
+                            <option value="false-info">False information</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reportDetails" class="form-label">Additional details (optional):</label>
+                        <textarea class="form-control" name="details" id="reportDetails" rows="3" placeholder="Provide more information..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show report modal and set post id (copied from index.php)
+document.addEventListener('DOMContentLoaded', function() {
+    var reportModalEl = document.getElementById('reportPostModal');
+    var reportModal = new bootstrap.Modal(reportModalEl);
+    document.querySelectorAll('.report-post-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            var postId = this.getAttribute('data-post-id');
+            document.getElementById('reportPostId').value = postId;
+            reportModal.show();
+        });
+    });
+    // Remove backdrop when modal is hidden
+    reportModalEl.addEventListener('hidden.bs.modal', function () {
+        var backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(function(bd) { bd.parentNode.removeChild(bd); });
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+    });
+});
+</script>
 
         <!-- Caption -->
         <div class="p-3 border-bottom" id="captionContainer" style="flex:0 0 auto;">
