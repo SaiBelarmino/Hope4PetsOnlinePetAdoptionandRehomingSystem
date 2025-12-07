@@ -10,161 +10,165 @@ if (file_exists($controllerPath)) {
     throw new RuntimeException('Posts controller not found: ' . $controllerPath);
 }
 
-// Get query parameters
+// Get query parameters for filters/sorting
 $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
-$search = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING);
-$sort = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_STRING) ?: 'created_at';
-$order = filter_input(INPUT_GET, 'order', FILTER_SANITIZE_STRING) ?: 'DESC';
-$status = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_STRING);
-$type = filter_input(INPUT_GET, 'type', FILTER_SANITIZE_STRING);
-
-$sort_order = $sort . '_' . $order;
+$search = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$type = filter_input(INPUT_GET, 'type', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$status = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$media = filter_input(INPUT_GET, 'media', FILTER_SANITIZE_FULL_SPECIAL_CHARS); // images/videos/text
+$engagement = filter_input(INPUT_GET, 'engagement', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$sort = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?: 'created_at';
+$order = filter_input(INPUT_GET, 'order', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?: 'DESC';
 
 $options = [
     'page' => $page,
-    'limit' => 10,
+    'limit' => 30,
     'search' => $search,
-    'sort' => 'p.' . $sort,
-    'order' => $order,
+    'type' => $type,
     'status' => $status,
-    'type' => $type
+    'media' => $media,
+    'engagement' => $engagement,
+    'sort' => $sort,
+    'order' => $order
 ];
 
 $result = PostsController::list($options);
 $posts = $result['posts'];
 $totalPages = $result['total_pages'];
 $currentPage = $result['current_page'];
+$totalRecords = $result['total_records'];
 
-$postTypes = ['Educational', 'Event', 'Article', 'News']; // Example post types
-$postStatuses = ['pending', 'approved', 'rejected']; // Existing statuses
+// For header stats (adjust as needed)
+$totalLive = 0;
+$totalHidden = 0;
+foreach ($posts as $p) {
+    if (($p['status'] ?? '') === 'visible') $totalLive++;
+    else $totalHidden++;
+}
 ?>
-<?php
-include dirname(__DIR__, 2) . '/sidebar.php';
-?>
+<?php include dirname(__DIR__, 2) . '/sidebar.php'; ?>
 
 <div class="body-wrapper">
     <?php include dirname(__DIR__, 2) . '/header.php'; ?>
     <div class="container-fluid">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <h3 class="mb-0">All Users Posts</h3>
+
+        <!-- HEADER SUMMARY -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h4 class="mb-0 fw-bold">
+                Total: <?= $totalRecords ?> posts |
+                <span class="text-success">Live: <?= $totalLive ?></span> |
+                <span class="text-danger">Hidden: <?= $totalHidden ?></span>
+            </h4>
+            <button class="btn btn-outline-secondary btn-sm" onclick="refreshPosts()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
         </div>
 
-        <!-- Controls -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form method="GET" action="">
-                    <div class="row g-3">
-                        <div class="col-md-5">
-                            <input type="search" name="search" class="form-control" placeholder="Search by title or author..." value="<?= htmlspecialchars($search ?? '') ?>">
-                        </div>
-                        <div class="col-md-2">
-                            <select name="type" class="form-select">
-                                <option value="">Filter by Type</option>
-                                <?php foreach ($postTypes as $postType): ?>
-                                    <option value="<?= strtolower($postType) ?>" <?= ($type ?? '') === strtolower($postType) ? 'selected' : '' ?>><?= $postType ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                             <select name="status" class="form-select">
-                                <option value="">Filter by Status</option>
-                                <?php foreach ($postStatuses as $postStatus): ?>
-                                    <option value="<?= $postStatus ?>" <?= ($status ?? '') === $postStatus ? 'selected' : '' ?>><?= ucfirst($postStatus) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <select name="sort_order" class="form-select" onchange="this.form.submit()">
-                                <option value="created_at_DESC" <?= $sort_order === 'created_at_DESC' ? 'selected' : '' ?>>Sort by Newest</option>
-                                <option value="created_at_ASC" <?= $sort_order === 'created_at_ASC' ? 'selected' : '' ?>>Sort by Oldest</option>
-                                <option value="title_ASC" <?= $sort_order === 'title_ASC' ? 'selected' : '' ?>>Sort by Title (A-Z)</option>
-                                <option value="title_DESC" <?= $sort_order === 'title_DESC' ? 'selected' : '' ?>>Sort by Title (Z-A)</option>
-                            </select>
-                            <!-- Hidden fields for sort and order -->
-                            <input type="hidden" name="sort" value="<?= explode('_', $sort_order)[0] ?>">
-                            <input type="hidden" name="order" value="<?= explode('_', $sort_order)[1] ?>">
-                        </div>
-                        <div class="col-md-1">
-                            <button type="submit" class="btn btn-primary w-100">Go</button>
-                        </div>
-                    </div>
-                </form>
+        <!-- QUICK FILTERS & SORT -->
+        <div class="row mb-3 g-2">
+            <div class="col-auto">
+                <div class="btn-group" role="group">
+                    <a href="?media=all" class="btn btn-outline-primary<?= !$media || $media=='all' ? ' active' : '' ?>">All</a>
+                    <a href="?media=image" class="btn btn-outline-primary<?= $media=='image' ? ' active' : '' ?>">With Images</a>
+                    <a href="?media=text" class="btn btn-outline-primary<?= $media=='text' ? ' active' : '' ?>">Text Only</a>
+                    <a href="?media=video" class="btn btn-outline-primary<?= $media=='video' ? ' active' : '' ?>">Videos</a>
+                    <a href="?engagement=high" class="btn btn-outline-warning<?= $engagement=='high' ? ' active' : '' ?>">High Engagement</a>
+                </div>
+            </div>
+            <div class="col-auto ms-auto">
+                <select class="form-select" id="sortSelect" style="min-width:180px;">
+                    <option value="created_at_DESC"<?= $sort=='created_at'&&$order=='DESC'?' selected':''; ?>>Newest</option>
+                    <option value="likes_DESC"<?= $sort=='likes'&&$order=='DESC'?' selected':''; ?>>Most Likes</option>
+                    <option value="comments_DESC"<?= $sort=='comments'&&$order=='DESC'?' selected':''; ?>>Most Comments</option>
+                    <option value="shares_DESC"<?= $sort=='shares'&&$order=='DESC'?' selected':''; ?>>Most Shares</option>
+                </select>
             </div>
         </div>
 
-    <?php if (empty($posts)): ?>
-        <div class="alert alert-info">No posts found matching your criteria.</div>
-    <?php else: ?>
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Visibility</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($posts as $post): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($post['title'] ?? '–') ?></td>
-                            <td><?= htmlspecialchars(ucfirst($post['type'] ?? 'N/A')) ?></td>
-                            <td>
-                                <?php
-                                $status = htmlspecialchars($post['status'] ?? 'unknown');
-                                $badgeClass = 'bg-secondary';
-                                if ($status === 'approved') {
-                                    $badgeClass = 'bg-success';
-                                } elseif ($status === 'rejected') {
-                                    $badgeClass = 'bg-danger';
-                                } elseif ($status === 'pending') {
-                                    $badgeClass = 'bg-warning';
-                                }
-                                ?>
-                                <span class="badge <?= $badgeClass ?>"><?= ucfirst($status) ?></span>
-                            </td>
-                            <td><?= htmlspecialchars(ucfirst($post['visibility'] ?? 'N/A')) ?></td>
-                            <td><?= htmlspecialchars((new DateTime($post['created_at']))->format('m/d/Y')) ?></td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="viewPost(<?= intval($post['id']) ?>)">View</button>
-                                    <a href="/admin/posts/edit/<?= intval($post['id']) ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                    <a href="/admin/posts/delete/<?= intval($post['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</a>
+        <!-- POSTS GRID -->
+        <div id="postsGrid" class="row row-cols-1 row-cols-md-3 g-4">
+            <?php if (empty($posts)): ?>
+                <div class="col">
+                    <div class="alert alert-info">No posts found.</div>
+                </div>
+            <?php else: foreach ($posts as $post): ?>
+                <div class="col">
+                    <div class="card shadow-sm h-100 border-<?= ($post['status'] ?? '') === 'visible' ? 'success' : 'danger' ?>">
+                        <div class="card-body d-flex flex-column">
+                            <!-- User Avatar -->
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="<?= htmlspecialchars($post['user_avatar'] ?? '/assets/img/default-avatar.png') ?>"
+                                     alt="Avatar" class="rounded-circle me-2" style="width:40px;height:40px;object-fit:cover;">
+                                <span class="fw-semibold"><?= htmlspecialchars($post['full_name'] ?? '–') ?></span>
+                            </div>
+                            <!-- Post Content (image/video/text) -->
+                            <?php if (!empty($post['media_type']) && $post['media_type'] === 'image' && !empty($post['media_url'])): ?>
+                                <img src="<?= htmlspecialchars($post['media_url']) ?>" class="img-fluid rounded mb-2" style="aspect-ratio:16/9;object-fit:cover;">
+                            <?php elseif (!empty($post['media_type']) && $post['media_type'] === 'video' && !empty($post['media_url'])): ?>
+                                <video controls class="w-100 rounded mb-2" style="aspect-ratio:16/9;">
+                                    <source src="<?= htmlspecialchars($post['media_url']) ?>">
+                                    Your browser does not support the video tag.
+                                </video>
+                            <?php else: ?>
+                                <div class="mb-2" style="min-height:60px;">
+                                    <?= nl2br(htmlspecialchars(mb_strimwidth($post['content'] ?? '', 0, 120, '...'))) ?>
+                                    <?php if (mb_strlen($post['content'] ?? '') > 120): ?>
+                                        <a href="#" onclick="viewPost(<?= intval($post['id']) ?>);return false;">Read more</a>
+                                    <?php endif; ?>
                                 </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                            <?php endif; ?>
+                            <!-- Engagement Stats -->
+                            <div class="d-flex justify-content-between text-muted small mb-2">
+                                <span><i class="bi bi-heart-fill text-danger"></i> <?= intval($post['likes'] ?? 0) ?></span>
+                                <span><i class="bi bi-chat-left-text-fill text-primary"></i> <?= intval($post['comments'] ?? 0) ?></span>
+                                <span><i class="bi bi-share-fill text-success"></i> <?= intval($post['shares'] ?? 0) ?></span>
+                            </div>
+                            <!-- Time & Visibility -->
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <span class="small"><?= time_elapsed_string($post['created_at']) ?></span>
+                                <span class="badge bg-<?= ($post['status'] ?? '') === 'visible' ? 'success' : 'danger' ?>">
+                                    <?= ucfirst($post['status'] ?? 'hidden') ?>
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Actions -->
+                        <div class="card-footer bg-white border-0 d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-secondary" title="Hide/Show" onclick="toggleVisibility(<?= intval($post['id']) ?>, this)">
+                                <i class="bi bi-eye<?= ($post['status'] ?? '') === 'visible' ? '' : '-slash' ?>"></i>
+                                <span class="ms-1"><?= ($post['status'] ?? '') === 'visible' ? 'Hide' : 'Show' ?></span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" title="Boost" onclick="boostPost(<?= intval($post['id']) ?>)">
+                                <i class="bi bi-rocket-takeoff"></i><span class="ms-1">Boost</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" title="Delete" onclick="deletePost(<?= intval($post['id']) ?>, this)">
+                                <i class="bi bi-trash"></i><span class="ms-1">Delete</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" title="Flag/Report" onclick="flagPost(<?= intval($post['id']) ?>)">
+                                <i class="bi bi-flag"></i><span class="ms-1">Flag</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; endif; ?>
         </div>
 
-        <!-- Pagination -->
+        <!-- Pagination (optional, if needed) -->
         <?php if ($totalPages > 1): ?>
         <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                <?php if ($currentPage > 1): ?>
-                    <li class="page-item"><a class="page-link" href="?page=<?= $currentPage - 1 ?>&<?= http_build_query(compact('search', 'status', 'type', 'sort', 'order')) ?>">Previous</a></li>
-                <?php endif; ?>
-
+            <ul class="pagination justify-content-center mt-4">
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <li class="page-item <?= $i == $currentPage ? 'active' : '' ?>"><a class="page-link" href="?page=<?= $i ?>&<?= http_build_query(compact('search', 'status', 'type', 'sort', 'order')) ?>"><?= $i ?></a></li>
+                    <li class="page-item<?= $i == $currentPage ? ' active' : '' ?>">
+                        <a class="page-link" href="?page=<?= $i ?>&<?= http_build_query(compact('search', 'status', 'type', 'media', 'engagement', 'sort', 'order')) ?>"><?= $i ?></a>
+                    </li>
                 <?php endfor; ?>
-
-                <?php if ($currentPage < $totalPages): ?>
-                    <li class="page-item"><a class="page-link" href="?page=<?= $currentPage + 1 ?>&<?= http_build_query(compact('search', 'status', 'type', 'sort', 'order')) ?>">Next</a></li>
-                <?php endif; ?>
             </ul>
         </nav>
         <?php endif; ?>
 
-    <?php endif; ?>
-</div>
+    </div>
 </div>
 
-<!-- Post Modal -->
+<!-- Post Modal (for "Read more" or View) -->
 <div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -180,38 +184,163 @@ include dirname(__DIR__, 2) . '/sidebar.php';
 </div>
 
 <script>
+// Sort dropdown
+document.getElementById('sortSelect').addEventListener('change', function() {
+    const [sort, order] = this.value.split('_');
+    const params = new URLSearchParams(window.location.search);
+    params.set('sort', sort);
+    params.set('order', order);
+    window.location.search = params.toString();
+});
+
+// Auto-refresh every 60s (AJAX)
+function refreshPosts() {
+    fetch(window.location.pathname + '?' + window.location.search.substring(1), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            document.getElementById('postsGrid').innerHTML = doc.getElementById('postsGrid').innerHTML;
+        });
+}
+setInterval(refreshPosts, 60000);
+
+// Action handlers (implement AJAX endpoints as needed)
+function handlePostAction(action, postId, options = {}) {
+    const formData = new FormData();
+    formData.append('action', action);
+    formData.append('id', postId);
+
+    return fetch('/admin/ajax/post-actions.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            throw new Error(data.message || 'An unknown error occurred.');
+        }
+        return data;
+    });
+}
+
+function toggleVisibility(postId, button) {
+    const isHiding = button.textContent.includes('Hide');
+    const action = isHiding ? 'hide' : 'show';
+
+    handlePostAction(action, postId)
+        .then(data => {
+            alert(data.message);
+            refreshPosts(); // Refresh the grid to show changes
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+}
+
+function boostPost(postId) {
+    if (!confirm('Are you sure you want to boost this post? This might incur costs.')) return;
+
+    handlePostAction('boost', postId)
+        .then(data => {
+            alert(data.message);
+            refreshPosts();
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+}
+
+function deletePost(postId, button) {
+    if (!confirm('Are you sure you want to permanently delete this post? This cannot be undone.')) return;
+
+    const card = button.closest('.col');
+    handlePostAction('delete', postId)
+        .then(data => {
+            alert(data.message);
+            if (card) {
+                card.remove(); // Optimistically remove from UI
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+}
+
+function flagPost(postId) {
+    if (!confirm('Are you sure you want to flag this post for review?')) return;
+
+    handlePostAction('flag', postId)
+        .then(data => {
+            alert(data.message);
+            refreshPosts();
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+}
+
+// View post modal
 function viewPost(postId) {
     const modal = new bootstrap.Modal(document.getElementById('postModal'));
     const body = document.getElementById('postModalBody');
     body.innerHTML = '<div class="text-center">Loading...</div>';
     modal.show();
-
     fetch(`/admin/ajax/get-post-details.php?id=${postId}`)
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.text();
-        })
-        .then(data => {
-            body.innerHTML = data;
-        })
-        .catch(error => {
-            body.innerHTML = '<div class="alert alert-danger">Error loading post details. Please try again.</div>';
-            console.error('Error:', error);
-        });
+        .then(response => response.text())
+        .then(data => { body.innerHTML = data; })
+        .catch(() => { body.innerHTML = '<div class="alert alert-danger">Error loading post details.</div>'; });
 }
 
-// Handle sort dropdown change to submit form
-document.addEventListener('DOMContentLoaded', function() {
-    const sortOrderSelect = document.querySelector('select[name="sort_order"]');
-    if (sortOrderSelect) {
-        sortOrderSelect.addEventListener('change', function() {
-            const [sort, order] = this.value.split('_');
-            document.querySelector('input[name="sort"]').value = sort;
-            document.querySelector('input[name="order"]').value = order;
-            this.form.submit();
-        });
-    }
-});
+// Helper: time ago
+function time_elapsed_string(datetime) {
+    // You may want to implement this in PHP for server-side rendering
+    // This is just a placeholder
+    return datetime;
+}
 </script>
 
 <?php include dirname(__DIR__, 2) . '/footer.php'; ?>
+
+<?php
+// PHP helper for "X minutes ago"
+function time_elapsed_string($datetime, $full = false) {
+    $now = new DateTime;
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
+
+    // Calculate weeks and adjust days
+    $weeks = floor($diff->d / 7);
+    $days = $diff->d - ($weeks * 7);
+
+    $string = [
+        'y' => 'year',
+        'm' => 'month',
+        'w' => 'week',
+        'd' => 'day',
+        'h' => 'hour',
+        'i' => 'minute',
+        's' => 'second',
+    ];
+
+    $diffs = [
+        'y' => $diff->y,
+        'm' => $diff->m,
+        'w' => $weeks,
+        'd' => $days,
+        'h' => $diff->h,
+        'i' => $diff->i,
+        's' => $diff->s,
+    ];
+
+    foreach ($string as $k => &$v) {
+        if ($diffs[$k]) {
+            $v = $diffs[$k] . ' ' . $v . ($diffs[$k] > 1 ? 's' : '');
+        } else {
+            unset($string[$k]);
+        }
+    }
+    if (!$full) $string = array_slice($string, 0, 1);
+    return $string ? implode(', ', $string) . ' ago' : 'just now';
+}
+?>

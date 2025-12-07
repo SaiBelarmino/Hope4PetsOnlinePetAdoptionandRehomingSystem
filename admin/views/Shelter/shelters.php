@@ -161,9 +161,21 @@ include dirname(__DIR__, 2) . '/sidebar.php';
                                                 <a href="view-shelter.php?id=<?= $s['id'] ?>" class="btn btn-outline-primary" title="View Details">
                                                     <i class="ti ti-eye"></i>
                                                 </a>
-                                                <a href="delete-shelter.php?id=<?= $s['id'] ?>" class="btn btn-outline-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this shelter?');">
-                                                    <i class="ti ti-trash"></i>
-                                                </a>
+                                                <?php if (empty($s['is_verified'])): ?>
+                                                    <a href="approve-shelter.php?id=<?= $s['id'] ?>" class="btn btn-outline-success" title="Approve" onclick="return confirm('Are you sure you want to approve this shelter?');">
+                                                        <i class="ti ti-check"></i>
+                                                    </a>
+                                                    <a href="reject-shelter.php?id=<?= $s['id'] ?>" class="btn btn-outline-danger" title="Reject" onclick="return confirm('Are you sure you want to reject this shelter? This action cannot be undone.');">
+                                                        <i class="ti ti-x"></i>
+                                                    </a>
+                                                <?php else: ?>
+                                                    <a href="revoke-verification.php?id=<?= $s['id'] ?>" class="btn btn-outline-warning" title="Revoke Verification" onclick="return confirm('Are you sure you want to revoke verification for this shelter?');">
+                                                        <i class="ti ti-ban"></i>
+                                                    </a>
+                                                    <a href="delete-shelter.php?id=<?= $s['id'] ?>" class="btn btn-outline-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this shelter?');">
+                                                        <i class="ti ti-trash"></i>
+                                                    </a>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>

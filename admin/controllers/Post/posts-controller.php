@@ -17,7 +17,7 @@ class PostsController extends BaseController {
         $offset = ($page - 1) * $limit;
 
         // Base SQL
-        $sql = "SELECT p.id, p.user_id, u.first_name, u.last_name, p.title, p.created_at, p.status, p.type, p.visibility 
+        $sql = "SELECT p.id, p.user_id, u.full_name, u.profile_photo AS user_avatar, p.content, p.created_at
                 FROM posts p
                 JOIN users u ON p.user_id = u.id";
         
@@ -29,12 +29,11 @@ class PostsController extends BaseController {
         $types = '';
 
         if (!empty($search)) {
-            $conditions[] = "(p.title LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ?)";
+            $conditions[] = "(p.content LIKE ? OR u.full_name LIKE ?)";
             $searchTerm = "%{$search}%";
             $params[] = $searchTerm;
             $params[] = $searchTerm;
-            $params[] = $searchTerm;
-            $types .= 'sss';
+            $types .= 'ss';
         }
 
         if (!empty($statusFilter)) {
