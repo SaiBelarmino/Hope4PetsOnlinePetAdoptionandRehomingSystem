@@ -36,11 +36,6 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./community.php" title="Community" aria-label="Community">
-                <i class="ti ti-users"></i>
-                </a>
-            </li>
-            <li class="nav-item">
                 <a class="nav-link" style="<?= $iconStyle ?>" href="./pets.php" title="Pets" aria-label="Pets">
                 <i class="ti ti-paw"></i>
                 </a>
