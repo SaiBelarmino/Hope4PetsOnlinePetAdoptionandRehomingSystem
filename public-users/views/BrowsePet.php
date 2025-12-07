@@ -4,7 +4,7 @@ require_once __DIR__ . '/../controllers/PetController.php';
 
 $pageTitle = 'Browse Pets';
 
-$pets = PetController::fetchAvailablePets(36, 0);
+$pets = PetController::fetchAvailablePets();
 
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>

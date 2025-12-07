@@ -131,7 +131,7 @@ class PetManagementController extends BaseController {
             "SELECT p.*, u.full_name as owner_name, s.shelter_name,
                     p.pet_photos as primary_photo
              FROM pets p
-             JOIN users u ON p.owner_id = u.id
+             LEFT JOIN users u ON p.owner_id = u.id
              LEFT JOIN shelters s ON p.shelter_id = s.id
              WHERE p.status = 'available'
              ORDER BY p.created_at DESC

@@ -9,7 +9,7 @@ class PetController {
      * Get available pets for public listing with normalized photo URLs and attached photos array.
      * Returns an array of pets suitable for views.
      */
-    public static function fetchAvailablePets(int $limit = 36, int $offset = 0): array {
+    public static function fetchAvailablePets(int $limit = 999, int $offset = 0): array {
         try {
             $pets = PetManagementController::getAvailablePets($limit, $offset);
 
