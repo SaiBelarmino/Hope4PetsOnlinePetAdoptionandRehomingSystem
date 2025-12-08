@@ -15,13 +15,15 @@ class NotificationController
         $userId = $_SESSION['user']['id'] ?? null;
         if (!$userId) return [];
 
-        // Use intval to ensure $limit is an integer and prevent SQL injection
         $limit = intval($limit);
-
-        $stmt = $this->pdo->prepare("SELECT id, message, icon, bg, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
-        $stmt->execute([$userId]);
-        $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        try {
+            $stmt = $this->pdo->prepare("SELECT id, message, icon, bg, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
+            $stmt->execute([$userId]);
+            $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Table missing or other DB error
+            return [];
+        }
         // Format time for display
         foreach ($notifications as &$n) {
             $n['time'] = $this->formatTimeAgo($n['created_at']);
@@ -34,10 +36,13 @@ class NotificationController
         $userId = $_SESSION['user']['id'] ?? null;
         if (!$userId) return [];
 
-        $stmt = $this->pdo->prepare("SELECT id, message, icon, bg, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC");
-        $stmt->execute([$userId]);
-        $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        try {
+            $stmt = $this->pdo->prepare("SELECT id, message, icon, bg, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC");
+            $stmt->execute([$userId]);
+            $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
         foreach ($notifications as &$n) {
             $n['time'] = $this->formatTimeAgo($n['created_at']);
         }

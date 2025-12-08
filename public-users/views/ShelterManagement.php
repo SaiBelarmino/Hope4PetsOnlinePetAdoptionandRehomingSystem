@@ -22,7 +22,7 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
             <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
             <!-- Center Content -->
             <div class="col-12 col-lg-8 center-scroll"
-                style="max-height:862px; overflow:auto; -webkit-overflow-scrolling:touch;" tabindex="0"
+                style="max-height:862px; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;" tabindex="0"
                 aria-label="Main shelter content (scrollable)">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                     <h3 class="mb-0 d-flex align-items-center gap-2">
@@ -156,6 +156,56 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                         </div>
                     </div>
                 </div>
+                <?php
+                // Show upload documents form if not verified or has pending/rejected documents
+                $showUploadForm = empty($shelter['is_verified']) || ($overallStatus === 'Pending' || $overallStatus === 'Rejected');
+                if ($showUploadForm): ?>
+                <div class="card mb-3" id="uploadDocumentsFormInline">
+                    <div class="card-header bg-white border-0 pb-0">
+                        <h6 class="mb-0">Upload Shelter Verification Documents</h6>
+                    </div>
+                    <div class="card-body">
+                        <!--
+                            After document upload, the backend should redirect to ShelterManagement.php.
+                            This ensures the latest document statuses are fetched and displayed immediately.
+                            The document status badge and count will update automatically based on the new DB state.
+                        -->
+                        <?php
+                        // Map document types to field names and labels
+                        $docFields = [
+                            'barangay_permit' => 'Barangay Permit',
+                            'barangay_clearance' => 'Barangay Clearance',
+                            'bir_permit' => 'BIR Permit',
+                            'bai_permit' => 'Bureau of Animal Industry Permit'
+                        ];
+                        // Build a lookup for document status by type
+                        $docStatus = [];
+                        if (!empty($documents) && is_array($documents)) {
+                            foreach ($documents as $d) {
+                                $docStatus[strtolower(str_replace(' ', '_', $d['doc_type']))] = strtolower($d['status']);
+                            }
+                        }
+                        ?>
+                        <form id="uploadDocumentsForm" enctype="multipart/form-data" class="row g-3">
+                            <input type="hidden" name="shelter_id" value="<?php echo htmlspecialchars($shelter['id'] ?? ''); ?>">
+                            <?php foreach ($docFields as $field => $label):
+                                $status = $docStatus[$field] ?? 'no document';
+                                $disabled = ($status === 'approved' || $status === 'pending') ? 'disabled' : '';
+                                $badgeColor = ($status === 'approved') ? 'success' : (($status === 'pending') ? 'warning' : (($status === 'declined') ? 'danger' : 'secondary'));
+                            ?>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label"><?php echo $label; ?> (image or PDF)</label>
+                                <input type="file" name="<?php echo $field; ?>" id="<?php echo $field; ?>Input" class="form-control" accept="image/*,.pdf" <?php echo $disabled; ?> >
+                            </div>
+                            <?php endforeach; ?>
+                            <div class="col-12 d-flex justify-content-end">
+                                <button type="submit" id="uploadDocsBtn" class="btn btn-primary"><i class="ti ti-upload"></i> Upload Documents</button>
+                                <span id="uploadSpinner" class="spinner-border spinner-border-sm ms-2" style="display:none;" role="status" aria-hidden="true"></span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <?php if (!empty($shelter['is_verified'])): ?>
                     <!-- Notify user that shelter is approved -->
                     <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
@@ -332,31 +382,74 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
         </div>
     </div>
 
-    <!-- Camera modal for capturing photos -->
-    <div id="cameraModal"
-        style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;z-index:1100;">
-        <div
-            style="background:#111;max-width:600px;width:90%;padding:0;border-radius:8px;overflow:hidden;position:relative;">
-            <video id="cameraVideo" style="width:100%;height:auto;background:#000;" autoplay muted></video>
-            <div style="padding:10px;display:flex;align-items:center;justify-content:space-between;background:#222;">
-                <div style="color:#fff;font-weight:500;">Capture Photo</div>
-                <button onclick="closeCameraModal()" class="btn btn-sm btn-outline-secondary">Close</button>
-            </div>
-            <div style="padding:10px;display:flex;gap:10px;background:#333;">
-                <button id="cameraCaptureBtn" type="button" class="btn btn-primary flex-fill"
-                    onclick="captureFromCamera()">
-                    <i class="ti ti-camera"></i> Capture
-                </button>
-                <button id="cameraSwitchBtn" type="button" class="btn btn-outline-light flex-fill"
-                    style="display:none;">
-                    <i class="ti ti-camera-off"></i> Switch to Front
-                </button>
-            </div>
-        </div>
-    </div>
 
     <script>
     var APP_BASE = '<?php echo addslashes($appBase); ?>';
+
+    // AJAX Upload Documents button handler
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('uploadDocumentsForm');
+        var btn = document.getElementById('uploadDocsBtn');
+        var spinner = document.getElementById('uploadSpinner');
+        if (form && btn) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Validate required files
+                var requiredFields = ['barangayPermitInput', 'barangayClearanceInput', 'birPermitInput', 'baiPermitInput'];
+                var missing = requiredFields.filter(function(id) {
+                    var el = document.getElementById(id);
+                    return !el || !el.files || el.files.length === 0;
+                });
+                if (missing.length > 0) {
+                    alert('Please upload all required documents before submitting.');
+                    return false;
+                }
+                btn.disabled = true;
+                if (spinner) spinner.style.display = 'inline-block';
+                var formData = new FormData(form);
+                fetch('../controllers/UploadDocumentsController.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    btn.disabled = false;
+                    if (spinner) spinner.style.display = 'none';
+                    if (data.success) {
+                        alert(data.message || 'Documents uploaded successfully.');
+                        // Fetch latest document status and update badge/count
+                        fetchDocumentStatus();
+                    } else {
+                        alert(data.message || 'Upload failed.');
+                    }
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    if (spinner) spinner.style.display = 'none';
+                    alert('Upload failed. Please try again.');
+                });
+            });
+        }
+    });
+
+    // Fetch latest document status and update badge/count
+    function fetchDocumentStatus() {
+        fetch('getShelterDocumentStatus.php?shelter_id=<?php echo htmlspecialchars($shelter['id'] ?? ''); ?>')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.status && data.badgeType) {
+                    var badge = document.querySelector('.badge.rounded-pill.bg-<?php echo $badgeType; ?>');
+                    if (badge) {
+                        badge.className = 'badge rounded-pill d-inline-flex align-items-center px-2 py-1 bg-' + data.badgeType + ' text-dark shadow-sm';
+                        badge.textContent = data.status;
+                    }
+                }
+                if (data && typeof data.pending_docs !== 'undefined') {
+                    var pendingDocsEl = document.querySelector('.card-body h4.mb-0');
+                    if (pendingDocsEl) pendingDocsEl.textContent = data.pending_docs;
+                }
+            });
+    }
     </script>
 
     <script>

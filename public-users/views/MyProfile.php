@@ -26,7 +26,7 @@ $__cssVer = file_exists($__cssFile) ? filemtime($__cssFile) : time();
         onchange="document.getElementById('photoForm').submit();">
 </form>
 <div class="container-fluid">
-    <div class="row g-3 py-4">
+    <div class="row g-3 pt-0 pb-0">
         <!-- Left Sidebar -->
         <?php include __DIR__ . '/../include/shortcut-button.php'; ?>
         <!-- Center Content -->
@@ -69,7 +69,7 @@ $__cssVer = file_exists($__cssFile) ? filemtime($__cssFile) : time();
             }
             ?>
             <!-- Cover Photo -->
-            <div class="card mb-3"
+            <div class="card mb-0"
                 style="background-image: url('/default-cover.jpg'); background-size: cover; background-position: center; min-height: 250px; border-radius: 10px;">
                 <div class="card-body d-flex flex-column flex-md-row align-items-center align-items-md-end">
                     <div class="position-relative mb-3 mb-md-0 me-md-3">

@@ -79,56 +79,54 @@ error_log('UploadDocumentsController: upload_max_filesize=' . ini_get('upload_ma
 $uploaded = 0;
 $errors = [];
 
-// Process required_docs associative array: input name required_docs[document_type]
-if (!empty($_FILES['required_docs']) && !empty($_FILES['required_docs']['name'])) {
-    foreach ($_FILES['required_docs']['name'] as $docType => $origName) {
-        if (empty($origName)) continue;
-        $errorCode = $_FILES['required_docs']['error'][$docType] ?? UPLOAD_ERR_OK;
+// Process individual file fields for required documents
+// Only error if all files are missing, otherwise process what is present
+$docFields = [
+    'barangay_permit' => 'Barangay Permit',
+    'barangay_clearance' => 'Barangay Clearance',
+    'bir_permit' => 'BIR Permit',
+    'bai_permit' => 'Bureau of Animal Industry Permit'
+];
+$anyFileSelected = false;
+foreach ($docFields as $field => $label) {
+    if (!empty($_FILES[$field]) && !empty($_FILES[$field]['name'])) {
+        $anyFileSelected = true;
+        $file = $_FILES[$field];
+        $errorCode = $file['error'] ?? UPLOAD_ERR_OK;
         if ($errorCode !== UPLOAD_ERR_OK) {
-            $errors[] = "$docType: upload error code $errorCode";
-            error_log("UploadDocumentsController: file upload error for $docType (code $errorCode)");
+            $errors[] = "$label: upload error code $errorCode";
             continue;
         }
-        $tmp = $_FILES['required_docs']['tmp_name'][$docType] ?? null;
-        if (empty($tmp) || !is_uploaded_file($tmp)) { 
-            $errors[] = "$docType: file upload failed (tmp missing).";
-            error_log("UploadDocumentsController: tmp missing for $docType: " . var_export($_FILES['required_docs'][$docType] ?? [], true));
-            continue; 
+        $tmp = $file['tmp_name'] ?? null;
+        if (empty($tmp) || !is_uploaded_file($tmp)) {
+            $errors[] = "$label: file upload failed (tmp missing).";
+            continue;
         }
-        $size = $_FILES['required_docs']['size'][$docType] ?? 0;
+        $size = $file['size'] ?? 0;
         $type = mime_content_type($tmp) ?: '';
-
-        if ($size > $maxSize) { $errors[] = "$docType: file is too large."; continue; }
-        if (!in_array($type, $allowedMime)) { $errors[] = "$docType: invalid file type ($type)."; continue; }
-
-        $ext = pathinfo($origName, PATHINFO_EXTENSION);
-        $safeName = preg_replace('/[^a-zA-Z0-9-_\.]/','_', pathinfo($origName, PATHINFO_FILENAME));
+        if ($size > $maxSize) { $errors[] = "$label: file is too large."; continue; }
+        if (!in_array($type, $allowedMime)) { $errors[] = "$label: invalid file type ($type)."; continue; }
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $safeName = preg_replace('/[^a-zA-Z0-9-_\.]/','_', pathinfo($file['name'], PATHINFO_FILENAME));
         $filename = time() . '_' . bin2hex(random_bytes(6)) . '_' . $safeName . '.' . $ext;
         $dest = $uploadDir . '/' . $filename;
-
-        if (!move_uploaded_file($tmp, $dest)) { 
-            $errors[] = "$docType: failed to save file.";
-            error_log("UploadDocumentsController: move_uploaded_file failed from $tmp to $dest; is_writable(uploadDir)=". (is_writable($uploadDir)?'yes':'no'));
-            error_log('$_FILES required_docs for '.$docType.': '.print_r([ 'name'=>$origName,'size'=>$size,'type'=>$type,'error'=>$errorCode,'tmp'=>$tmp], true));
-            continue; 
+        if (!move_uploaded_file($tmp, $dest)) {
+            $errors[] = "$label: failed to save file.";
+            continue;
         }
-
-        // Insert into shelter_documents
         $relativePath = '/storage/documents/' . $shelterDir . '/' . $filename;
         $stmt = $conn->prepare('INSERT INTO shelter_documents (shelter_id, doc_type, file_path, status, uploaded_at) VALUES (?, ?, ?, ?, NOW())');
         if ($stmt) {
             $status = 'pending';
-            $stmt->bind_param('isss', $shelterId, $docType, $relativePath, $status);
+            $stmt->bind_param('isss', $shelterId, $label, $relativePath, $status);
             $stmt->execute();
-            if ($stmt->errno) {
-                error_log('UploadDocumentsController: DB insert error: ' . $stmt->error);
-            }
             $stmt->close();
-        } else {
-            error_log('UploadDocumentsController: DB prepare error for insert: ' . $conn->error);
         }
         $uploaded++;
     }
+}
+if (!$anyFileSelected) {
+    $errors[] = 'No files selected for upload.';
 }
 
 // Process optional document
@@ -184,13 +182,139 @@ if (!empty($_FILES['optional_document']) && !empty($_FILES['optional_document'][
     }
 }
 
-if ($uploaded > 0) {
-    SessionManager::setFlash('success', "Uploaded $uploaded file(s) successfully.");
-} else {
-    $msg = 'Upload failed.';
-    if (!empty($errors)) $msg .= ' ' . implode('; ', $errors);
-    SessionManager::setFlash('danger', $msg);
+// Detect AJAX request
+$isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+    if ($isAjax) {
+        $debug = [
+            'POST' => $_POST,
+            'FILES' => $_FILES,
+            'uploaded' => $uploaded,
+            'errors' => $errors,
+            'uploadDir' => $uploadDir,
+            'isWritable' => is_writable($uploadDir)
+        ];
+        if ($uploaded > 0) {
+            echo json_encode([
+                'success' => true,
+                'message' => "Uploaded $uploaded file(s) successfully.",
+                'errors' => $errors,
+                'debug' => $debug
+            ]);
+        } else {
+            $msg = 'Upload failed.';
+            if (!empty($errors)) $msg .= ' ' . implode('; ', $errors);
+            echo json_encode([
+                'success' => false,
+                'message' => $msg,
+                'errors' => $errors,
+                'debug' => $debug
+            ]);
+        }
+        exit;
+    } else {
+        if ($uploaded > 0) {
+            SessionManager::setFlash('success', "Uploaded $uploaded file(s) successfully.");
+        } else {
+            $msg = 'Upload failed.';
+            if (!empty($errors)) $msg .= ' ' . implode('; ', $errors);
+            SessionManager::setFlash('danger', $msg);
+        }
+    }
+// --- SHELTER DOCUMENT UPLOAD FUNCTION ---
+/**
+ * Upload shelter documents (Barangay Permit, Barangay Clearance, BIR Permit, BAI Permit)
+ * @param mysqli $conn
+ * @param int $shelterId
+ * @param string $shelterDir
+ * @param array $files $_FILES array
+ * @return array [uploaded_count, errors]
+ */
+function uploadShelterDocuments($conn, $shelterId, $shelterDir, $files) {
+    $uploadDir = __DIR__ . '/../../storage/documents/' . $shelterDir;
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+    if (!is_writable($uploadDir)) {
+        @chmod($uploadDir, 0755);
+        if (!is_writable($uploadDir)) @chmod($uploadDir, 0777);
+    }
+    $allowedMime = ['image/jpeg','image/png','application/pdf'];
+    $maxSize = 5 * 1024 * 1024; // 5MB
+    $docFields = [
+        'barangay_permit' => 'Barangay Permit',
+        'barangay_clearance' => 'Barangay Clearance',
+        'bir_permit' => 'BIR Permit',
+        'bai_permit' => 'Bureau of Animal Industry Permit'
+    ];
+    $uploaded = 0;
+    $errors = [];
+    foreach ($docFields as $field => $label) {
+        if (empty($files[$field]) || empty($files[$field]['name'])) {
+            $errors[] = "$label: No file uploaded.";
+            continue;
+        }
+        $file = $files[$field];
+        $errorCode = $file['error'] ?? UPLOAD_ERR_OK;
+        if ($errorCode !== UPLOAD_ERR_OK) {
+            $errors[] = "$label: upload error code $errorCode";
+            continue;
+        }
+        $tmp = $file['tmp_name'] ?? null;
+        if (empty($tmp) || !is_uploaded_file($tmp)) {
+            $errors[] = "$label: file upload failed (tmp missing).";
+            continue;
+        }
+        $size = $file['size'] ?? 0;
+        $type = mime_content_type($tmp) ?: '';
+        if ($size > $maxSize) { $errors[] = "$label: file is too large."; continue; }
+        if (!in_array($type, $allowedMime)) { $errors[] = "$label: invalid file type ($type)."; continue; }
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $safeName = preg_replace('/[^a-zA-Z0-9-_\.]/','_', pathinfo($file['name'], PATHINFO_FILENAME));
+        $filename = time() . '_' . bin2hex(random_bytes(6)) . '_' . $safeName . '.' . $ext;
+        $dest = $uploadDir . '/' . $filename;
+        if (!move_uploaded_file($tmp, $dest)) {
+            $errors[] = "$label: failed to save file.";
+            continue;
+        }
+        $relativePath = '/storage/documents/' . $shelterDir . '/' . $filename;
+        $stmt = $conn->prepare('INSERT INTO shelter_documents (shelter_id, doc_type, file_path, status, uploaded_at) VALUES (?, ?, ?, ?, NOW())');
+        if ($stmt) {
+            $status = 'pending';
+            $stmt->bind_param('isss', $shelterId, $label, $relativePath, $status);
+            $stmt->execute();
+            $stmt->close();
+        }
+        $uploaded++;
+    }
+    return ['uploaded_count' => $uploaded, 'errors' => $errors];
 }
+
+// --- ADMIN REVIEW FUNCTIONS ---
+// Get all pending documents for admin review
+function getPendingDocuments($conn) {
+    $docs = [];
+    $sql = "SELECT d.id, d.shelter_id, d.doc_type, d.file_path, d.status, d.uploaded_at, s.shelter_name FROM shelter_documents d JOIN shelters s ON d.shelter_id = s.id WHERE d.status = 'pending' ORDER BY d.uploaded_at DESC";
+    $result = $conn->query($sql);
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $docs[] = $row;
+        }
+    }
+    return $docs;
+}
+
+// Approve or decline a document
+function reviewDocument($conn, $docId, $action, $adminId) {
+    $status = ($action === 'approve') ? 'approved' : 'declined';
+    $stmt = $conn->prepare("UPDATE shelter_documents SET status = ?, reviewed_by = ?, reviewed_at = NOW() WHERE id = ?");
+    if ($stmt) {
+        $stmt->bind_param('sii', $status, $adminId, $docId);
+        $stmt->execute();
+        $stmt->close();
+        return true;
+    }
+    return false;
+}
+
+// --- END ADMIN REVIEW FUNCTIONS ---
 
 header('Location: ../views/ShelterManagement.php');
 exit;
