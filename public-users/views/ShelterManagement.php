@@ -1,4 +1,4 @@
-    <!-- Container for fallback confirmation messages -->
+<!-- Container for fallback confirmation messages -->
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
 <body>
@@ -55,11 +55,9 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                         <?php endif; ?>
                     </h3>
                     <div class="d-flex gap-1 align-items-center">
-                        <?php if (!empty($shelter['is_verified'])): ?>
-                        <a href="PetManagement.php" class="btn btn-sm btn-primary"><i class="ti ti-paw"></i> Manage Pets</a>
-                        <?php else: ?>
-                        <button class="btn btn-sm btn-secondary" disabled title="Verify shelter to manage pets"><i class="ti ti-paw"></i> Manage Pets</button>
-                        <?php endif; ?>
+                        <a href="PetManagement.php" class="btn btn-sm btn-primary" id="managePetsBtn" target="_blank" rel="noopener">
+                            <i class="ti ti-paw"></i> Manage Pets
+                        </a>
                         <button id="editShelterBtn" type="button" class="btn btn-sm btn-outline-secondary"><i class="ti ti-edit"></i> Edit</button>
                     </div>
                 </div>
@@ -459,6 +457,41 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                 }
             });
     }
+
+    function updateShelterStatusUI(isVerified) {
+        // Badge
+        var badge = document.getElementById('shelterStatusBadge');
+        if (badge) {
+            if (isVerified) {
+                badge.className = 'badge rounded-pill d-inline-flex align-items-center px-2 py-1 bg-success text-white shadow-sm';
+                badge.innerHTML = 'Verified';
+            } else {
+                badge.className = 'badge rounded-pill d-inline-flex align-items-center px-2 py-1 bg-warning text-dark shadow-sm';
+                badge.innerHTML = 'Unverified';
+            }
+        }
+        // Manage Pets button
+        var manageBtn = document.getElementById('managePetsBtn');
+        if (manageBtn) {
+            manageBtn.disabled = !isVerified;
+            if (isVerified) {
+                manageBtn.className = 'btn btn-sm btn-primary';
+            } else {
+                manageBtn.className = 'btn btn-sm btn-secondary';
+            }
+        }
+    }
+
+    // Poll shelter status every 10 seconds
+    setInterval(function() {
+        fetch('ShelterManagementController.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.shelter) {
+                    updateShelterStatusUI(data.shelter.is_verified == 1);
+                }
+            });
+    }, 10000);
     </script>
 
     <script>

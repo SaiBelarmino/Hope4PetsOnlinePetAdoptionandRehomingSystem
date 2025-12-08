@@ -27,6 +27,7 @@ class ShelterManagementController extends BaseController {
             $shelter['address'] = $shelter['address'] ?? '';
             $shelter['contact_number'] = $shelter['contact_number'] ?? '';
             $shelter['is_verified'] = isset($shelter['is_verified']) ? (int)$shelter['is_verified'] : 0;
+            $shelter['approved'] = isset($shelter['approved']) ? (int)$shelter['approved'] : 0;
             if (!isset($shelter['is_active'])) {
                 $shelter['is_active'] = $shelter['is_verified'] ? 1 : 0;
             }
@@ -37,6 +38,7 @@ class ShelterManagementController extends BaseController {
                 'address' => '',
                 'contact_number' => '',
                 'is_verified' => 0,
+                'approved' => 0,
                 'verified_at' => null,
                 'created_at' => null,
                 'is_active' => 0,
@@ -89,6 +91,32 @@ class ShelterManagementController extends BaseController {
                 $documents = $res->fetch_all(MYSQLI_ASSOC) ?: [];
                 $stmt->close();
             }
+        }
+
+        // Check if documents are all approved
+        $allDocsApproved = false;
+        if ($shelter && !empty($documents)) {
+            $allApproved = true;
+            foreach ($documents as $doc) {
+                if (strtolower($doc['status']) !== 'approved') {
+                    $allApproved = false;
+                    break;
+                }
+            }
+            $allDocsApproved = $allApproved;
+        }
+
+        // Auto-verify shelter if all documents are approved
+        if ($shelter && $allDocsApproved && empty($shelter['is_verified'])) {
+            $conn = self::db();
+            $updateStmt = $conn->prepare("UPDATE shelters SET is_verified = 1, verified_at = NOW() WHERE id = ?");
+            $updateStmt->bind_param('i', $shelter['id']);
+            $updateStmt->execute();
+            $updateStmt->close();
+
+            // Refresh shelter data
+            $shelter['is_verified'] = 1;
+            $shelter['verified_at'] = date('Y-m-d H:i:s');
         }
 
         $requiredTypes = ['dtiregistration','mayors_permit','bir_registration','business_permit','articles_of_incorporation','barangay_clearance','contract_of_lease','other_business_documents'];
