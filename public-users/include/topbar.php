@@ -11,7 +11,7 @@
         </a>
 
         <!-- Desktop Search -->
-        <form class="d-none d-md-flex flex-grow-0" role="search" method="get" action="./search.php"
+        <form class="d-none d-md-flex flex-grow-0" role="search" method="get" action="/Hope4PetsOnlinePetAdoptionandRehomingSystem/public-users/views/Search.php"
             aria-label="Site search">
             <div class="input-group" style="width:280px;">
                 <span class="input-group-text bg-light border-0 rounded-start-pill">
@@ -36,12 +36,12 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./pets.php" title="Pets" aria-label="Pets">
+                <a class="nav-link" style="<?= $iconStyle ?>" href="./BrowsePet.php" title="Pets" aria-label="Pets">
                 <i class="ti ti-paw"></i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./shelters.php" title="Shelters" aria-label="Shelters">
+                <a class="nav-link" style="<?= $iconStyle ?>" href="./FindShelters.php" title="Shelters" aria-label="Shelters">
                 <i class="ti ti-building-community"></i>
                 </a>
             </li>
@@ -153,7 +153,7 @@
 
     <!-- Collapsible (Mobile) -->
     <div class="collapse navbar-collapse collapse-area border-top px-3 px-md-4" id="communityNav">
-        <form class="w-100 py-3 d-md-none" role="search" method="get" action="./search.php">
+        <form class="w-100 py-3 d-md-none" role="search" method="get" action="/Hope4PetsOnlinePetAdoptionandRehomingSystem/public-users/views/Search.php">
             <div class="input-group input-group-lg">
                 <span class="input-group-text bg-light border-end-0"><i
                         class="ti ti-search icon-huge-search"></i></span>

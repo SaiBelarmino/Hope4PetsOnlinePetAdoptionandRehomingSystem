@@ -145,9 +145,117 @@ if (is_array($adoptions)) {
 								<hr class="my-2">
 
 								<div class="d-flex gap-2">
-									<a href="./PetView.php?pet_id=<?php echo (int)$a['pet_id']; ?>" class="btn btn-sm btn-outline-primary">View Pet</a>
+									<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewModal-<?php echo (int)$a['pet_id']; ?>">View Pet</button>
 									<a href="./ChatMessages.php?user_id=<?php echo (int)$a['owner_id']; ?>" class="btn btn-sm btn-outline-secondary">Message Shelter</a>
 								</div>
+								<!-- View Pet Modal (matches BrowsePet.php style) -->
+								<div class="modal fade" id="viewModal-<?php echo (int)$a['pet_id']; ?>" tabindex="-1" aria-labelledby="viewModalLabel-<?php echo (int)$a['pet_id']; ?>" aria-hidden="true">
+									<div class="modal-dialog modal-lg modal-dialog-centered">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h5 class="modal-title" id="viewModalLabel-<?php echo (int)$a['pet_id']; ?>">
+													<?php echo htmlspecialchars($a['pet_name'] ?? 'Pet Profile'); ?></h5>
+												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+											</div>
+											<div class="modal-body">
+												<div class="row g-3">
+													<div class="col-12 col-md-5">
+														<img src="<?php echo htmlspecialchars($petImgPath); ?>" class="img-fluid rounded w-100 object-fit-cover" alt="<?php echo htmlspecialchars($a['pet_name'] ?? 'Pet'); ?>">
+													</div>
+													<div class="col-12 col-md-7">
+														<div class="mb-2"><strong>Breed:</strong> <?php echo htmlspecialchars($a['pet_breed'] ?? 'Unknown'); ?></div>
+														<div class="mb-2"><strong>Age:</strong> <?php echo htmlspecialchars($a['pet_age'] ?? ''); ?></div>
+														<div class="mb-2"><strong>Species:</strong> <?php echo htmlspecialchars($a['pet_species'] ?? 'Other'); ?></div>
+														<div class="mb-2"><strong>Gender:</strong> <?php echo htmlspecialchars($a['pet_gender'] ?? 'Unknown'); ?></div>
+														<div class="mb-2"><strong>Size:</strong> <?php echo htmlspecialchars($a['pet_size'] ?? 'Medium'); ?></div>
+														<div class="mb-2"><strong>Vaccine:</strong> <?php echo htmlspecialchars($a['pet_vaccine_status'] ?? 'N/A'); ?></div>
+														<div class="mb-2"><strong>Health:</strong> <?php echo htmlspecialchars($a['pet_health_status'] ?? 'N/A'); ?></div>
+														<div class="mb-2"><strong>Owner:</strong> <?php echo htmlspecialchars($a['owner_name'] ?? ''); ?></div>
+														<?php if (!empty($a['shelter_name']) || !empty($a['pet_location']) || !empty($a['shelter_address'])): ?>
+														<hr>
+														<h6>Shelter / Location</h6>
+														<?php if (!empty($a['shelter_name'])): ?><div class="mb-2"><strong>Shelter:</strong> <?php echo htmlspecialchars($a['shelter_name']); ?></div><?php endif; ?>
+														<?php if (!empty($a['shelter_address'])): ?><div class="mb-2"><strong>Address:</strong> <?php echo htmlspecialchars($a['shelter_address']); ?></div><?php endif; ?>
+														<?php if (!empty($a['pet_location'])): ?>
+														<div class="mb-2"><strong>Location:</strong> <?php echo htmlspecialchars($a['pet_location']); ?></div>
+														<div class="mb-2"><a href="https://www.google.com/maps/search/<?php echo urlencode($a['pet_location']); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary">View on Google Maps</a></div>
+														<?php endif; ?>
+														<?php endif; ?>
+													</div>
+													<div class="col-12">
+														<hr>
+														<h6>Description</h6>
+														<div class="bg-light rounded p-2" style="min-height:60px;white-space:pre-line;">
+															<?php echo nl2br(htmlspecialchars($a['pet_description'] ?? 'No description')); ?>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="modal-footer">
+												<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- Pet Details Modal -->
+							<div class="modal fade" id="petDetailsModal" tabindex="-1" aria-labelledby="petDetailsModalLabel" aria-hidden="true">
+								<div class="modal-dialog modal-lg modal-dialog-centered">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5 class="modal-title" id="petDetailsModalLabel">Pet Details</h5>
+											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+										</div>
+										<div class="modal-body">
+											<div class="row g-3 align-items-center">
+												<div class="col-md-4 text-center">
+													<img id="modalPetPhoto" src="" alt="Pet Photo" class="img-fluid rounded shadow" style="max-height:220px;object-fit:cover;">
+												</div>
+												<div class="col-md-8">
+													<h3 id="modalPetName" class="mb-2 text-primary"></h3>
+													<div class="mb-2">
+														<span class="badge bg-info text-dark me-1" id="modalPetBreed"></span>
+														<span class="badge bg-secondary me-1" id="modalPetSpecies"></span>
+														<span class="badge bg-success" id="modalPetAge"></span>
+													</div>
+													<p id="modalPetDescription" class="mt-3 mb-2" style="min-height:60px;"></p>
+													<div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+														<span class="fw-bold">Status:</span>
+														<span class="badge" id="modalPetStatus"></span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<script>
+							document.addEventListener('DOMContentLoaded', function() {
+								var petModal = new bootstrap.Modal(document.getElementById('petDetailsModal'));
+								document.querySelectorAll('.view-pet-btn').forEach(function(btn) {
+									btn.addEventListener('click', function() {
+										var pet = JSON.parse(this.getAttribute('data-pet'));
+										document.getElementById('modalPetPhoto').src = pet.photo || '../../assets/images/placeholder.png';
+										document.getElementById('modalPetName').textContent = pet.name || '';
+										document.getElementById('modalPetBreed').textContent = pet.breed ? 'Breed: ' + pet.breed : '';
+										document.getElementById('modalPetSpecies').textContent = pet.species ? 'Species: ' + pet.species : '';
+										document.getElementById('modalPetAge').textContent = pet.age ? 'Age: ' + pet.age : '';
+										document.getElementById('modalPetDescription').textContent = pet.description || 'No description available.';
+										// Status badge
+										var status = (pet.status || '').toLowerCase();
+										var badge = 'bg-secondary';
+										if (status === 'available') badge = 'bg-success';
+										else if (status === 'adopted') badge = 'bg-primary';
+										else if (status === 'pending') badge = 'bg-warning';
+										else if (status === 'rehomed') badge = 'bg-info';
+										var statusElem = document.getElementById('modalPetStatus');
+										statusElem.className = 'badge ' + badge + ' text-uppercase px-3 py-2';
+										statusElem.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+										petModal.show();
+									});
+								});
+							});
+							</script>
 							</div>
 						</div>
 					</div>
