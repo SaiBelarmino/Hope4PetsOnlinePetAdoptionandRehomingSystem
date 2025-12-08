@@ -260,7 +260,7 @@ class UsersController extends BaseController {
      * @param array $params
      * @param bool $returnAffected if true returns affected_rows else bool
      */
-    protected static function execute(string $sql, string $types = '', array $params = [], bool $returnAffected = false) {
+    public static function execute(string $sql, string $types = '', array $params = [], bool $returnAffected = false) {
         $mysqli = self::db();
         if ($types !== '' && $params) {
             $stmt = $mysqli->prepare($sql);
