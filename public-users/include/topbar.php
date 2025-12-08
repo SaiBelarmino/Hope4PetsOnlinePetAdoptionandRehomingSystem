@@ -56,13 +56,62 @@
                    style="<?= $iconStyle ?>height:40px;width:40px;border-radius:50%;background:#f0f2f5;font-size:20px;">
                     <i class="ti ti-message-circle"></i>
                 </a>
-                <a class="nav-link position-relative p-0 d-flex align-items-center justify-content-center"
-                   href="./notifications.php" title="Notifications" aria-label="Notifications"
-                   style="<?= $iconStyle ?>height:40px;width:40px;border-radius:50%;background:#f0f2f5;font-size:20px;">
-                    <i class="ti ti-bell-ringing"></i>
-                    <span class="notification-dot bg-danger rounded-circle position-absolute"
-                          style="width:10px;height:10px;top:4px;right:4px;"></span>
-                </a>
+
+                <?php
+                    // Include the controller to fetch notification data
+                    if (!class_exists('NotificationController')) {
+                        require_once __DIR__ . '/../controllers/NotificationController.php';
+                    }
+                    $notificationController = new NotificationController();
+                    $recentNotifications = $notificationController->getRecentNotifications();
+                    $unreadCount = count(array_filter($recentNotifications, fn($n) => !$n['is_read']));
+                ?>
+                <div class="dropdown">
+                    <a class="nav-link position-relative p-0 d-flex align-items-center justify-content-center"
+                       href="#" title="Notifications" aria-label="Notifications" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                       style="<?= $iconStyle ?>height:40px;width:40px;border-radius:50%;background:#f0f2f5;font-size:20px;">
+                        <i class="ti ti-bell-ringing"></i>
+                        <?php if ($unreadCount > 0): ?>
+                            <span class="notification-dot bg-danger rounded-circle position-absolute"
+                                  style="width:10px;height:10px;top:4px;right:4px;"></span>
+                        <?php endif; ?>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="width: 350px; padding: 0;">
+                        <li class="p-3">
+                            <h6 class="mb-0">Notifications</h6>
+                        </li>
+                        <li><hr class="dropdown-divider my-0"></li>
+                        <li style="max-height: 400px; overflow-y: auto;">
+                            <ul class="list-unstyled mb-0">
+                                <?php if (empty($recentNotifications)): ?>
+                                    <li class="py-3 px-3 text-center text-muted">No new notifications</li>
+                                <?php else: ?>
+                                    <?php foreach ($recentNotifications as $notification): ?>
+                                        <li class="border-bottom">
+                                            <a class="dropdown-item d-flex align-items-start gap-3 py-3 <?= $notification['is_read'] ? 'bg-light' : '' ?>" href="#">
+                                                <span class="p-2 rounded-circle d-flex align-items-center justify-content-center <?= htmlspecialchars($notification['bg']) ?>">
+                                                    <i class="ti <?= htmlspecialchars($notification['icon']) ?>"></i>
+                                                </span>
+                                                <div>
+                                                    <p class="mb-0 small"><?= htmlspecialchars($notification['message']) ?></p>
+                                                    <small class="text-muted"><?= htmlspecialchars($notification['time']) ?></small>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </ul>
+                        </li>
+                        <li><hr class="dropdown-divider my-0"></li>
+                        <li class="py-2">
+                            <!-- Change link to open modal instead of navigating -->
+                            <a class="dropdown-item text-center" href="#" data-bs-toggle="modal" data-bs-target="#allNotificationsModal">
+                                View All Notifications
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
                 <div class="dropdown">
                     <?php if (!function_exists('resolve_profile_photo')) { include __DIR__ . '/profile_helpers.php'; } ?>
                     <a class="nav-link p-0 d-flex align-items-center" href="#" id="userMenu" role="button"
@@ -114,3 +163,47 @@
         </form>
     </div>
 </nav>
+
+<!-- Modal for all notifications -->
+<div class="modal fade" id="allNotificationsModal" tabindex="-1" aria-labelledby="allNotificationsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="allNotificationsModalLabel">All Notifications</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <?php
+        // Use the controller to get all notifications
+        if (!class_exists('NotificationController')) {
+            require_once __DIR__ . '/../controllers/NotificationController.php';
+        }
+        $controller = new NotificationController();
+        $allNotifications = $controller->getAllNotifications();
+        ?>
+        <?php if (empty($allNotifications)): ?>
+            <div class="p-4 text-center text-muted">
+                You have no notifications.
+            </div>
+        <?php else: ?>
+            <ul class="list-group list-group-flush">
+                <?php foreach ($allNotifications as $notification): ?>
+                    <li class="list-group-item list-group-item-action d-flex align-items-start gap-3 py-3 <?= $notification['is_read'] ? 'bg-light' : '' ?>">
+                        <span class="p-2 rounded-circle d-flex align-items-center justify-content-center <?= htmlspecialchars($notification['bg']) ?>">
+                            <i class="ti <?= htmlspecialchars($notification['icon']) ?>"></i>
+                        </span>
+                        <div class="w-100">
+                            <p class="mb-1"><?= htmlspecialchars($notification['message']) ?></p>
+                            <small class="text-muted"><?= htmlspecialchars($notification['time']) ?></small>
+                        </div>
+                        <?php if (!$notification['is_read']): ?>
+                            <span class="badge bg-primary rounded-pill">New</span>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+</div>

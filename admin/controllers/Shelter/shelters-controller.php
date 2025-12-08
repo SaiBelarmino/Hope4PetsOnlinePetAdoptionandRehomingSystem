@@ -24,7 +24,12 @@ class SheltersController extends BaseController {
                     s.is_verified, 
                     s.created_at,
                     u.full_name AS owner_name,
-                    u.email AS owner_email
+                    u.email AS owner_email,
+                    (
+                        SELECT COUNT(*) 
+                        FROM shelter_documents sd 
+                        WHERE sd.shelter_id = s.id AND sd.status = 'approved'
+                    ) AS approved_docs
                 FROM shelters s
                 LEFT JOIN users u ON s.user_id = u.id";
         
@@ -38,10 +43,15 @@ class SheltersController extends BaseController {
             $types .= 's';
         }
 
+        // Updated status logic
         if ($status === 'verified') {
-            $conditions[] = "s.is_verified = 1";
+            $conditions[] = "s.is_verified = 1 AND (
+                SELECT COUNT(*) FROM shelter_documents sd WHERE sd.shelter_id = s.id AND sd.status = 'approved'
+            ) > 0";
         } elseif ($status === 'unverified') {
-            $conditions[] = "s.is_verified = 0";
+            $conditions[] = "s.is_verified = 0 OR (
+                SELECT COUNT(*) FROM shelter_documents sd WHERE sd.shelter_id = s.id AND sd.status = 'approved'
+            ) = 0";
         }
 
         if (!empty($registeredDate)) {
@@ -56,7 +66,14 @@ class SheltersController extends BaseController {
 
         $sql .= " ORDER BY s.created_at DESC";
         
-        return self::fetchAll($sql, $types, $params) ?? [];
+        $results = self::fetchAll($sql, $types, $params) ?? [];
+
+        // Set status for each shelter based on both is_verified and approved_docs
+        foreach ($results as &$shelter) {
+            $shelter['status'] = (!empty($shelter['is_verified']) && $shelter['approved_docs'] > 0) ? 'Verified' : 'Unverified';
+        }
+
+        return $results;
     }
 
     /**
@@ -77,6 +94,18 @@ class SheltersController extends BaseController {
             'verified' => $stats['verified'] ?? 0,
             'unverified' => $stats['unverified'] ?? 0,
         ];
+    }
+
+    /**
+     * Fetch shelter details by ID.
+     */
+    public static function getShelterById(int $id): ?array {
+        $sql = "SELECT s.*, u.full_name AS owner_name, u.email AS owner_email
+                FROM shelters s
+                LEFT JOIN users u ON s.user_id = u.id
+                WHERE s.id = ?
+                LIMIT 1";
+        return self::fetchOne($sql, 'i', [$id]);
     }
 }
 
@@ -112,5 +141,17 @@ class ShelterVerificationRequestsController {
 
         // Safe default: empty list
         return [];
+    }
+
+    /**
+     * Fetch shelter details by ID.
+     */
+    public static function getShelterById(int $id): ?array {
+        $sql = "SELECT s.*, u.full_name AS owner_name, u.email AS owner_email
+                FROM shelters s
+                LEFT JOIN users u ON s.user_id = u.id
+                WHERE s.id = ?
+                LIMIT 1";
+        return self::fetchOne($sql, 'i', [$id]);
     }
 }

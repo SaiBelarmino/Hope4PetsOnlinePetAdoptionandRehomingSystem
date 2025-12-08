@@ -149,7 +149,7 @@ include dirname(__DIR__, 2) . '/sidebar.php';
                                         <td style="min-width: 100px; white-space: normal;"><?= htmlspecialchars($s['contact_number'] ?? '–') ?></td>
                                         <td style="min-width: 100px; white-space: normal;"><?= htmlspecialchars($s['owner_email'] ?? '–') ?></td>
                                         <td>
-                                            <?php if (!empty($s['is_verified'])): ?>
+                                            <?php if ($s['status'] === 'Verified'): ?>
                                                 <span class="badge bg-success">Verified</span>
                                             <?php else: ?>
                                                 <span class="badge bg-warning text-dark">Unverified</span>
@@ -190,3 +190,33 @@ include dirname(__DIR__, 2) . '/sidebar.php';
 </div>
 
 <?php include dirname(__DIR__, 2) . '/footer.php'; ?>
+
+<?php
+$shelter_id = intval($_GET['id'] ?? 0);
+// Fetch shelter info
+$shelter = SheltersController::getShelterById($shelter_id);
+// Fetch documents if shelter is verified
+$documents = [];
+if (!empty($shelter['is_verified'])) {
+    global $db;
+    if (!isset($db)) {
+        require_once __DIR__ . '/../../../config/Database.php';
+        $db = $GLOBALS['db'];
+    }
+    $stmt = $db->prepare("SELECT * FROM shelter_documents WHERE shelter_id = ? AND status = 'approved'");
+    $stmt->bind_param('i', $shelter_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($doc = $result->fetch_assoc()) {
+        $documents[] = $doc;
+    }
+    $stmt->close();
+}
+// Display documents
+if (!empty($documents)) {
+    echo "<h4>Documents</h4><ul>";
+    foreach ($documents as $doc) {
+        echo "<li><a href='{$doc['file_path']}' target='_blank'>{$doc['doc_type']}</a></li>";
+    }
+    echo "</ul>";
+}

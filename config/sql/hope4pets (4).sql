@@ -456,7 +456,8 @@ CREATE TABLE `shelters` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `is_verified` tinyint(1) NOT NULL DEFAULT 0,
   `verified_at` timestamp NULL DEFAULT NULL,
-  `verified_by` bigint(20) UNSIGNED DEFAULT NULL
+  `verified_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `approved` TINYINT(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -554,6 +555,23 @@ CREATE TABLE `user_reports` (
   `handled_by` bigint(20) UNSIGNED DEFAULT NULL,
   `handled_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT UNSIGNED NOT NULL,
+  `message` VARCHAR(255) NOT NULL,
+  `icon` VARCHAR(50) DEFAULT 'ti-bell',
+  `bg` VARCHAR(100) DEFAULT 'bg-light-info text-info',
+  `is_read` TINYINT(1) DEFAULT 0,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
 
 --
 -- Indexes for dumped tables

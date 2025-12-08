@@ -61,7 +61,7 @@ abstract class BaseController {
      * Execute a write query (INSERT/UPDATE/DELETE) with optional prepared params.
      * If $returnAffected is true return affected_rows (int), otherwise return bool success.
      */
-    protected static function execute(string $sql, string $types = '', array $params = [], bool $returnAffected = false) {
+    public static function execute(string $sql, string $types = '', array $params = [], bool $returnAffected = false) {
         $mysqli = self::db();
         try {
             if ($types !== '' && !empty($params)) {
