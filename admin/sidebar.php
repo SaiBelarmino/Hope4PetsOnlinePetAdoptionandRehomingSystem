@@ -126,14 +126,6 @@
                             </a>
                         </li>
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Pet/pet-photos-reports.php" aria-expanded="false">
-                                <span>
-                                    <i class="ti ti-photo fs-6"></i>
-                                </span>
-                                <span class="hide-menu">Pet Photos / Reports</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
                             <a class="sidebar-link" href="/Hope4PetsOnlinePetAdoptionandRehomingSystem/admin/views/Adoption/adoption-requests.php" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-file-description fs-6"></i>
