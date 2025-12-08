@@ -201,11 +201,10 @@ $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTT
                 'debug' => $debug
             ]);
         } else {
-            $msg = 'Upload failed.';
-            if (!empty($errors)) $msg .= ' ' . implode('; ', $errors);
+            // Silent failure: do not send any message
             echo json_encode([
                 'success' => false,
-                'message' => $msg,
+                'message' => '',
                 'errors' => $errors,
                 'debug' => $debug
             ]);

@@ -1,5 +1,7 @@
+    <!-- Container for fallback confirmation messages -->
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
+<body>
 <link rel="stylesheet" href="assets/css/documentmodal.css">
 <link rel="stylesheet" href="assets/css/leaflet.css" />
 
@@ -53,10 +55,12 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                         <?php endif; ?>
                     </h3>
                     <div class="d-flex gap-1 align-items-center">
-                        <a href="PetManagement.php" class="btn btn-sm btn-primary"><i class="ti ti-paw"></i> Manage
-                            Pets</a>
-                        <button id="editShelterBtn" type="button" class="btn btn-sm btn-outline-secondary"><i
-                                class="ti ti-edit"></i> Edit</button>
+                        <?php if (!empty($shelter['is_verified'])): ?>
+                        <a href="PetManagement.php" class="btn btn-sm btn-primary"><i class="ti ti-paw"></i> Manage Pets</a>
+                        <?php else: ?>
+                        <button class="btn btn-sm btn-secondary" disabled title="Verify shelter to manage pets"><i class="ti ti-paw"></i> Manage Pets</button>
+                        <?php endif; ?>
+                        <button id="editShelterBtn" type="button" class="btn btn-sm btn-outline-secondary"><i class="ti ti-edit"></i> Edit</button>
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
@@ -207,89 +211,94 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                 </div>
                 <?php endif; ?>
                 <?php if (!empty($shelter['is_verified'])): ?>
-                    <!-- Notify user that shelter is approved -->
-                    <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
-                        <i class="ti ti-check-circle me-2"></i>
-                        <div>Your shelter has been <strong>approved</strong> by the admin. You can now manage and display your pets.</div>
-                    </div>
-                    <!-- Show pets grid if shelter is verified -->
-                    <?php
-                    $shelterPets = [];
-                    if (!empty($shelter['id'])) {
-                        // Fetch pets for this shelter
-                        $shelterId = (int)$shelter['id'];
-                        $shelterPets = PetManagementController::getPetsByShelterId($shelterId);
-                        // Attach photo URLs
-                        foreach ($shelterPets as &$pet) {
-                            $photos = PetManagementController::getPetPhotos((int)$pet['id']);
-                            $pet['photos'] = $photos;
-                            $source = '';
-                            if (!empty($pet['primary_photo'])) $source = $pet['primary_photo'];
-                            elseif (!empty($photos[0]['photo_path'])) $source = $photos[0]['photo_path'];
-                            elseif (!empty($pet['pet_photos'])) $source = $pet['pet_photos'];
-                            $pet['photo'] = PetManagementController::getPhotoUrl((int)($pet['owner_id'] ?? 0), $source ?: '/storage/uploads/images/default.png');
-                            $pet['photo_raw'] = $source;
-                        }
-                        unset($pet);
-                    }
-                    ?>
-                    <div class="card mb-3">
-                        <div class="card-header bg-white border-0 pb-0">
-                            <h6 class="mb-0">Shelter Pets</h6>
+                        <!-- Notify user that shelter is approved -->
+                        <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                            <i class="ti ti-check-circle me-2"></i>
+                            <div>Your shelter has been <strong>approved</strong> by the admin. You can now manage and display your pets.</div>
                         </div>
-                        <div class="card-body">
-                            <div class="row g-3" id="pet-grid">
-                                <?php if (empty($shelterPets)): ?>
-                                    <div class="col-12">
-                                        <div class="card">
-                                            <div class="card-body text-center text-muted py-5">No pets found for this shelter.</div>
+                        <!-- Show pets grid if shelter is verified -->
+                        <?php
+                        $shelterPets = [];
+                        if (!empty($shelter['id'])) {
+                            // Fetch pets for this shelter
+                            $shelterId = (int)$shelter['id'];
+                            $shelterPets = PetManagementController::getPetsByShelterId($shelterId);
+                            // Attach photo URLs
+                            foreach ($shelterPets as &$pet) {
+                                $photos = PetManagementController::getPetPhotos((int)$pet['id']);
+                                $pet['photos'] = $photos;
+                                $source = '';
+                                if (!empty($pet['primary_photo'])) $source = $pet['primary_photo'];
+                                elseif (!empty($photos[0]['photo_path'])) $source = $photos[0]['photo_path'];
+                                elseif (!empty($pet['pet_photos'])) $source = $pet['pet_photos'];
+                                $pet['photo'] = PetManagementController::getPhotoUrl((int)($pet['owner_id'] ?? 0), $source ?: '/storage/uploads/images/default.png');
+                                $pet['photo_raw'] = $source;
+                            }
+                            unset($pet);
+                        }
+                        ?>
+                        <div class="card mb-3">
+                            <div class="card-header bg-white border-0 pb-0">
+                                <h6 class="mb-0">Shelter Pets</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3" id="pet-grid">
+                                    <?php if (empty($shelterPets)): ?>
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-body text-center text-muted py-5">No pets found for this shelter.</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                <?php else: foreach ($shelterPets as $p):
-                                    $status = $p['status'] ?? 'available';
-                                    $photoFullUrl = $p['photo'] ?? '/storage/uploads/images/default.png';
-                                ?>
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="card h-100 pet-card">
-                                        <div class="ratio ratio-4x3 overflow-hidden">
-                                            <img src="<?php echo htmlspecialchars($photoFullUrl); ?>"
-                                                alt="<?php echo htmlspecialchars($p['name'] ?? 'Pet'); ?>"
-                                                class="card-img-top object-fit-cover">
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div>
-                                                    <h6 class="mb-0 fw-semibold">
-                                                        <?php echo htmlspecialchars($p['name'] ?? 'Unnamed'); ?>
-                                                    </h6>
-                                                    <div class="small text-muted">
-                                                        <?php echo htmlspecialchars($p['breed'] ?? 'Unknown'); ?> ·
-                                                        <?php echo htmlspecialchars($p['age'] ?? ''); ?>
+                                    <?php else: foreach ($shelterPets as $p):
+                                        $status = $p['status'] ?? 'available';
+                                        $photoFullUrl = $p['photo'] ?? '/storage/uploads/images/default.png';
+                                    ?>
+                                    <div class="col-12 col-sm-6 col-md-4">
+                                        <div class="card h-100 pet-card">
+                                            <div class="ratio ratio-4x3 overflow-hidden">
+                                                <img src="<?php echo htmlspecialchars($photoFullUrl); ?>"
+                                                    alt="<?php echo htmlspecialchars($p['name'] ?? 'Pet'); ?>"
+                                                    class="card-img-top object-fit-cover">
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <h6 class="mb-0 fw-semibold">
+                                                            <?php echo htmlspecialchars($p['name'] ?? 'Unnamed'); ?>
+                                                        </h6>
+                                                        <div class="small text-muted">
+                                                            <?php echo htmlspecialchars($p['breed'] ?? 'Unknown'); ?> ·
+                                                            <?php echo htmlspecialchars($p['age'] ?? ''); ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <span class="badge bg-<?php echo ($status==='available')? 'success' : (($status==='adopted')? 'secondary' : 'warning'); ?>">
+                                                            <?php echo htmlspecialchars(ucfirst($status)); ?>
+                                                        </span>
                                                     </div>
                                                 </div>
-                                                <div class="text-end">
-                                                    <span class="badge bg-<?php echo ($status==='available')? 'success' : (($status==='adopted')? 'secondary' : 'warning'); ?>">
-                                                        <?php echo htmlspecialchars(ucfirst($status)); ?>
-                                                    </span>
+                                                <div class="mb-2 small">
+                                                    <span class="me-2"><strong>Species:</strong> <?php echo htmlspecialchars(ucfirst($p['species'] ?? 'Other')); ?></span>
+                                                    <span class="me-2"><strong>Gender:</strong> <?php echo htmlspecialchars(ucfirst($p['gender'] ?? 'Unknown')); ?></span>
+                                                    <span><strong>Size:</strong> <?php echo htmlspecialchars(ucfirst($p['size'] ?? 'Medium')); ?></span>
                                                 </div>
+                                                <div class="mb-2 small text-truncate"><strong>Vaccine:</strong> <?php echo htmlspecialchars($p['vaccine_status'] ?? 'N/A'); ?></div>
+                                                <div class="mb-2 small text-truncate"><strong>Health:</strong> <?php echo htmlspecialchars($p['health_status'] ?? 'N/A'); ?></div>
+                                                <div class="mb-2 small text-truncate text-muted"><i class="ti ti-map-pin"></i> <?php echo htmlspecialchars($p['location'] ?? 'Unknown'); ?></div>
+                                                <p class="small text-truncate mb-2"> <?php echo htmlspecialchars($p['description'] ?? 'No description'); ?></p>
                                             </div>
-                                            <div class="mb-2 small">
-                                                <span class="me-2"><strong>Species:</strong> <?php echo htmlspecialchars(ucfirst($p['species'] ?? 'Other')); ?></span>
-                                                <span class="me-2"><strong>Gender:</strong> <?php echo htmlspecialchars(ucfirst($p['gender'] ?? 'Unknown')); ?></span>
-                                                <span><strong>Size:</strong> <?php echo htmlspecialchars(ucfirst($p['size'] ?? 'Medium')); ?></span>
-                                            </div>
-                                            <div class="mb-2 small text-truncate"><strong>Vaccine:</strong> <?php echo htmlspecialchars($p['vaccine_status'] ?? 'N/A'); ?></div>
-                                            <div class="mb-2 small text-truncate"><strong>Health:</strong> <?php echo htmlspecialchars($p['health_status'] ?? 'N/A'); ?></div>
-                                            <div class="mb-2 small text-truncate text-muted"><i class="ti ti-map-pin"></i> <?php echo htmlspecialchars($p['location'] ?? 'Unknown'); ?></div>
-                                            <p class="small text-truncate mb-2"> <?php echo htmlspecialchars($p['description'] ?? 'No description'); ?></p>
                                         </div>
                                     </div>
+                                    <?php endforeach; endif; ?>
                                 </div>
-                                <?php endforeach; endif; ?>
                             </div>
                         </div>
-                    </div>
-                <?php endif; ?>
+                    <?php else: ?>
+                        <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+                            <i class="ti ti-lock me-2"></i>
+                            <div>Your shelter must be <strong>verified</strong> before you can manage or add pets.</div>
+                        </div>
+                    <?php endif; ?>
             </div>
         </div>
     </div>
@@ -396,14 +405,7 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                 e.preventDefault();
                 // Validate required files
                 var requiredFields = ['barangayPermitInput', 'barangayClearanceInput', 'birPermitInput', 'baiPermitInput'];
-                var missing = requiredFields.filter(function(id) {
-                    var el = document.getElementById(id);
-                    return !el || !el.files || el.files.length === 0;
-                });
-                if (missing.length > 0) {
-                    alert('Please upload all required documents before submitting.');
-                    return false;
-                }
+                // Remove required document check and alert
                 btn.disabled = true;
                 if (spinner) spinner.style.display = 'inline-block';
                 var formData = new FormData(form);
@@ -415,18 +417,25 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                 .then(data => {
                     btn.disabled = false;
                     if (spinner) spinner.style.display = 'none';
+                        console.log('AJAX response received:', data);
                     if (data.success) {
-                        alert(data.message || 'Documents uploaded successfully.');
+                        // Show confirmation message instead of alert
+                        var container = document.getElementById('uploadAlertContainer') || document.body;
+                        var msg = document.createElement('div');
+                        msg.className = 'alert alert-success mt-3';
+                        msg.innerHTML = 'Your documents are submitted to admin.<br>Please wait up to <strong>3 days</strong> for review.';
+                        // Remove previous confirmation if present
+                        var oldMsg = container.querySelector('.alert-success');
+                        if (oldMsg) oldMsg.remove();
+                        container.prepend(msg);
                         // Fetch latest document status and update badge/count
                         fetchDocumentStatus();
-                    } else {
-                        alert(data.message || 'Upload failed.');
-                    }
+                    } // No else: do not show any alert for failed upload
                 })
                 .catch(() => {
                     btn.disabled = false;
                     if (spinner) spinner.style.display = 'none';
-                    alert('Upload failed. Please try again.');
+                    // Silent failure: do not show any alert
                 });
             });
         }
@@ -478,3 +487,5 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
     <script src="assets/js/uploadDocumentsModal.js" defer></script>
     <script src="assets/js/shelterManagement.js"></script>
     <?php include __DIR__ . '/../include/footer.php'; ?>
+</body>
+</html>

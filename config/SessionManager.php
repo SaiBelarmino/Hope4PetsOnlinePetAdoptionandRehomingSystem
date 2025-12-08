@@ -65,7 +65,7 @@ class SessionManager {
         global $conn;
         
         $userId = self::getUserId();
-        $stmt = $conn->prepare("SELECT id, shelter_name, verified_badge FROM shelters WHERE user_id = ? LIMIT 1");
+        $stmt = $conn->prepare("SELECT id, shelter_name, is_verified FROM shelters WHERE user_id = ? LIMIT 1");
         $stmt->bind_param('i', $userId);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -76,7 +76,7 @@ class SessionManager {
             $_SESSION['has_shelter'] = true;
             $_SESSION['shelter_id'] = $shelter['id'];
             $_SESSION['shelter_name'] = $shelter['shelter_name'];
-            $_SESSION['shelter_verified'] = $shelter['verified_badge'];
+            $_SESSION['shelter_verified'] = $shelter['is_verified'];
         } else {
             $_SESSION['has_shelter'] = false;
             $_SESSION['shelter_id'] = null;
