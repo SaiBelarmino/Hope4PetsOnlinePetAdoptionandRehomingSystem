@@ -43,16 +43,6 @@ include dirname(__DIR__, 2) . '/sidebar.php';
             <div class="col-md-2 col-sm-6 mb-3">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="card-title">Rehoming Requests</h6>
-                        <h3 id="rehomingRequests" class="fw-bold"><?php echo (int)($stats['rehoming_requests_total'] ?? 0); ?></h3>
-                        <small class="text-muted">Users surrendering pets</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-2 col-sm-6 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
                         <h6 class="card-title">Approved Adoptions</h6>
                         <h3 id="approvedAdoptions" class="fw-bold"><?php echo (int)($stats['approved_adoptions'] ?? 0); ?></h3>
                         <small class="text-muted">Successful placements</small>

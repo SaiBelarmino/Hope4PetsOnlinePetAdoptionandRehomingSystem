@@ -55,7 +55,7 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                         <?php endif; ?>
                     </h3>
                     <div class="d-flex gap-1 align-items-center">
-                        <a href="PetManagement.php" class="btn btn-sm btn-primary" id="managePetsBtn" target="_blank" rel="noopener">
+                        <a href="PetManagement.php" class="btn btn-sm btn-primary" id="managePetsBtn" rel="noopener">
                             <i class="ti ti-paw"></i> Manage Pets
                         </a>
                         <button id="editShelterBtn" type="button" class="btn btn-sm btn-outline-secondary"><i class="ti ti-edit"></i> Edit</button>

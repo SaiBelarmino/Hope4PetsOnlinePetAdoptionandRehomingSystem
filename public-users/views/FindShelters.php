@@ -51,34 +51,25 @@ $selectedShelter = $data['selectedShelter'] ?? ($data['shelters'][0] ?? null);
                                 <input id="shelterSearch" type="search" class="form-control" placeholder="Search shelters...">
                             </div>
                             <select id="shelterSort" class="form-select form-select-sm">
-                                <option value="name">Sort: Name</option>
+                                <option value="all">Sort: All</option>
                                 <option value="pets">Sort: Most Pets</option>
                                 <option value="verified">Sort: Verified</option>
                             </select>
                         </div>
                     </div>
 
-                    <?php if (isset($data['shelters']) && is_array($data['shelters']) && count($data['shelters']) > 0) : ?>
+                    <?php if (!empty($data['shelters'])) : ?>
                     <ul id="shelterList" class="list-group list-group-flush">
                         <?php foreach ($data['shelters'] as $shelter) : ?>
                         <li class="list-group-item py-3">
                             <div class="d-flex">
-                                <div class="me-3">
-                                    <?php $img = $shelter['photo'] ?? $shelter['image'] ?? ''; ?>
-                                    <div class="avatar rounded bg-light" style="width:64px;height:64px;overflow:hidden;">
-                                        <?php if (!empty($img)): ?>
-                                        <img src="<?php echo htmlspecialchars($img); ?>" alt="<?php echo htmlspecialchars($shelter['shelter_name']); ?>" style="width:100%;height:100%;object-fit:cover;">
-                                        <?php else: ?>
-                                        <div class="d-flex align-items-center justify-content-center h-100 text-muted small">No Image</div>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
+                    
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h6 class="mb-1">
                                                 <?php echo htmlspecialchars($shelter['shelter_name']); ?>
-                                                <?php if (isset($shelter['is_verified']) && intval($shelter['is_verified'])===1): ?>
+                                                <?php if (!empty($shelter['is_verified'])): ?>
                                                 <span class="badge bg-success ms-2">Verified</span>
                                                 <?php endif; ?>
                                             </h6>
@@ -96,45 +87,6 @@ $selectedShelter = $data['selectedShelter'] ?? ($data['shelters'][0] ?? null);
                             </div>
                         </li>
 
-                        <!-- Modal for shelter (professional layout) -->
-                        <div class="modal fade" id="shelterModal-<?php echo (int)$shelter['id']; ?>" tabindex="-1" aria-labelledby="shelterModalLabel-<?php echo (int)$shelter['id']; ?>" aria-hidden="true">
-                          <div class="modal-dialog modal-lg modal-dialog-centered">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <h5 class="modal-title" id="shelterModalLabel-<?php echo (int)$shelter['id']; ?>"><?php echo htmlspecialchars($shelter['shelter_name'] ?? ''); ?></h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-                              <div class="modal-body">
-                                <div class="row">
-                                    <div class="col-12 col-md-5 mb-3 mb-md-0">
-                                        <?php if (!empty($img)): ?>
-                                        <img src="<?php echo htmlspecialchars($img); ?>" alt="<?php echo htmlspecialchars($shelter['shelter_name']); ?>" class="img-fluid rounded">
-                                        <?php else: ?>
-                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height:200px;">No image available</div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="col-12 col-md-7">
-                                        <p class="mb-1"><strong>Address:</strong> <?php echo htmlspecialchars($shelter['address'] ?? '—'); ?></p>
-                                        <p class="mb-1"><strong>Contact:</strong> <?php echo htmlspecialchars($shelter['contact_number'] ?? '—'); ?></p>
-                                        <p class="mb-1"><strong>Owner:</strong> <?php echo htmlspecialchars($shelter['owner_name'] ?? '—'); ?></p>
-                                        <p class="mb-1"><strong>Verified:</strong> <?php echo (isset($shelter['is_verified']) && intval($shelter['is_verified'])===1) ? 'Yes' : 'No'; ?></p>
-                                        <p class="mb-1"><strong>Pets Available:</strong> <?php echo (int)($shelter['pet_count'] ?? 0); ?></p>
-                                        <?php if (!empty($shelter['description'] ?? '') || !empty($shelter['notes'] ?? '')): ?>
-                                        <hr>
-                                        <p class="mb-0 small text-muted"><?php echo nl2br(htmlspecialchars($shelter['description'] ?? $shelter['notes'] ?? '—')); ?></p>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                              </div>
-                              <div class="modal-footer">
-                                <?php if (!empty($shelter['contact_number'])): ?>
-                                <a href="tel:<?php echo htmlspecialchars($shelter['contact_number']); ?>" class="btn btn-success">Call</a>
-                                <?php endif; ?>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
 
                         <?php endforeach; ?>
                     </ul>
@@ -182,3 +134,88 @@ $selectedShelter = $data['selectedShelter'] ?? ($data['shelters'][0] ?? null);
     </div>
 </div>
 <?php include __DIR__ . '/../include/footer.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('shelterSearch');
+    const sortSelect = document.getElementById('shelterSort');
+    const list = document.getElementById('shelterList');
+    if (!list) return;
+
+    // Cache original shelter data
+    const originalShelters = Array.from(list.children).map(li => {
+        return {
+            element: li,
+            name: li.querySelector('h6').textContent.trim().toLowerCase(),
+            pets: parseInt(li.querySelector('.text-end strong').textContent.trim(), 10) || 0,
+            verified: li.querySelector('.badge.bg-success') ? 1 : 0,
+            fullName: li.querySelector('h6').textContent.trim()
+        };
+    });
+
+    // Helper: sort names alphabetically, then by number if present
+    function alphaNumSort(a, b) {
+        function splitAlphaNum(str) {
+            const match = str.match(/^([a-zA-Z\s]+)(\d+)?/);
+            return match ? [match[1].trim(), match[2] ? parseInt(match[2], 10) : null] : [str, null];
+        }
+        const [aAlpha, aNum] = splitAlphaNum(a.fullName);
+        const [bAlpha, bNum] = splitAlphaNum(b.fullName);
+
+        const cmp = aAlpha.localeCompare(bAlpha, undefined, { sensitivity: 'base' });
+        if (cmp !== 0) return cmp;
+        if (aNum !== null && bNum !== null) return aNum - bNum;
+        if (aNum !== null) return 1;
+        if (bNum !== null) return -1;
+        return 0;
+    }
+
+    function renderShelters(shelters, emptyMsg = "No shelters found.") {
+        list.innerHTML = '';
+        if (shelters.length === 0) {
+            list.innerHTML = `<li class="list-group-item text-center py-5">${emptyMsg}</li>`;
+        } else {
+            shelters.forEach(s => {
+                list.appendChild(s.element);
+            });
+        }
+    }
+
+    function filterAndSort() {
+        const search = searchInput.value.trim().toLowerCase();
+        let filtered = originalShelters;
+
+        if (search.length > 0) {
+            filtered = originalShelters.filter(s => s.name.startsWith(search));
+        }
+
+        const sortVal = sortSelect.value;
+        if (sortVal === 'all') {
+            renderShelters(filtered);
+        } else if (sortVal === 'pets') {
+            // Only show shelters with at least 1 pet
+            const withPets = filtered.filter(s => s.pets > 0);
+            if (withPets.length === 0) {
+                renderShelters([], "No shelter managed a pet.");
+            } else {
+                withPets.sort((a, b) => b.pets - a.pets);
+                renderShelters(withPets);
+            }
+        } else if (sortVal === 'verified') {
+            const verifiedShelters = filtered.filter(s => s.verified === 1);
+            if (verifiedShelters.length === 0) {
+                renderShelters([], "No verified shelters found.");
+            } else {
+                verifiedShelters.sort(alphaNumSort);
+                renderShelters(verifiedShelters);
+            }
+        }
+    }
+
+    searchInput.addEventListener('input', filterAndSort);
+    sortSelect.addEventListener('change', filterAndSort);
+
+    // Automatically trigger sorting when page loads and whenever sort option changes
+    filterAndSort();
+});
+</script>
