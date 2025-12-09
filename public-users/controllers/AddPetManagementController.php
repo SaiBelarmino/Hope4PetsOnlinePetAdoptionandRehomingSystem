@@ -4,6 +4,7 @@
 require_once __DIR__ . '/../../controllers/BaseController.php';
 require_once __DIR__ . '/../../config/SessionManager.php';
 require_once __DIR__ . '/PetManagementController.php';
+require_once __DIR__ . '/NotificationController.php';
 
 class AddPetManagementController extends BaseController {
     /**
@@ -61,6 +62,17 @@ class AddPetManagementController extends BaseController {
             header('Location: ../views/PetManagement.php?success=1&warning=photo');
             exit;
         }
+
+        // Notify all users except the actor about the new pet
+        $notificationController = new NotificationController();
+        $actorId = $_SESSION['user']['id'];
+        $notificationController->notifyAllExceptActor(
+            "A new pet has been added!",
+            $actorId,
+            'ti-paw',
+            'bg-light-success text-success',
+            "/public-users/views/PetView.php?id=$petId"
+        );
 
         header('Location: ../views/PetManagement.php?success=1');
         exit;

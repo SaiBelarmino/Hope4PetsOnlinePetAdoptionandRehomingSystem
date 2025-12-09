@@ -28,7 +28,13 @@ $allNotifications = $controller->getAllNotifications();
                                 <i class="ti <?= htmlspecialchars($notification['icon']) ?>"></i>
                             </span>
                             <div class="w-100">
-                                <p class="mb-1"><?= htmlspecialchars($notification['message']) ?></p>
+                                <?php if (!empty($notification['url'])): ?>
+                                    <a href="<?= htmlspecialchars($notification['url']) ?>" class="text-decoration-none">
+                                        <p class="mb-1"><?= htmlspecialchars($notification['message']) ?></p>
+                                    </a>
+                                <?php else: ?>
+                                    <p class="mb-1"><?= htmlspecialchars($notification['message']) ?></p>
+                                <?php endif; ?>
                                 <small class="text-muted"><?= htmlspecialchars($notification['time']) ?></small>
                             </div>
                             <?php if (!$notification['is_read']): ?>

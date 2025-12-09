@@ -88,7 +88,8 @@
                                 <?php else: ?>
                                     <?php foreach ($recentNotifications as $notification): ?>
                                         <li class="border-bottom">
-                                            <a class="dropdown-item d-flex align-items-start gap-3 py-3 <?= $notification['is_read'] ? 'bg-light' : '' ?>" href="#">
+                                            <a class="dropdown-item d-flex align-items-start gap-3 py-3 <?= $notification['is_read'] ? 'bg-light' : '' ?>"
+                                               href="<?= !empty($notification['url']) ? htmlspecialchars($notification['url']) : '#' ?>">
                                                 <span class="p-2 rounded-circle d-flex align-items-center justify-content-center <?= htmlspecialchars($notification['bg']) ?>">
                                                     <i class="ti <?= htmlspecialchars($notification['icon']) ?>"></i>
                                                 </span>
@@ -172,7 +173,7 @@
         <h5 class="modal-title" id="allNotificationsModalLabel">All Notifications</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body p-0">
+      <div class="modal-body p-0" style="max-height:500px;overflow-y:auto;">
         <?php
         // Use the controller to get all notifications
         if (!class_exists('NotificationController')) {
@@ -188,7 +189,7 @@
         <?php else: ?>
             <ul class="list-group list-group-flush">
                 <?php foreach ($allNotifications as $notification): ?>
-                    <li class="list-group-item list-group-item-action d-flex align-items-start gap-3 py-3 <?= $notification['is_read'] ? 'bg-light' : '' ?>">
+                    <li class="list-group-item list-group-item-action d-flex align-items-start gap-3 py-3 <?= $notification['is_read'] ? 'bg-light' : '' ?>" data-id="<?= $notification['id'] ?>">
                         <span class="p-2 rounded-circle d-flex align-items-center justify-content-center <?= htmlspecialchars($notification['bg']) ?>">
                             <i class="ti <?= htmlspecialchars($notification['icon']) ?>"></i>
                         </span>
@@ -199,6 +200,9 @@
                         <?php if (!$notification['is_read']): ?>
                             <span class="badge bg-primary rounded-pill">New</span>
                         <?php endif; ?>
+                        <button class="btn btn-sm btn-link text-danger ms-auto delete-notification" title="Delete" style="font-size:18px;">
+                            <i class="ti ti-trash"></i>
+                        </button>
                     </li>
                 <?php endforeach; ?>
             </ul>
@@ -207,3 +211,46 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function updateNotificationDot() {
+        // Count remaining unread notifications in modal
+        const unread = document.querySelectorAll('#allNotificationsModal .list-group-item .badge.bg-primary');
+        const dot = document.querySelector('.notification-dot');
+        if (unread.length === 0 && dot) {
+            dot.style.display = 'none';
+        }
+    }
+
+    document.querySelectorAll('.delete-notification').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const li = btn.closest('li[data-id]');
+            const id = li.getAttribute('data-id');
+            if (!confirm('Delete this notification?')) return;
+            fetch('../controllers/NotificationController.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'action=delete_notification&id=' + encodeURIComponent(id)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    li.remove();
+                    // Check if there are any notifications left
+                    const list = document.querySelector('#allNotificationsModal .list-group');
+                    if (!list || list.children.length === 0) {
+                        const modalBody = document.querySelector('#allNotificationsModal .modal-body');
+                        modalBody.innerHTML = '<div class="p-4 text-center text-muted">You have no notifications.</div>';
+                    }
+                    updateNotificationDot();
+                } else {
+                    alert('Failed to delete notification.');
+                }
+            });
+        });
+    });
+});
+</script>
+
