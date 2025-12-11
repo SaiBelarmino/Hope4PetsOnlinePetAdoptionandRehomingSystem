@@ -1,11 +1,34 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (empty($_SESSION['user'])) {
+    header('Location: ../user-authentication/authentication-login.php');
+    exit;
+}
 require_once __DIR__ . '/../controllers/PetController.php';
+
+// --- Fetch species and breeds for dropdowns ---
+$speciesList = PetController::getSpeciesList();
+$breedList = [];
+if (!empty($_GET['species'])) {
+    $breedList = PetController::getBreedList($_GET['species']);
+}
 
 $pageTitle = 'Browse Pets';
 
-$pets = PetController::fetchAvailablePets();
+// --- Build filter array from GET ---
+$filters = [
+    'search' => trim($_GET['search'] ?? ''),
+    'species' => $_GET['species'] ?? '',
+    'breed' => $_GET['breed'] ?? '',
+    'age' => $_GET['age'] ?? [],
+    'size' => $_GET['size'] ?? [],
+    'gender' => $_GET['gender'] ?? '',
+    'activity_level' => $_GET['activity_level'] ?? '',
+    'vaccine_status' => $_GET['vaccine_status'] ?? '',
+    'availability' => $_GET['availability'] ?? '',
+];
 
+$pets = PetController::filterAvailablePets($filters);
 ?>
 <?php include __DIR__ . '/../include/header.php'; ?>
 <?php include __DIR__ . '/../include/topbar.php'; ?>
@@ -39,6 +62,101 @@ $pets = PetController::fetchAvailablePets();
         <div class="col-12 col-lg-6"
             style="max-height:862px; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; -ms-overflow-style:none;">
             <div class="row g-3">
+                <!-- Search Bar Start -->
+                    <div class="col-12 mb-2">
+                        <form method="get" action="" class="input-group input-group-sm" style="max-width:100%;">
+                            <input type="text" class="form-control" name="search" placeholder="Search pets..." value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </form>
+                    </div>
+                        <!-- Search Bar End -->
+
+                <!-- Filter By: Start -->
+                <form method="get" action="" class="card mb-2" style="max-width: 100%; border: none; background: transparent;">
+                    <div class="card-body py-2 px-0">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <span class="fw-bold me-2">Filter By:</span>
+                            
+                            <!-- Species -->
+                            <div class="d-flex align-items-center gap-1">
+                                <span title="Dog"><i class="ti ti-dog"></i></span>
+                                <span title="Cat"><i class="ti ti-cat"></i></span>
+                                <select class="form-select form-select-sm" style="width:110px;" name="species" id="filter-species">
+                                    <option value="">Species</option>
+                                    <?php foreach ($speciesList as $sp): ?>
+                                        <option value="<?php echo htmlspecialchars($sp); ?>" <?php echo ($filters['species'] == $sp) ? 'selected' : ''; ?>>
+                                            <?php echo ucfirst($sp); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <!-- Breed -->
+                            <select class="form-select form-select-sm" style="width:120px;" name="breed" id="filter-breed" <?php echo empty($filters['species']) ? 'disabled' : ''; ?>>
+                                <option value="">Breed</option>
+                                <?php foreach ($breedList as $br): ?>
+                                    <option value="<?php echo htmlspecialchars($br); ?>" <?php echo ($filters['breed'] == $br) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($br); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+
+                            <!-- Gender (dropdown, beside breed) -->
+                            <select class="form-select form-select-sm" style="width:100px;" name="gender" id="filter-gender">
+                                <option value="">Gender</option>
+                                <option value="male" <?php echo ($filters['gender'] == 'male') ? 'selected' : ''; ?>>Male</option>
+                                <option value="female" <?php echo ($filters['gender'] == 'female') ? 'selected' : ''; ?>>Female</option>
+                            </select>
+
+                            <!-- Age -->
+                            <div class="d-flex align-items-center gap-1">
+                                <label class="form-check-label small"><input type="checkbox" class="form-check-input" name="age[]" value="puppy" <?php echo in_array('puppy', $filters['age']) ? 'checked' : ''; ?>> Puppy/Kitten</label>
+                                <label class="form-check-label small"><input type="checkbox" class="form-check-input" name="age[]" value="young" <?php echo in_array('young', $filters['age']) ? 'checked' : ''; ?>> Young (1-3y)</label>
+                                <label class="form-check-label small"><input type="checkbox" class="form-check-input" name="age[]" value="adult" <?php echo in_array('adult', $filters['age']) ? 'checked' : ''; ?>> Adult (3-8y)</label>
+                                <label class="form-check-label small"><input type="checkbox" class="form-check-input" name="age[]" value="senior" <?php echo in_array('senior', $filters['age']) ? 'checked' : ''; ?>> Senior (8+y)</label>
+                            </div>
+
+                            <!-- Size -->
+                            <div class="d-flex align-items-center gap-1">
+                                <label class="form-check-label small"><input type="checkbox" class="form-check-input" name="size[]" value="small" <?php echo in_array('small', $filters['size']) ? 'checked' : ''; ?>> Small</label>
+                                <label class="form-check-label small"><input type="checkbox" class="form-check-input" name="size[]" value="medium" <?php echo in_array('medium', $filters['size']) ? 'checked' : ''; ?>> Medium</label>
+                                <label class="form-check-label small"><input type="checkbox" class="form-check-input" name="size[]" value="large" <?php echo in_array('large', $filters['size']) ? 'checked' : ''; ?>> Large</label>
+                                <label class="form-check-label small"><input type="checkbox" class="form-check-input" name="size[]" value="xlarge" <?php echo in_array('xlarge', $filters['size']) ? 'checked' : ''; ?>> X-Large</label>
+                            </div>
+
+                            <!-- Advanced Filters Toggle -->
+                            <button type="button" class="btn btn-link btn-sm px-2" id="toggle-advanced-filters">Show Advanced Filters</button>
+                        </div>
+
+                        <!-- Advanced Filters (hidden by default) -->
+                        <div id="advanced-filters" class="mt-2 d-none">
+                            <div class="d-flex flex-wrap gap-2">
+                                <!-- Vaccination Status Dropdown -->
+                                <select class="form-select form-select-sm" style="width:170px;" name="vaccine_status">
+                                    <option value="">Vaccination Status: Any</option>
+                                    <option value="up-to-date" <?php echo ($filters['vaccine_status'] ?? '') === 'up-to-date' ? 'selected' : ''; ?>>Up-to-date</option>
+                                    <option value="partially" <?php echo ($filters['vaccine_status'] ?? '') === 'partially' ? 'selected' : ''; ?>>Partially</option>
+                                    <option value="unknown" <?php echo ($filters['vaccine_status'] ?? '') === 'unknown' ? 'selected' : ''; ?>>Unknown</option>
+                                </select>
+                                <!-- Availability Dropdown -->
+                                <select class="form-select form-select-sm" style="width:170px;" name="availability">
+                                    <option value="">Availability: Any</option>
+                                    <option value="available" <?php echo ($filters['availability'] ?? '') === 'available' ? 'selected' : ''; ?>>Available Now</option>
+                                    <option value="pending" <?php echo ($filters['availability'] ?? '') === 'pending' ? 'selected' : ''; ?>>Pending Adoption</option>
+                                    <option value="hold" <?php echo ($filters['availability'] ?? '') === 'hold' ? 'selected' : ''; ?>>On Hold</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Filter Buttons -->
+                        <div class="mt-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
+                            <button type="reset" class="btn btn-outline-secondary btn-sm" onclick="window.location='BrowsePet.php'">Clear All</button>
+                        </div>
+                    </div>
+                </form>
+                <!-- Filter By: End -->
+
                 <?php if (empty($pets)): ?>
                 <div class="col-12">
                     <div class="card">
@@ -274,4 +392,21 @@ $pets = PetController::fetchAvailablePets();
 
 <!-- include page-specific JS -->
 <script src="./assets/js/BrowsePet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const species = document.getElementById('filter-species');
+    const breed = document.getElementById('filter-breed');
+    species.addEventListener('change', function() {
+        // Submit form to reload breeds for selected species
+        this.form.submit();
+    });
+
+    document.getElementById('toggle-advanced-filters').addEventListener('click', function() {
+        document.getElementById('advanced-filters').classList.toggle('d-none');
+        this.textContent = document.getElementById('advanced-filters').classList.contains('d-none')
+            ? 'Show Advanced Filters'
+            : 'Hide Advanced Filters';
+    });
+});
+</script>
 <?php include __DIR__ . '/../include/footer.php'; ?>

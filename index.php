@@ -122,7 +122,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-3 d-grid">
-                                <a href="public-users/views/authentication-login.php" class="btn btn-primary">
+                                <a href="public-users\user-authentication\authentication-login.php" class="btn btn-primary">
                                     <i class="ti ti-search me-1"></i> Search
                                 </a>
                             </div>
@@ -180,7 +180,7 @@
                     <h2 class="h1 fw-bold mb-1" data-assemble="words" data-assemble-delay="140">Popular categories</h2>
                     <p class="text-muted mb-0">Start browsing by the type of pet you love.</p>
                 </div>
-                <a href="public-users/views/authentication-login.php" class="btn btn-outline-primary">Browse pets</a>
+                <a href="public-users/views/BrowsePet.php" class="btn btn-outline-primary">Browse pets</a>
             </div>
             <div class="row g-4">
                 <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-scale">
@@ -361,15 +361,6 @@
                         <li><a class="link-light" href="#adopt">Adopt</a></li>
                         <li><a class="link-light" href="#how">How it works</a></li>
                         <li><a class="link-light" href="#stories">Stories</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-3">
-                    <h6 class="text-white">For shelters</h6>
-                    <ul class="list-unstyled">
-                        <li><a class="link-light" href="organization-shelter/views/authentication-signup.php">Create
-                                account</a></li>
-                        <li><a class="link-light" href="organization-shelter/views/authentication-login.php">Shelter
-                                login</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3">

@@ -384,4 +384,20 @@ class PetManagementController extends BaseController {
             return ['success' => $success, 'action' => 'added'];
         }
     }
+
+    public static function getDB() {
+        static $db = null;
+        if ($db === null) {
+            $host = 'localhost';
+            $dbname = 'hope4pets';
+            $username = 'root';
+            $password = '';
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ];
+            $db = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, $options);
+        }
+        return $db;
+    }
 }
