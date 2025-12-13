@@ -87,8 +87,10 @@ class NotificationController
     {
         $timestamp = strtotime($datetime);
         $diff = time() - $timestamp;
-        if ($diff < 60) return $diff . ' sec ago';
-        if ($diff < 3600) return floor($diff / 60) . ' min ago';
+        if ($diff < 3600) {
+            $mins = max(1, floor($diff / 60));
+            return $mins . ' min ago';
+        }
         if ($diff < 86400) return floor($diff / 3600) . ' hour ago';
         return date('M d, Y', $timestamp);
     }

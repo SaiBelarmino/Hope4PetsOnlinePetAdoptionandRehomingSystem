@@ -36,17 +36,14 @@ class PetManagementController extends BaseController {
      */
     public static function createPet(int $ownerId, array $data): array {
         $mysqli = self::db();
-        
         // Insert pet
         $stmt = $mysqli->prepare(
             "INSERT INTO pets (owner_id, shelter_id, name, species, breed, age, gender, size, vaccine_status, health_status, location, description, status, created_at) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available', NOW())"
         );
-        
         if (!$stmt) {
             return ['success' => false, 'message' => 'Database error. Please try again.'];
         }
-        
         $stmt->bind_param(
             'iissssssssss',
             $ownerId,
@@ -62,17 +59,28 @@ class PetManagementController extends BaseController {
             $data['location'],
             $data['description']
         );
-        
         $success = $stmt->execute();
-        
         if (!$success) {
             $stmt->close();
             return ['success' => false, 'message' => 'Failed to create pet listing.'];
         }
-        
         $petId = $mysqli->insert_id;
         $stmt->close();
-        
+
+        // Notify all users except the actor (ownerId) about the new pet
+        require_once __DIR__ . '/NotificationController.php';
+        if (class_exists('NotificationController')) {
+            $notificationController = new NotificationController();
+            $petName = isset($data['name']) ? $data['name'] : 'A new pet';
+            $notificationController->notifyAllExceptActor(
+                "A new pet has been added: " . htmlspecialchars($petName) . "!",
+                $ownerId,
+                'ti-paw',
+                'bg-light-success text-success',
+                "/public-users/views/PetView.php?id=$petId"
+            );
+        }
+
         return [
             'success' => true,
             'message' => 'Pet listed successfully!',

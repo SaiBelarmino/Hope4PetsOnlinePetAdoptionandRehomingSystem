@@ -17,10 +17,22 @@ class AdoptPetProcessController extends BaseController {
         }
 
         if (session_status() === PHP_SESSION_NONE) session_start();
+
         $userId = (int)($_SESSION['user']['id'] ?? 0);
         if (!$userId) {
             $_SESSION['flash'] = ['type' => 'error', 'message' => 'You must be logged in to submit an adoption request.'];
             header('Location: ./login.php');
+            exit;
+        }
+
+        // Always fetch latest verification status from DB to avoid stale session
+        require_once __DIR__ . '/MyProfileController.php';
+        $userProfile = ProfileController::get($userId);
+        $isVerified = isset($userProfile['is_verified']) && ((int)$userProfile['is_verified'] === 1);
+        if (!$isVerified) {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'You must verify your account before submitting an adoption request.'];
+            $referer = $_SERVER['HTTP_REFERER'] ?? '../views/BrowsePet.php';
+            header('Location: ' . $referer);
             exit;
         }
 
