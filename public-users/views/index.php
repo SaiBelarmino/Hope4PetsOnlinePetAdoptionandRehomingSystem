@@ -363,12 +363,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                     class="d-none d-sm-inline">Like</span>
                                 <?php if ($post['reaction_count'] > 0): ?><span
                                     class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span><?php endif; ?></a>
-                            <!-- Replace Comment link with a toggle button that expands a collapsible comment form -->
-                            <button type="button" class="btn btn-light border me-1 mb-1 comment-toggle"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#comment-box-<?php echo $post['id']; ?>"
-                                    aria-expanded="false"
-                                    aria-controls="comment-box-<?php echo $post['id']; ?>">
+                            <!-- Comment button triggers modal -->
+                            <button type="button" class="btn btn-light border me-1 mb-1 comment-modal-btn"
+                                    data-post-id="<?php echo $post['id']; ?>"
+                                    data-post-content="<?php echo isset($fullHtml) ? htmlspecialchars($fullHtml, ENT_QUOTES, 'UTF-8') : ''; ?>"
+                                    data-post-user="<?php echo htmlspecialchars($post['full_name']); ?>"
+                                    data-post-avatar="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-post-date="<?php echo htmlspecialchars($timeAgo); ?>"
+                                    data-comment-count="<?php echo $post['comment_count']; ?>">
                                 <i class="ti ti-message-circle"></i> <span class="d-none d-sm-inline">Comment</span>
                                 <?php if ($post['comment_count'] > 0): ?><span
                                     class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?>
@@ -381,36 +383,168 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <!-- End single post card -->
 
-            <!-- Collapsible inline comment box -->
-            <?php if ($userId): ?>
-            <div id="comment-box-<?php echo $post['id']; ?>" class="collapse comment-box mt-2">
-                 <form method="post" action="../controllers/AddCommentController.php" class="d-flex align-items-start gap-2">
-                    <img src="<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>"
-                         class="rounded-circle object-fit-cover" width="32" height="32" alt="Your avatar"
-                         style="object-fit:cover; aspect-ratio:1/1;">
+            <!-- Remove inline comment box, handled by modal below -->
+<!-- Comment Modal (single, reused for all posts) -->
+<div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="commentModalLabel">Post & Comments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-2">
+                    <img id="commentModalAvatar" src="" class="rounded-circle me-2 object-fit-cover" width="36" height="36" alt="Profile picture" />
                     <div class="flex-grow-1">
-                        <input type="hidden" name="action" value="create">
-                        <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($post['id'], ENT_QUOTES, 'UTF-8'); ?>">
-                        <div class="position-relative">
-                            <input type="text" name="content" class="form-control pe-5" placeholder="Write a comment..." required maxlength="1000">
-                            <button type="submit" class="btn btn-primary position-absolute top-50 end-0 translate-middle-y me-2 p-0 d-inline-flex align-items-center justify-content-center" style="width:32px; height:32px; border-radius:50%;" aria-label="Send comment">
-                                <i class="ti ti-send"></i>
+                        <span id="commentModalUser" class="fw-bold"></span>
+                        <div class="text-muted small" id="commentModalDate"></div>
+                    </div>
+                </div>
+                <div class="mb-2" id="commentModalContent"></div>
+                <div id="commentModalMedia"></div>
+                <hr />
+                <div id="commentModalComments">
+                    <div class="text-center text-muted">Loading comments...</div>
+                </div>
+                <div id="commentModalFormContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+// Comment modal logic
+document.addEventListener('DOMContentLoaded', function() {
+    var commentModalEl = document.getElementById('commentModal');
+    var commentModal = new bootstrap.Modal(commentModalEl);
+    var avatarEl = document.getElementById('commentModalAvatar');
+    var userEl = document.getElementById('commentModalUser');
+    var dateEl = document.getElementById('commentModalDate');
+    var contentEl = document.getElementById('commentModalContent');
+    var commentsEl = document.getElementById('commentModalComments');
+    var formContainer = document.getElementById('commentModalFormContainer');
+
+    // Refresh page when comment modal is closed
+    commentModalEl.addEventListener('hidden.bs.modal', function () {
+        window.location.reload();
+    });
+
+    document.querySelectorAll('.comment-modal-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            // Set post info
+            avatarEl.src = btn.getAttribute('data-post-avatar');
+            userEl.textContent = btn.getAttribute('data-post-user');
+            dateEl.textContent = btn.getAttribute('data-post-date');
+            contentEl.innerHTML = btn.getAttribute('data-post-content');
+            // Load post media (images/videos) via AJAX
+            var postId = btn.getAttribute('data-post-id');
+            var mediaEl = document.getElementById('commentModalMedia');
+            mediaEl.innerHTML = '';
+            fetch('../api/get_post_media.php?post_id=' + encodeURIComponent(postId))
+                .then(r => r.json())
+                .then(data => {
+                    var html = '';
+                    if (data.photos && data.photos.length > 0) {
+                        if (data.photos.length === 1) {
+                            html += `<div class=\"post-media-single mb-3\"><img src=\"${data.photos[0]}\" alt=\"Post photo\" style=\"max-width:100%;height:auto;object-fit:contain;\" /></div>`;
+                        } else {
+                            html += '<div class="row row-cols-2 row-cols-md-2 g-2 mb-3">';
+                            data.photos.slice(0,4).forEach(function(photo, idx) {
+                                html += `<div class=\"col\"><div style=\"position:relative; padding-top:100%; overflow:hidden;\"><img src=\"${photo}\" class=\"position-absolute top-0 start-0 w-100 h-100 object-fit-cover rounded\" /></div></div>`;
+                            });
+                            html += '</div>';
+                        }
+                    }
+                    if (data.videos && data.videos.length > 0) {
+                        data.videos.forEach(function(video) {
+                            html += `<div class=\"video-container position-relative mb-3\"><video controls class=\"w-100\" style=\"max-height:420px; aspect-ratio:1; object-fit:cover;\" controlslist=\"nodownload\"><source src=\"${video}\" /></video></div>`;
+                        });
+                    }
+                    mediaEl.innerHTML = html;
+                });
+            // Load comments via AJAX
+            commentsEl.innerHTML = '<div class="text-center text-muted">Loading comments...</div>';
+            fetch('../api/get_post_comments.php?post_id=' + encodeURIComponent(postId))
+                .then(r => r.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        commentsEl.innerHTML = data.map(function(c) {
+                            return `<div class=\"mb-2\"><b>${c.full_name}</b> <span class=\"text-muted small\">${c.created_at}</span><div>${c.content}</div></div>`;
+                        }).join('');
+                    } else {
+                        commentsEl.innerHTML = '<div class="text-muted">No comments yet.</div>';
+                    }
+                })
+                .catch(() => { commentsEl.innerHTML = '<div class="text-danger">Failed to load comments.</div>'; });
+            // Show comment form if logged in
+            <?php if ($userId): ?>
+            formContainer.innerHTML = `
+                <form id=\"commentModalForm\" class=\"d-flex align-items-start gap-2 mt-3\" autocomplete=\"off\">
+                    <img src=\"<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>\" class=\"rounded-circle object-fit-cover\" width=\"32\" height=\"32\" alt=\"Your avatar\" style=\"object-fit:cover; aspect-ratio:1/1;\">
+                    <div class=\"flex-grow-1\">
+                        <input type=\"hidden\" name=\"action\" value=\"create\">
+                        <input type=\"hidden\" name=\"post_id\" value=\"${postId}\">
+                        <div class=\"position-relative\">
+                            <input type=\"text\" name=\"content\" class=\"form-control pe-5\" placeholder=\"Write a comment...\" required maxlength=\"1000\">
+                            <button type=\"submit\" class=\"btn btn-primary position-absolute top-50 end-0 translate-middle-y me-2 p-0 d-inline-flex align-items-center justify-content-center\" style=\"width:32px; height:32px; border-radius:50%;\" aria-label=\"Send comment\">
+                                <i class=\"ti ti-send\"></i>
                             </button>
                         </div>
                     </div>
                 </form>
-            </div>
-            <br>
+            `;
+            // AJAX submit for comment form
+            setTimeout(function() {
+                var commentForm = document.getElementById('commentModalForm');
+                if (commentForm) {
+                    commentForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        var submitBtn = commentForm.querySelector('button[type="submit"]');
+                        if (submitBtn) submitBtn.disabled = true;
+                        var formData = new FormData(commentForm);
+                        fetch('../controllers/AddCommentController.php', {
+                            method: 'POST',
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                            body: formData
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success && data.comment) {
+                                // Reload comments from server to avoid duplicates
+                                commentsEl.innerHTML = '<div class="text-center text-muted">Loading comments...</div>';
+                                fetch('../api/get_post_comments.php?post_id=' + encodeURIComponent(postId))
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        if (Array.isArray(data) && data.length > 0) {
+                                            commentsEl.innerHTML = data.map(function(c) {
+                                                return `<div class=\"mb-2\"><b>${c.full_name}</b> <span class=\"text-muted small\">${c.created_at}</span><div>${c.content}</div></div>`;
+                                            }).join('');
+                                        } else {
+                                            commentsEl.innerHTML = '<div class="text-muted">No comments yet.</div>';
+                                        }
+                                    })
+                                    .catch(() => { commentsEl.innerHTML = '<div class="text-danger">Failed to load comments.</div>'; });
+                                commentForm.reset();
+                            } else {
+                                alert(data.error || 'Comment Added.');
+                            }
+                        })
+                        .catch(() => { alert('Comment Added.'); })
+                        .finally(() => {
+                            if (submitBtn) submitBtn.disabled = false;
+                        });
+                    });
+                }
+            }, 100);
             <?php else: ?>
-            <div id="comment-box-<?php echo $post['id']; ?>" class="collapse comment-box mt-2">
-                <div class="alert alert-info mb-0">
-                    Please <a href="../login.php" class="alert-link">log in</a> to comment.
-                </div>
-            </div>
+            formContainer.innerHTML = `<div class=\"alert alert-info mt-3\">Please <a href=\"../login.php\" class=\"alert-link\">log in</a> to comment.</div>`;
             <?php endif; ?>
-
-            <?php endforeach; ?>
-            <?php endif; ?>
+            commentModal.show();
+        });
+    });
+});
+</script>
+           <?php endforeach; ?>
+            <?php endif; ?> 
             <!-- Create Post Modal -->
             <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel"
                 aria-hidden="true">

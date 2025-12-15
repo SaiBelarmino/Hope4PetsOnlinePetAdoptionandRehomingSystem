@@ -292,10 +292,6 @@ if (isset($_SERVER['SCRIPT_NAME'])) {
                             </div>
                         </div>
                     <?php else: ?>
-                        <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
-                            <i class="ti ti-lock me-2"></i>
-                            <div>Your shelter must be <strong>verified</strong> before you can manage or add pets.</div>
-                        </div>
                     <?php endif; ?>
             </div>
         </div>
