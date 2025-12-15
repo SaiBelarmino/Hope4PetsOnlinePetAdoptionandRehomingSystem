@@ -198,6 +198,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Get profile photo or default using helper
                     $profilePhoto = resolve_profile_photo($post['profile_photo'] ?? null);
+                    // Get heart count and if user hearted
+                    $heartCount = 0;
+                    $userHearted = false;
+                    try {
+                        $conn = $GLOBALS['conn'] ?? null;
+                        if (!$conn) {
+                            require_once __DIR__ . '/../config/db-connection/db_connection.php';
+                            $conn = $GLOBALS['conn'] ?? null;
+                        }
+                        if ($conn) {
+                            $stmt = $conn->prepare('SELECT COUNT(*) FROM post_reactions WHERE post_id=?');
+                            $stmt->bind_param('i', $post['id']);
+                            $stmt->execute();
+                            $stmt->bind_result($heartCount);
+                            $stmt->fetch();
+                            $stmt->close();
+                            if ($userId) {
+                                $stmt = $conn->prepare('SELECT 1 FROM post_reactions WHERE post_id=? AND user_id=? LIMIT 1');
+                                $stmt->bind_param('ii', $post['id'], $userId);
+                                $stmt->execute();
+                                $stmt->store_result();
+                                $userHearted = $stmt->num_rows > 0;
+                                $stmt->close();
+                            }
+                        }
+                    } catch (Throwable $e) {}
                 ?>
 
             <!-- Single post card -->
@@ -358,11 +384,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <div class="d-flex justify-content-between post-actions-sm mt-2">
                         <div class="action-group d-flex flex-wrap">
-                            <a href="./PostView.php?id=<?php echo $post['id']; ?>"
-                                class="btn btn-light border me-1 mb-1"><i class="ti ti-thumb-up"></i> <span
-                                    class="d-none d-sm-inline">Like</span>
-                                <?php if ($post['reaction_count'] > 0): ?><span
-                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span><?php endif; ?></a>
+                            <button type="button" class="heart-btn btn btn-light border me-1 mb-1<?php if ($userHearted) echo ' hearted'; ?>"
+                                data-post-id="<?php echo $post['id']; ?>" data-user-heart="<?php echo $userHearted ? '1' : '0'; ?>" <?php if (!$userId) echo 'disabled title="Log in to heart"'; ?>>
+                                <span class="heart-icon align-middle"></span>
+                                <span class="d-none d-sm-inline">Heart</span>
+                                <span class="heart-count ms-1"><?php echo (int)$heartCount; ?></span>
+                            </button>
+                            <link href="assets/css/HeartReaction.css?v=1" rel="stylesheet">
+                            <script src="assets/js/HeartReaction.js?v=1"></script>
                             <!-- Comment button triggers modal -->
                             <button type="button" class="btn btn-light border me-1 mb-1 comment-modal-btn"
                                     data-post-id="<?php echo $post['id']; ?>"

@@ -1,0 +1,38 @@
+.heart-btn {
+  color: #f91880;
+  transition: transform 0.2s cubic-bezier(.4,2,.6,1), color 0.2s;
+  position: relative;
+  outline: none;
+}
+.heart-btn .heart-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 24px;
+  height: 24px;
+  margin-right: 2px;
+  transition: filter 0.2s;
+}
+.heart-btn .heart-count {
+  font-weight: 600;
+  color: #f91880;
+  margin-left: 2px;
+}
+.heart-btn.hearted .heart-icon svg {
+  filter: drop-shadow(0 2px 6px #f9188033);
+}
+.heart-btn.hearted,
+.heart-btn:focus.hearted {
+  color: #f91880;
+}
+.heart-btn.heart-anim {
+  transform: scale(1.2);
+}
+.heart-btn:active {
+  transform: scale(1.1);
+}
+.heart-btn:hover .heart-icon svg {
+  filter: drop-shadow(0 2px 8px #f9188044);
+}
+.heart-btn:focus {
+  box-shadow: 0 0 0 2px #f9188055;
+}
