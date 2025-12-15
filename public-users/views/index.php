@@ -145,7 +145,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <img src="<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>"
                             class="rounded-circle me-3 object-fit-cover" width="44" height="44"
                             alt="<?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>'s avatar"
-                            style="object-fit:cover;" />
+                            style="object-fit:cover;"
+                            onerror="this.onerror=null;this.src='../../assets/images/profile/user-1.jpg';" />
                         <a href="#" data-bs-toggle="modal" data-bs-target="#createPostModal"
                             class="form-control text-start text-muted text-decoration-none"
                             style="text-decoration:none;">
@@ -234,7 +235,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             <img src="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>"
                                 class="rounded-circle me-2 object-fit-cover" width="36" height="36"
                                 style="object-fit: cover; aspect-ratio: 1/1; min-width:36px; min-height:36px; max-width:36px; max-height:36px;"
-                                alt="Profile picture" onerror="this.src='../../assets/images/profile/user-1.jpg'" />
+                                alt="Profile picture"
+                                onerror="this.onerror=null;this.src='../../assets/images/profile/user-1.jpg';" />
                         </a>
                         <div class="flex-grow-1">
                             <a href="./UserProfile.php?user_id=<?php echo urlencode($post['user_id']); ?>"
@@ -404,8 +406,85 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <?php if ($post['comment_count'] > 0): ?><span
                                     class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?>
                             </button>
-                            <a href="./PostView.php?id=<?php echo urlencode($post['id']); ?>" class="btn btn-light border mb-1"><i
-                                    class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></a>
+                            <button type="button" class="btn btn-light border mb-1 share-btn"
+                                data-post-id="<?php echo $post['id']; ?>"
+                                data-post-url="<?php echo htmlspecialchars('https://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST_URI'], '?') . '?post_id=' . $post['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <i class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span>
+                            </button>
+                        <!-- Share Post Modal -->
+                        <div class="modal fade" id="sharePostModal" tabindex="-1" aria-labelledby="sharePostModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="sharePostModalLabel">Share Post</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <p>Share this post on:</p>
+                                        <div class="d-flex justify-content-center gap-3 mb-3">
+                                            <a id="shareFacebook" class="btn btn-primary" target="_blank" rel="noopener">
+                                                <i class="ti ti-brand-facebook"></i> Facebook
+                                            </a>
+                                            <a id="shareInstagram" class="btn btn-danger" target="_blank" rel="noopener">
+                                                <i class="ti ti-brand-instagram"></i> Instagram
+                                            </a>
+                                            <a id="shareTiktok" class="btn btn-dark" target="_blank" rel="noopener">
+                                                <i class="ti ti-brand-tiktok"></i> TikTok
+                                            </a>
+                                        </div>
+                                        <input type="text" id="sharePostUrl" class="form-control text-center" readonly value="" style="font-size:0.95em;">
+                                        <button class="btn btn-outline-secondary mt-2" id="copyShareUrlBtn">Copy Link</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                        // Share modal logic
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var shareModalEl = document.getElementById('sharePostModal');
+                            var shareModal = new bootstrap.Modal(shareModalEl);
+                            var shareUrlInput = document.getElementById('sharePostUrl');
+                            var copyBtn = document.getElementById('copyShareUrlBtn');
+                            var fbBtn = document.getElementById('shareFacebook');
+                            var igBtn = document.getElementById('shareInstagram');
+                            var tiktokBtn = document.getElementById('shareTiktok');
+
+                            document.querySelectorAll('.share-btn').forEach(function(btn) {
+                                btn.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    var postUrl = this.getAttribute('data-post-url');
+                                    shareUrlInput.value = postUrl;
+                                    // Facebook share
+                                    fbBtn.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(postUrl);
+                                    // Instagram does not support direct web sharing, so we copy the link and show a message
+                                    igBtn.onclick = function(ev) {
+                                        ev.preventDefault();
+                                        navigator.clipboard.writeText(postUrl).then(function() {
+                                            alert('Link copied! Open Instagram and paste it in your story or bio.');
+                                        });
+                                    };
+                                    // TikTok: no direct web share, but we can copy the link and prompt
+                                    tiktokBtn.onclick = function(ev) {
+                                        ev.preventDefault();
+                                        navigator.clipboard.writeText(postUrl).then(function() {
+                                            alert('Link copied! Open TikTok and share it in your video or bio.');
+                                        });
+                                    };
+                                    shareModal.show();
+                                });
+                            });
+                            copyBtn.addEventListener('click', function() {
+                                navigator.clipboard.writeText(shareUrlInput.value).then(function() {
+                                    copyBtn.textContent = 'Copied!';
+                                    setTimeout(function() { copyBtn.textContent = 'Copy Link'; }, 1500);
+                                });
+                            });
+                            // Redirect to main page after closing the share modal
+                            shareModalEl.addEventListener('hidden.bs.modal', function () {
+                                window.location.href = window.location.pathname;
+                            });
+                        });
+                        </script>
                         </div>
                     </div>
                 </div>
@@ -423,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="modal-body">
                 <div class="d-flex align-items-center mb-2">
-                    <img id="commentModalAvatar" src="" class="rounded-circle me-2 object-fit-cover" width="36" height="36" alt="Profile picture" />
+                    <img id="commentModalAvatar" src="" class="rounded-circle me-2 object-fit-cover" width="36" height="36" alt="Profile picture" onerror="this.onerror=null;this.src='../../assets/images/profile/user-1.jpg';" />
                     <div class="flex-grow-1">
                         <span id="commentModalUser" class="fw-bold"></span>
                         <div class="text-muted small" id="commentModalDate"></div>
@@ -508,7 +587,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <?php if ($userId): ?>
             formContainer.innerHTML = `
                 <form id=\"commentModalForm\" class=\"d-flex align-items-start gap-2 mt-3\" autocomplete=\"off\">
-                    <img src=\"<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>\" class=\"rounded-circle object-fit-cover\" width=\"32\" height=\"32\" alt=\"Your avatar\" style=\"object-fit:cover; aspect-ratio:1/1;\">
+                    <img src=\"<?php echo htmlspecialchars($composerAvatar, ENT_QUOTES, 'UTF-8'); ?>\" class=\"rounded-circle object-fit-cover\" width=\"32\" height=\"32\" alt=\"Your avatar\" style=\"object-fit:cover; aspect-ratio:1/1;\" onerror=\"this.onerror=null;this.src='../../assets/images/profile/user-1.jpg';\">
                     <div class=\"flex-grow-1\">
                         <input type=\"hidden\" name=\"action\" value=\"create\">
                         <input type=\"hidden\" name=\"post_id\" value=\"${postId}\">
