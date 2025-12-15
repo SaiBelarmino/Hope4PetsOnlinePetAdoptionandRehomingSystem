@@ -150,3 +150,43 @@ window.toggleCaption = function(btn){
   }
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', bindCaptionToggles); } else { bindCaptionToggles(); }
 })();
+(function(){
+  // Like-only toggle
+  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function update(btn, liked, count){
+    btn.dataset.liked = liked ? '1' : '0';
+    btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+    btn.classList.remove('btn-light','btn-primary');
+    btn.classList.add(liked ? 'btn-primary' : 'btn-light');
+    btn.classList.toggle('active', !!liked);
+    var badge = btn.querySelector('.like-count');
+    if (badge){ var n = Number(count||0); badge.textContent = n; badge.style.display = n > 0 ? '' : 'none'; }
+  }
+  function toggle(postId){
+    return fetch('../controllers/ToggleLikeController.php',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body: JSON.stringify({action:'toggle', post_id: postId, reaction_type: 'like'})
+    }).then(function(r){ return r.json(); });
+  }
+  function onClick(e){
+    var btn = e.currentTarget;
+    if (btn.dataset.auth !== '1'){ window.location.href = '../login.php'; return; }
+    var postId = btn.dataset.postId;
+    if (!postId) return;
+    var liked = btn.dataset.liked === '1';
+    var badge = btn.querySelector('.like-count');
+    var current = Number(badge ? badge.textContent : '0');
+    var optimisticLiked = !liked;
+    var optimisticCount = current + (optimisticLiked ? 1 : -1);
+    if (optimisticCount < 0) optimisticCount = 0;
+    update(btn, optimisticLiked, optimisticCount);
+    toggle(postId).then(function(res){
+      if (res && res.success){ update(btn, !!res.liked, Number(res.count||0)); }
+      else { update(btn, liked, current); }
+    }).catch(function(){ update(btn, liked, current); });
+  }
+  function init(){ qsa('.post-like-btn').forEach(function(btn){ btn.addEventListener('click', onClick); }); }
+  if (document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); } else { init(); }
+})();

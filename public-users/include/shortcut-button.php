@@ -18,15 +18,6 @@ $unreadMessagesCount = isset($unreadMessagesCount)? (int)$unreadMessagesCount : 
                     <span><i class="ti ti-user me-2 text-secondary" style="font-size:1.15rem;"></i>My Profile</span>
                 </a>
                 <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
-                    href="./BrowsePet.php">
-                    <span><i class="ti ti-paw me-2 text-success" style="font-size:1.15rem;"></i>Browse Pets</span>
-                </a>
-                <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
-                    href="./FindShelters.php">
-                    <span><i class="ti ti-building-community me-2 text-info" style="font-size:1.15rem;"></i>Find
-                        Shelters</span>
-                </a>
-                <a class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center border-0"
                     href="./AdoptionManagement.php">
                     <span><i class="ti ti-file-like me-2 text-warning" style="font-size:1.15rem;"></i>My
                         Adoptions</span>

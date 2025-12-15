@@ -386,105 +386,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <div class="d-flex justify-content-between post-actions-sm mt-2">
                         <div class="action-group d-flex flex-wrap">
-                            <button type="button" class="heart-btn btn btn-light border me-1 mb-1<?php if ($userHearted) echo ' hearted'; ?>"
-                                data-post-id="<?php echo $post['id']; ?>" data-user-heart="<?php echo $userHearted ? '1' : '0'; ?>" <?php if (!$userId) echo 'disabled title="Log in to heart"'; ?>>
-                                <span class="heart-icon align-middle"></span>
-                                <span class="d-none d-sm-inline">Heart</span>
-                                <span class="heart-count ms-1"><?php echo (int)$heartCount; ?></span>
-                            </button>
-                            <link href="assets/css/HeartReaction.css?v=1" rel="stylesheet">
-                            <script src="assets/js/HeartReaction.js?v=1"></script>
-                            <!-- Comment button triggers modal -->
-                            <button type="button" class="btn btn-light border me-1 mb-1 comment-modal-btn"
-                                    data-post-id="<?php echo $post['id']; ?>"
-                                    data-post-content="<?php echo isset($fullHtml) ? htmlspecialchars($fullHtml, ENT_QUOTES, 'UTF-8') : ''; ?>"
-                                    data-post-user="<?php echo htmlspecialchars($post['full_name']); ?>"
-                                    data-post-avatar="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>"
-                                    data-post-date="<?php echo htmlspecialchars($timeAgo); ?>"
-                                    data-comment-count="<?php echo $post['comment_count']; ?>">
+                            <a href="./PostView.php?id=<?php echo $post['id']; ?>"
+                                class="btn btn-light border me-1 mb-1"><i class="ti ti-thumb-up"></i> <span
+                                    class="d-none d-sm-inline">Like</span>
+                                <?php if ($post['reaction_count'] > 0): ?><span
+                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span><?php endif; ?></a>
+                            <!-- Replace Comment link with a toggle button that expands a collapsible comment form -->
+                            <button type="button" class="btn btn-light border me-1 mb-1 comment-toggle"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#comment-box-<?php echo $post['id']; ?>"
+                                    aria-expanded="false"
+                                    aria-controls="comment-box-<?php echo $post['id']; ?>">
                                 <i class="ti ti-message-circle"></i> <span class="d-none d-sm-inline">Comment</span>
-                                <?php if ($post['comment_count'] > 0): ?><span
-                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?>
+                                <?php if ($post['comment_count'] > 0): ?><span class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?>
                             </button>
-                            <button type="button" class="btn btn-light border mb-1 share-btn"
-                                data-post-id="<?php echo $post['id']; ?>"
-                                data-post-url="<?php echo htmlspecialchars('https://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST_URI'], '?') . '?post_id=' . $post['id'], ENT_QUOTES, 'UTF-8'); ?>">
-                                <i class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span>
-                            </button>
-                        <!-- Share Post Modal -->
-                        <div class="modal fade" id="sharePostModal" tabindex="-1" aria-labelledby="sharePostModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="sharePostModalLabel">Share Post</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body text-center">
-                                        <p>Share this post on:</p>
-                                        <div class="d-flex justify-content-center gap-3 mb-3">
-                                            <a id="shareFacebook" class="btn btn-primary" target="_blank" rel="noopener">
-                                                <i class="ti ti-brand-facebook"></i> Facebook
-                                            </a>
-                                            <a id="shareInstagram" class="btn btn-danger" target="_blank" rel="noopener">
-                                                <i class="ti ti-brand-instagram"></i> Instagram
-                                            </a>
-                                            <a id="shareTiktok" class="btn btn-dark" target="_blank" rel="noopener">
-                                                <i class="ti ti-brand-tiktok"></i> TikTok
-                                            </a>
-                                        </div>
-                                        <input type="text" id="sharePostUrl" class="form-control text-center" readonly value="" style="font-size:0.95em;">
-                                        <button class="btn btn-outline-secondary mt-2" id="copyShareUrlBtn">Copy Link</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <script>
-                        // Share modal logic
-                        document.addEventListener('DOMContentLoaded', function() {
-                            var shareModalEl = document.getElementById('sharePostModal');
-                            var shareModal = new bootstrap.Modal(shareModalEl);
-                            var shareUrlInput = document.getElementById('sharePostUrl');
-                            var copyBtn = document.getElementById('copyShareUrlBtn');
-                            var fbBtn = document.getElementById('shareFacebook');
-                            var igBtn = document.getElementById('shareInstagram');
-                            var tiktokBtn = document.getElementById('shareTiktok');
-
-                            document.querySelectorAll('.share-btn').forEach(function(btn) {
-                                btn.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    var postUrl = this.getAttribute('data-post-url');
-                                    shareUrlInput.value = postUrl;
-                                    // Facebook share
-                                    fbBtn.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(postUrl);
-                                    // Instagram does not support direct web sharing, so we copy the link and show a message
-                                    igBtn.onclick = function(ev) {
-                                        ev.preventDefault();
-                                        navigator.clipboard.writeText(postUrl).then(function() {
-                                            alert('Link copied! Open Instagram and paste it in your story or bio.');
-                                        });
-                                    };
-                                    // TikTok: no direct web share, but we can copy the link and prompt
-                                    tiktokBtn.onclick = function(ev) {
-                                        ev.preventDefault();
-                                        navigator.clipboard.writeText(postUrl).then(function() {
-                                            alert('Link copied! Open TikTok and share it in your video or bio.');
-                                        });
-                                    };
-                                    shareModal.show();
-                                });
-                            });
-                            copyBtn.addEventListener('click', function() {
-                                navigator.clipboard.writeText(shareUrlInput.value).then(function() {
-                                    copyBtn.textContent = 'Copied!';
-                                    setTimeout(function() { copyBtn.textContent = 'Copy Link'; }, 1500);
-                                });
-                            });
-                            // Redirect to main page after closing the share modal
-                            shareModalEl.addEventListener('hidden.bs.modal', function () {
-                                window.location.href = window.location.pathname;
-                            });
-                        });
-                        </script>
+                            <a href="./PostView.php?id=<?php echo urlencode($post['id']); ?>" class="btn btn-light border mb-1"><i
+                                    class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></a>
                         </div>
                     </div>
                 </div>
@@ -706,4 +623,4 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <?php include __DIR__ . '/../include/footer.php'; ?>
-            <script src="assets/js/index.js?v=3"></script>
+            <script src="assets/js/index.js?v=6"></script>

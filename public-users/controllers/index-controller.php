@@ -35,17 +35,19 @@ class IndexController extends BaseController {
      * Get recent posts (community feed)
      */
     public static function getRecentPosts(int $limit = 10, int $offset = 0): array {
-        return self::fetchAll(
-            "SELECT p.*, u.full_name, u.profile_photo,
+        $userId = $_SESSION['user']['id'] ?? null;
+        $likedSelect = $userId
+            ? ", (SELECT 1 FROM post_reactions pr WHERE pr.post_id = p.id AND pr.user_id = " . intval($userId) . " LIMIT 1) AS liked_by_me"
+            : ", NULL AS liked_by_me";
+        $sql = "SELECT p.*, u.full_name, u.profile_photo,
                     (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id) as reaction_count,
                     (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count
+                    {$likedSelect}
              FROM posts p
              JOIN users u ON p.user_id = u.id
              ORDER BY p.created_at DESC
-             LIMIT ? OFFSET ?",
-            'ii',
-            [$limit, $offset]
-        );
+             LIMIT ? OFFSET ?";
+        return self::fetchAll($sql, 'ii', [$limit, $offset]);
     }
     
     /**

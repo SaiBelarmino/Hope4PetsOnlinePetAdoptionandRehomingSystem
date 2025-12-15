@@ -36,6 +36,14 @@
                 </a>
             </li>
             <li class="nav-item">
+<<<<<<< Updated upstream
+=======
+                <a class="nav-link" style="<?= $iconStyle ?>" href="./community.php" title="Community" aria-label="Community">
+                <i class="ti ti-users"></i>
+                </a>
+            </li>
+            <li class="nav-item">
+>>>>>>> Stashed changes
                 <a class="nav-link" style="<?= $iconStyle ?>" href="./BrowsePet.php" title="Pets" aria-label="Pets">
                 <i class="ti ti-paw"></i>
                 </a>
