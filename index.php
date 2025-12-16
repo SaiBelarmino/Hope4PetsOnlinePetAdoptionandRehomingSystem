@@ -184,7 +184,7 @@
             </div>
             <div class="row g-4">
                 <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-scale">
-                    <a class="text-decoration-none" href="public-users/views/authentication-login.php">
+                    <a class="text-decoration-none" href="public-users/user-authentication/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/GRDog1.jpg" class="card-img-top" alt="Dogs" />
                             <div class="card-body">
@@ -195,7 +195,7 @@
                     </a>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-zoom delay-1" data-reveal-dur="780ms">
-                    <a class="text-decoration-none" href="public-users/views/authentication-login.php">
+                    <a class="text-decoration-none" href="public-users/user-authentication/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/PCat3.jpg" class="card-img-top" alt="Cats" />
                             <div class="card-body">
@@ -206,7 +206,7 @@
                     </a>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-rotate delay-2" data-reveal-dur="820ms">
-                    <a class="text-decoration-none" href="public-users/views/authentication-login.php">
+                    <a class="text-decoration-none" href="public-users/user-authentication/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/rabbit2.jpg" class="card-img-top" alt="Small pets" />
                             <div class="card-body">
@@ -218,7 +218,7 @@
                     </a>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 reveal reveal-up reveal-flip delay-3" data-reveal-dur="900ms">
-                    <a class="text-decoration-none" href="public-users/views/authentication-login.php">
+                    <a class="text-decoration-none" href="public-users/user-authentication/authentication-login.php">
                         <div class="card category-card border-0 shadow-sm h-100">
                             <img src="assets/images/products/fish1.jpg" class="card-img-top" alt="Fish" />
                             <div class="card-body">
@@ -284,7 +284,7 @@
             <div class="row g-4">
                 <div class="col-md-4 reveal reveal-up reveal-scale">
                     <div class="card border-0 shadow-sm h-100 hover-lift">
-                        <a href="public-users/views/profile.php?user_id=1">
+                        <a href="public-users/user-authentication/authentication-login.php">
                             <img src="assets/images/profile/user-1.jpg" class="card-img-top object-fit-cover"
                                 style="height: 220px" alt="" />
                         </a>
@@ -297,7 +297,7 @@
                 </div>
                 <div class="col-md-4 reveal reveal-up reveal-rotate delay-1" data-reveal-dur="820ms">
                     <div class="card border-0 shadow-sm h-100 hover-lift">
-                        <a href="public-users/views/profile.php?user_id=2">
+                        <a href="public-users/user-authentication/authentication-login.php">
                             <img src="assets/images/profile/user-2.jpg" class="card-img-top object-fit-cover"
                                 style="height: 220px" alt="" />
                         </a>
@@ -310,8 +310,10 @@
                 </div>
                 <div class="col-md-4 reveal reveal-up reveal-blur-lift delay-2" data-reveal-dur="950ms">
                     <div class="card border-0 shadow-sm h-100 hover-lift">
-                        <img src="assets/images/products/PCat1.jpg" class="card-img-top object-fit-cover"
-                            style="height: 220px" alt="" />
+                        <a href="public-users/user-authentication/authentication-login.php">
+                            <img src="assets/images/products/PCat1.jpg" class="card-img-top object-fit-cover"
+                                style="height: 220px" alt="" />
+                        </a>
                         <div class="card-body">
                             <h5 class="card-title">Luna’s big adventure</h5>
                             <p class="card-text text-muted mb-0">“The shelter was kind, transparent, and supportive
