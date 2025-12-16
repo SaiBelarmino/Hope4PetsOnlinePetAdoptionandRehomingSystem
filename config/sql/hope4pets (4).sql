@@ -328,7 +328,8 @@ CREATE TABLE `posts` (
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `pet_id` bigint(20) UNSIGNED DEFAULT NULL,
   `content` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `reaction_count` int NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

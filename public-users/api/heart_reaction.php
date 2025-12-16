@@ -44,10 +44,26 @@ $stmt->execute();
 $stmt->bind_result($count);
 $stmt->fetch();
 $stmt->close();
+
+// Update the posts table with the new reaction count
+$stmt = $conn->prepare('UPDATE posts SET reaction_count = ? WHERE id = ?');
+$stmt->bind_param('ii', $count, $postId);
+$stmt->execute();
+$stmt->close();
+
+// Check if user has hearted after the update (always reflect DB state)
+$stmt = $conn->prepare('SELECT 1 FROM post_reactions WHERE post_id=? AND user_id=?');
+$stmt->bind_param('ii', $postId, $userId);
+$stmt->execute();
+$stmt->store_result();
+$dbHearted = $stmt->num_rows > 0;
+$stmt->free_result();
+$stmt->close();
+
 // Return new state
 $res = [
-    'success'=>true,
-    'count'=>(int)$count,
-    'liked'=>$liked
+    'success' => true,
+    'count' => (int)$count,
+    'liked' => $dbHearted
 ];
 echo json_encode($res);

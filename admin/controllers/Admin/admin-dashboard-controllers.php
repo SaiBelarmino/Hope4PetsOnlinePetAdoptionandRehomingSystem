@@ -23,6 +23,15 @@
                 'adoption_requests_total' => (int) self::fetchValue("SELECT COUNT(*) FROM adoption_requests", '', [] , 0),
                 'adoption_requests_pending' => (int) self::fetchValue("SELECT COUNT(*) FROM adoption_requests WHERE status='pending'", '', [] , 0),
                 'approved_adoptions' => (int) self::fetchValue("SELECT COUNT(*) FROM adoption_requests WHERE status='approved'", '', [] , 0),
+                // Approved adoptions from shelters only
+                'approved_adoptions_from_shelters' => (int) self::fetchValue(
+                    "SELECT COUNT(*) FROM adoption_requests ar JOIN pets p ON ar.pet_id = p.pet_id WHERE ar.status='approved' AND p.shelter_id IS NOT NULL",
+                    '',
+                    [],
+                    0
+                ),
+                // Daily adoption requests (today)
+                'adoption_requests_today' => (int) self::fetchValue("SELECT COUNT(*) FROM adoption_requests WHERE DATE(created_at) = CURDATE()", '', [], 0),
 
                 // Rehoming / surrender requests
                 'rehoming_requests_total' => (int) self::fetchValue("SELECT COUNT(*) FROM rehoming_requests", '', [] , 0),

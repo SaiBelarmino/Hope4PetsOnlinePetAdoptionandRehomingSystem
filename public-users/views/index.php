@@ -199,32 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Get profile photo or default using helper
                     $profilePhoto = resolve_profile_photo($post['profile_photo'] ?? null);
-                    // Get heart count and if user hearted
-                    $heartCount = 0;
-                    $userHearted = false;
-                    try {
-                        $conn = $GLOBALS['conn'] ?? null;
-                        if (!$conn) {
-                            require_once __DIR__ . '/../config/db-connection/db_connection.php';
-                            $conn = $GLOBALS['conn'] ?? null;
-                        }
-                        if ($conn) {
-                            $stmt = $conn->prepare('SELECT COUNT(*) FROM post_reactions WHERE post_id=?');
-                            $stmt->bind_param('i', $post['id']);
-                            $stmt->execute();
-                            $stmt->bind_result($heartCount);
-                            $stmt->fetch();
-                            $stmt->close();
-                            if ($userId) {
-                                $stmt = $conn->prepare('SELECT 1 FROM post_reactions WHERE post_id=? AND user_id=? LIMIT 1');
-                                $stmt->bind_param('ii', $post['id'], $userId);
-                                $stmt->execute();
-                                $stmt->store_result();
-                                $userHearted = $stmt->num_rows > 0;
-                                $stmt->close();
-                            }
-                        }
-                    } catch (Throwable $e) {}
                 ?>
 
             <!-- Single post card -->
@@ -385,23 +359,84 @@ document.addEventListener('DOMContentLoaded', function() {
                     <?php endif; ?>
 
                     <div class="d-flex justify-content-between post-actions-sm mt-2">
-                        <div class="action-group d-flex flex-wrap">
-                            <a href="./PostView.php?id=<?php echo $post['id']; ?>"
-                                class="btn btn-light border me-1 mb-1"><i class="ti ti-thumb-up"></i> <span
-                                    class="d-none d-sm-inline">Like</span>
-                                <?php if ($post['reaction_count'] > 0): ?><span
-                                    class="badge bg-primary rounded-pill ms-1"><?php echo $post['reaction_count']; ?></span><?php endif; ?></a>
-                            <!-- Replace Comment link with a toggle button that expands a collapsible comment form -->
-                            <button type="button" class="btn btn-light border me-1 mb-1 comment-toggle"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#comment-box-<?php echo $post['id']; ?>"
-                                    aria-expanded="false"
-                                    aria-controls="comment-box-<?php echo $post['id']; ?>">
+                        <div class="action-group d-flex flex-wrap align-items-center">
+                            <button type="button" class="heart-btn btn btn-light border me-1 mb-1<?php if ($userHearted) echo ' hearted'; ?>"
+                                data-post-id="<?php echo $post['id']; ?>" <?php if (!$userId) echo 'disabled title=\"Log in to heart\"'; ?>>
+                                <span class="heart-icon align-middle"></span>
+                                <span class="heart-count ms-1"><?php echo isset($post['reaction_count']) ? (int)$post['reaction_count'] : 0; ?></span>
+                            </button>
+                            <link href="assets/css/HeartReaction.css?v=1" rel="stylesheet">
+                            <script src="assets/js/HeartReaction.js?v=1"></script>
+                            <!-- Comment button triggers modal -->
+                            <button type="button" class="btn btn-light border me-1 mb-1 comment-modal-btn"
+                                    data-post-id="<?php echo $post['id']; ?>"
+                                    data-post-content="<?php echo isset($fullHtml) ? htmlspecialchars($fullHtml, ENT_QUOTES, 'UTF-8') : ''; ?>"
+                                    data-post-user="<?php echo htmlspecialchars($post['full_name']); ?>"
+                                    data-post-avatar="<?php echo htmlspecialchars($profilePhoto, ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-post-date="<?php echo htmlspecialchars($timeAgo); ?>"
+                                    data-comment-count="<?php echo $post['comment_count']; ?>">
                                 <i class="ti ti-message-circle"></i> <span class="d-none d-sm-inline">Comment</span>
                                 <?php if ($post['comment_count'] > 0): ?><span class="badge bg-primary rounded-pill ms-1"><?php echo $post['comment_count']; ?></span><?php endif; ?>
                             </button>
-                            <a href="./PostView.php?id=<?php echo urlencode($post['id']); ?>" class="btn btn-light border mb-1"><i
-                                    class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span></a>
+                            <button type="button" class="btn btn-light border mb-1 share-modal-btn" 
+                                    data-post-id="<?php echo $post['id']; ?>"
+                                    data-share-link="<?php echo htmlspecialchars(((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/PostView.php?id=' . urlencode($post['id']), ENT_QUOTES, 'UTF-8'); ?>">
+                                <i class="ti ti-share"></i> <span class="d-none d-sm-inline">Share</span>
+                            </button>
+                        <!-- Share Modal (single, reused for all posts) -->
+                        <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="shareModalLabel">Share Post</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="shareLinkInput" class="form-label">Share this link with anyone:</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="shareLinkInput" readonly>
+                                                <button class="btn btn-outline-secondary" type="button" id="copyShareLinkBtn">Copy</button>
+                                            </div>
+                                            <div id="copyShareLinkMsg" class="form-text text-success d-none">Link copied!</div>
+                                        </div>
+                                        <div class="alert alert-info small mb-0">Anyone with this link can view the post, even if they are not logged in.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                        // Share modal logic
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var shareModalEl = document.getElementById('shareModal');
+                            var shareModal = new bootstrap.Modal(shareModalEl);
+                            var shareLinkInput = document.getElementById('shareLinkInput');
+                            var copyBtn = document.getElementById('copyShareLinkBtn');
+                            var copyMsg = document.getElementById('copyShareLinkMsg');
+                            document.querySelectorAll('.share-modal-btn').forEach(function(btn) {
+                                btn.addEventListener('click', function() {
+                                    var link = btn.getAttribute('data-share-link');
+                                    shareLinkInput.value = link;
+                                    copyMsg.classList.add('d-none');
+                                    shareModal.show();
+                                });
+                            });
+                            if (copyBtn) {
+                                copyBtn.addEventListener('click', function() {
+                                    shareLinkInput.select();
+                                    shareLinkInput.setSelectionRange(0, 99999);
+                                    try {
+                                        document.execCommand('copy');
+                                        copyMsg.classList.remove('d-none');
+                                    } catch (e) {
+                                        copyMsg.textContent = 'Failed to copy.';
+                                        copyMsg.classList.remove('d-none');
+                                    }
+                                });
+                            }
+                        });
+                        </script>
                         </div>
                     </div>
                 </div>
@@ -568,8 +603,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-           <?php endforeach; ?>
-            <?php endif; ?> 
+              <?php endforeach; ?>
+          <?php endif; ?>
             <!-- Create Post Modal -->
             <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel"
                 aria-hidden="true">
@@ -622,5 +657,5 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <?php include __DIR__ . '/../include/footer.php'; ?>
-            <script src="assets/js/index.js?v=6"></script>
+        <?php include __DIR__ . '/../include/footer.php'; ?>
+        <script src="assets/js/index.js?v=6"></script>

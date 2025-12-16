@@ -22,39 +22,52 @@
             </div>
         </form>
 
-        <!-- Center: Icon Nav (desktop) - centered -->
-        <!-- Center Icons (Facebook-like sizing) -->
-        <div class="nav-center d-none d-lg-flex position-absolute start-50 top-50 translate-middle">
-            <ul class="topbar-icons navbar-nav flex-row align-items-center gap-1">
-            <?php
-            // Common style for FB-like icon buttons
-            $iconStyle = "height:56px;width:56px;display:flex;align-items:center;justify-content:center;font-size:24px;";
-            ?>
-            <li class="nav-item">
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./index.php" title="Home" aria-label="Home">
-                <i class="ti ti-home"></i>
-                </a>
-            </li>
-            <li class="nav-item">
-<<<<<<< Updated upstream
-=======
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./community.php" title="Community" aria-label="Community">
-                <i class="ti ti-users"></i>
-                </a>
-            </li>
-            <li class="nav-item">
->>>>>>> Stashed changes
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./BrowsePet.php" title="Pets" aria-label="Pets">
-                <i class="ti ti-paw"></i>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" style="<?= $iconStyle ?>" href="./FindShelters.php" title="Shelters" aria-label="Shelters">
-                <i class="ti ti-building-community"></i>
-                </a>
-            </li>
+        <!-- Center Icons: Always visible, fixed at bottom on mobile, centered on desktop -->
+        <div class="nav-center position-absolute start-50 top-50 translate-middle d-none d-lg-flex">
+            <ul class="topbar-icons navbar-nav flex-row align-items-center gap-1 mb-0">
+                <?php
+                $iconStyle = "height:56px;width:56px;display:flex;align-items:center;justify-content:center;font-size:24px;";
+                ?>
+                <li class="nav-item">
+                    <a class="nav-link" style="<?= $iconStyle ?>" href="./index.php" title="Home" aria-label="Home">
+                        <i class="ti ti-home"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" style="<?= $iconStyle ?>" href="./community.php" title="Community" aria-label="Community">
+                        <i class="ti ti-users"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" style="<?= $iconStyle ?>" href="./BrowsePet.php" title="Pets" aria-label="Pets">
+                        <i class="ti ti-paw"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" style="<?= $iconStyle ?>" href="./FindShelters.php" title="Shelters" aria-label="Shelters">
+                        <i class="ti ti-building-community"></i>
+                    </a>
+                </li>
             </ul>
         </div>
+        <!-- Mobile bottom nav: always visible on mobile, fixed at bottom -->
+        <nav class="mobile-bottom-nav d-flex d-lg-none justify-content-around align-items-center bg-white border-top shadow-lg" style="position:fixed;bottom:0;left:0;width:100vw;height:60px;z-index:1050;">
+            <?php
+            $iconStyleMobile = "height:44px;width:44px;display:flex;align-items:center;justify-content:center;font-size:22px;";
+            ?>
+            <a class="nav-link flex-fill text-center" style="<?= $iconStyleMobile ?>" href="./index.php" title="Home" aria-label="Home">
+                <i class="ti ti-home"></i>
+            </a>
+            <a class="nav-link flex-fill text-center" style="<?= $iconStyleMobile ?>" href="./community.php" title="Community" aria-label="Community">
+                <i class="ti ti-users"></i>
+            </a>
+            <a class="nav-link flex-fill text-center" style="<?= $iconStyleMobile ?>" href="./BrowsePet.php" title="Pets" aria-label="Pets">
+                <i class="ti ti-paw"></i>
+            </a>
+            <a class="nav-link flex-fill text-center" style="<?= $iconStyleMobile ?>" href="./FindShelters.php" title="Shelters" aria-label="Shelters">
+                <i class="ti ti-building-community"></i>
+            </a>
+        </nav>
 
         <!-- Right Section -->
         <div class="d-flex align-items-center ms-auto gap-2">

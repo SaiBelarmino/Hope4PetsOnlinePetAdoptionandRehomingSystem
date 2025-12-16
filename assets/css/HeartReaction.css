@@ -1,0 +1,28 @@
+/* HeartReaction.css */
+.heart-btn {
+    transition: color 0.2s, background 0.2s;
+    color: #888;
+    background: #fff;
+    border: 1px solid #eee;
+    position: relative;
+}
+.heart-btn .heart-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    background: url('../images/icons/heart-outline.svg') no-repeat center center/contain;
+    transition: background 0.2s;
+}
+.heart-btn.hearted {
+    color: #e25555;
+    background: #fff0f0;
+    border-color: #e25555;
+}
+.heart-btn.hearted .heart-icon {
+    background: url('../images/icons/heart-filled.svg') no-repeat center center/contain;
+}
+.heart-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

@@ -35,7 +35,8 @@ include dirname(__DIR__, 2) . '/sidebar.php';
                     <div class="card-body">
                         <h6 class="card-title">Adoption Requests</h6>
                         <h3 id="adoptionTotal" class="fw-bold"><?php echo (int)($stats['adoption_requests_total'] ?? 0); ?></h3>
-                        <small class="text-muted">Pending: <span id="adoptionPending"><?php echo (int)($stats['adoption_requests_pending'] ?? 0); ?></span></small>
+                        <small class="text-muted">Pending: <span id="adoptionPending"><?php echo (int)($stats['adoption_requests_pending'] ?? 0); ?></span></small><br>
+                        <small class="text-muted">Today: <span id="adoptionToday"><?php echo (int)($stats['adoption_requests_today'] ?? 0); ?></span></small>
                     </div>
                 </div>
             </div>
@@ -45,7 +46,8 @@ include dirname(__DIR__, 2) . '/sidebar.php';
                     <div class="card-body">
                         <h6 class="card-title">Approved Adoptions</h6>
                         <h3 id="approvedAdoptions" class="fw-bold"><?php echo (int)($stats['approved_adoptions'] ?? 0); ?></h3>
-                        <small class="text-muted">Successful placements</small>
+                        <small class="text-muted">Successful placements</small><br>
+                        <small class="text-muted">From Shelters: <span id="approvedAdoptionsFromShelters"><?php echo (int)($stats['approved_adoptions_from_shelters'] ?? 0); ?></span></small>
                     </div>
                 </div>
             </div>
@@ -319,12 +321,14 @@ include dirname(__DIR__, 2) . '/sidebar.php';
       if (!data) return;
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val ?? 0; };
       set('totalPets', data.total_pets);
-      set('adoptionTotal', data.adoption_requests_total);
-      set('adoptionPending', data.adoption_requests_pending);
-      set('rehomingRequests', data.rehoming_requests_total);
-      set('approvedAdoptions', data.approved_adoptions);
-      set('registeredUsers', data.registered_users);
-      set('totalShelters', data.total_shelters);
+    set('adoptionTotal', data.adoption_requests_total);
+    set('adoptionPending', data.adoption_requests_pending);
+    set('adoptionToday', data.adoption_requests_today);
+    set('rehomingRequests', data.rehoming_requests_total);
+    set('approvedAdoptions', data.approved_adoptions);
+    set('approvedAdoptionsFromShelters', data.approved_adoptions_from_shelters);
+    set('registeredUsers', data.registered_users);
+    set('totalShelters', data.total_shelters);
     })
     .catch(()=>{/* silent */})
     .finally(()=> setTimeout(pollStats, 10000)); // poll every 10s
