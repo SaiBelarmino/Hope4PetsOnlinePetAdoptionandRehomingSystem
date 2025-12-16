@@ -160,10 +160,37 @@ class UsersController extends BaseController {
     }
 
     public static function getById(int $id): ?array {
-    $selectBanned = self::hasBanned() ? 'u.is_banned AS is_banned' : '0 AS is_banned';
-    $row = self::fetchOne("SELECT u.*, $selectBanned FROM users u WHERE u.id = ?", 'i', [$id]);
+        $selectBanned = self::hasBanned() ? 'u.is_banned AS is_banned' : '0 AS is_banned';
+        $row = self::fetchOne("SELECT u.*, $selectBanned FROM users u WHERE u.id = ?", 'i', [$id]);
         if ($row) {
             $row['status'] = ($row['is_banned'] ?? 0) ? 'banned' : (($row['is_verified'] ?? 0) ? 'active' : 'pending');
+            // Profile picture logic
+            $default = '/assets/images/profile/default.png';
+            $profileDir = '/storage/uploads/profile_picture/' . $id . '/';
+            $basePath = $_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 4);
+            $absProfileDir = rtrim($basePath, '/\\') . $profileDir;
+            $avatar = $default;
+            if (!empty($row['profile_photo'])) {
+                // If profile_photo is a filename, check if it exists in the user's folder
+                $photoFile = $row['profile_photo'];
+                $absPhoto = $absProfileDir . $photoFile;
+                if (file_exists($absPhoto)) {
+                    $avatar = $profileDir . $photoFile;
+                } else {
+                    // fallback to what is stored if it's a full path
+                    $avatar = $row['profile_photo'];
+                }
+            } else {
+                // Try to find any image in the user's profile_picture/{id}/ folder
+                $tryDir = $basePath . $profileDir;
+                if (is_dir($tryDir)) {
+                    $files = glob($tryDir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+                    if ($files && count($files) > 0) {
+                        $avatar = $profileDir . basename($files[0]);
+                    }
+                }
+            }
+            $row['avatar'] = $avatar;
         }
         return $row;
     }

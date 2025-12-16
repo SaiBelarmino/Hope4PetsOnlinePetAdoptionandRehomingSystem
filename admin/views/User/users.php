@@ -311,7 +311,7 @@ include dirname(__DIR__, 2) . '/sidebar.php';
     if(ids.length===0) return;
     if(!confirm('Apply "'+action+'" to '+ids.length+' selected user(s)?')) return;
     // send AJAX to perform bulk action
-    fetch('../controllers/users-action.php', {
+    fetch('../../controllers/User/users-action.php', {
       method: 'POST',
       credentials: 'same-origin',
       headers: {'Content-Type':'application/x-www-form-urlencoded'},
@@ -319,7 +319,7 @@ include dirname(__DIR__, 2) . '/sidebar.php';
     }).then(async r=>{
       const txt = await r.text();
       try { const res = JSON.parse(txt); if(res.success){ alert('Bulk action applied. Affected: '+(res.affected||0)); location.reload(); } else alert('Failed: '+(res.message||txt)); }
-      catch(e){ alert('Unexpected response: '+txt); }
+      catch(e){ alert('Sorry, something went wrong. Please try again or contact support.'); }
     }).catch(e=>alert('Request failed: '+e.message));
   });
 
@@ -327,15 +327,45 @@ include dirname(__DIR__, 2) . '/sidebar.php';
 })();
 </script>
 
-<!-- User modal for view/edit -->
-<div class="modal" id="userModal" tabindex="-1" style="display:none;">
+
+<!-- User Profile View Modal -->
+<div class="modal" id="userProfileModal" tabindex="-1" style="display:none;">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">User</h5>
+        <h5 class="modal-title">User Profile</h5>
         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <div class="d-flex flex-column align-items-center mb-3">
+          <img id="profile-avatar" src="/assets/images/profile/default.png" class="rounded-circle border mb-2" width="90" height="90" alt="avatar">
+          <h5 id="profile-full_name" class="mb-0"></h5>
+          <div class="text-muted" id="profile-email"></div>
+        </div>
+        <div class="row g-2">
+          <div class="col-6"><strong>Gender:</strong> <span id="profile-gender"></span></div>
+          <div class="col-6"><strong>Birthday:</strong> <span id="profile-birthday"></span></div>
+          <div class="col-12"><strong>Location:</strong> <span id="profile-location"></span></div>
+          <div class="col-12"><strong>Contact:</strong> <span id="profile-contact_number"></span></div>
+          <div class="col-6"><strong>Verified:</strong> <span id="profile-is_verified"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Edit Modal -->
+<div class="modal" id="userEditModal" tabindex="-1" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit User</h5>
+        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex justify-content-center mb-3">
+          <img id="u-avatar" src="/assets/images/profile/default.png" class="rounded-circle border" width="80" height="80" alt="avatar">
+        </div>
         <form id="user-form">
           <input type="hidden" name="id" id="u-id">
           <div class="mb-2"><label class="form-label small">Full name</label><input class="form-control form-control-sm" name="full_name" id="u-full_name"></div>
@@ -375,8 +405,30 @@ include dirname(__DIR__, 2) . '/sidebar.php';
     const action = btn.getAttribute('data-action');
     const id = btn.getAttribute('data-id');
     if(!action || !id) return;
-    if(action === 'view' || action === 'edit'){
-        fetch('../controllers/users-action.php?action=get&id='+encodeURIComponent(id), {credentials: 'same-origin'})
+    if(action === 'view'){
+        fetch('../../controllers/User/users-action.php?action=get&id='+encodeURIComponent(id), {credentials: 'same-origin'})
+          .then(async r=>{
+            const txt = await r.text();
+            try {
+              const res = JSON.parse(txt);
+              if(!res.success){ alert(res.message||'Failed to load'); return; }
+              const d = res.data;
+              // Fill profile modal fields
+              document.getElementById('profile-avatar').src = d.avatar || '/assets/images/profile/default.png';
+              document.getElementById('profile-full_name').textContent = d.full_name || '';
+              document.getElementById('profile-email').textContent = d.email || '';
+              document.getElementById('profile-gender').textContent = d.gender || '';
+              document.getElementById('profile-location').textContent = d.location || '';
+              document.getElementById('profile-contact_number').textContent = d.contact_number || '';
+              document.getElementById('profile-birthday').textContent = d.birthday || '';
+              document.getElementById('profile-is_verified').textContent = d.is_verified ? 'Yes' : 'No';
+              showModal('userProfileModal');
+            } catch(e) {
+              alert('Unexpected response: '+txt);
+            }
+          }).catch(e=>alert('Request failed: '+e.message));
+    } else if(action === 'edit'){
+        fetch('../../controllers/User/users-action.php?action=get&id='+encodeURIComponent(id), {credentials: 'same-origin'})
           .then(async r=>{
             const txt = await r.text();
             try {
@@ -391,36 +443,57 @@ include dirname(__DIR__, 2) . '/sidebar.php';
               document.getElementById('u-contact_number').value = d.contact_number || '';
               document.getElementById('u-birthday').value = d.birthday || '';
               document.getElementById('u-is_verified').value = d.is_verified ? '1' : '0';
-              showModal('userModal');
+              var avatar = d.avatar || '/assets/images/profile/default.png';
+              document.getElementById('u-avatar').src = avatar;
+              showModal('userEditModal');
             } catch(e) {
               alert('Unexpected response: '+txt);
             }
           }).catch(e=>alert('Request failed: '+e.message));
     } else if(action === 'delete'){
       if(!confirm('Delete user #'+id+'?')) return;
-      fetch('../controllers/users-action.php', {
+      fetch('../../controllers/User/users-action.php', {
         method:'POST', credentials: 'same-origin', headers:{'Content-Type':'application/x-www-form-urlencoded'},
         body: new URLSearchParams({action:'delete', id: id})
       }).then(async r=>{
-        const txt = await r.text(); try { const res = JSON.parse(txt); if(res.success){ alert('Deleted'); location.reload(); } else alert('Failed: '+(res.message||txt)); } catch(e){ alert('Unexpected response: '+txt); }
+        const txt = await r.text();
+        try {
+          const res = JSON.parse(txt);
+          if(res.success){
+            alert('Deleted');
+            // Remove the row from the table without reloading
+            const row = btn.closest('tr');
+            if(row) row.remove();
+            // Optionally update the count info
+            if(typeof update === 'function') update();
+          } else {
+            alert('Failed: '+(res.message||txt));
+          }
+        } catch(e){
+          // Show backend response for debugging
+          alert('Sorry, something went wrong.\nResponse: '+txt);
+        }
       }).catch(e=>alert('Request failed: '+e.message));
     }
   });
+
 
   document.getElementById('save-user')?.addEventListener('click', ()=>{
     const form = document.getElementById('user-form');
     const data = new FormData(form);
     data.append('action','update');
-    fetch('../controllers/users-action.php', {
+    fetch('../../controllers/User/users-action.php', {
       method:'POST', credentials: 'same-origin', body: data
     }).then(async r=>{
-      const txt = await r.text(); try { const res = JSON.parse(txt); if(res.success){ alert('Saved'); hideModal('userModal'); location.reload(); } else alert('Failed to save: '+(res.message||txt)); } catch(e){ alert('Unexpected response: '+txt); }
+      const txt = await r.text();
+      try { const res = JSON.parse(txt); if(res.success){ alert('Saved'); hideModal('userEditModal'); location.reload(); } else alert('Failed to save: '+(res.message||txt)); } catch(e){ alert('Sorry, something went wrong. Please try again or contact support.'); }
     }).catch(e=>alert('Request failed: '+e.message));
   });
 
   // Close modal when clicking close buttons
   document.querySelectorAll('[data-dismiss="modal"]').forEach(btn=>btn.addEventListener('click', ()=>{
-    hideModal('userModal');
+    hideModal('userProfileModal');
+    hideModal('userEditModal');
   }));
 })();
 </script>

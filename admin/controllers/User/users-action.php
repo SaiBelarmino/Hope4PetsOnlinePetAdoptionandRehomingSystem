@@ -12,9 +12,18 @@ if (!$action) {
 
 // Simple auth guard: ensure admin session exists (project may have different auth)
 // Use project's SessionManager to check login state
-require_once __DIR__ . '/../../config/SessionManager.php';
-\SessionManager::init();
-if (!\SessionManager::isLoggedIn()) {
+
+require_once __DIR__ . '/../../../config/SessionManager.php';
+SessionManager::init();
+if (!class_exists('AdminSessionManager') && file_exists(__DIR__ . '/../../../config/SessionManager.php')) {
+    require_once __DIR__ . '/../../../config/SessionManager.php';
+}
+if (!class_exists('AdminSessionManager')) {
+    echo json_encode(['success'=>false,'message'=>'Admin session manager missing']); exit;
+}
+try {
+    AdminSessionManager::requireAdminLogin($_SERVER['REQUEST_URI'] ?? null);
+} catch (Exception $e) {
     echo json_encode(['success'=>false,'message'=>'Not authenticated']); exit;
 }
 
